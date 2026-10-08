@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contact Viustay</title>
+<meta name="description" content="Talk to Viustay on WhatsApp, Monday to Saturday, 8 AM to 5 PM.">
+<link rel="icon" href="assets/favicon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&family=Source+Sans+3:wght@400;600&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body data-header="main">
+<header id="site-header"></header>
+<section class="page-hero"><div class="container"><span class="kicker">Contact</span><h1>Talk to us.</h1><p>The fastest way is WhatsApp. We reply Monday to Saturday, 8:00 AM – 5:00 PM.</p></div></section>
+<main class="container section contact-grid" id="contact-wrap">
+  <div class="contact-list">
+    <div><svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Z"/></svg><span><small>WhatsApp</small><a data-wa="Hi Viustay" href="#" style="font-weight:600">+254 748 600 342</a></span></div>
+    <div><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg><span><small>Email</small><span class="placeholder">[hello@viustay.co.ke]</span></span></div>
+    <div><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span><small>Hours</small>Monday to Saturday, 8:00 AM – 5:00 PM</span></div>
+    <div><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg><span><small>Location</small>Nairobi, Kenya <span class="placeholder">[OFFICE AREA]</span></span></div>
+  </div>
+  <form id="contact-form" class="panel" novalidate>
+    <h2 style="font-size:24px">Send us a message</h2>
+    <div class="grid-2">
+      <label class="field">Your name<input type="text" name="name" autocomplete="name"></label>
+      <label class="field">WhatsApp number<input type="tel" name="phone" autocomplete="tel" placeholder="07XX XXX XXX"></label>
+    </div>
+    <label class="field">I am a…<select name="kind"><option>Tenant / looking for a home</option><option>Landlord / manager</option><option>Caretaker</option><option>Other</option></select></label>
+    <label class="field">Message<textarea name="message" rows="4"></textarea></label>
+    <label class="check"><input type="checkbox" name="consent"><span>Viustay may contact me about this message, as set out in the <a href="privacy.html" target="_blank">privacy notice</a>.</span></label>
+    <p class="error hidden" id="c-error" role="alert"></p>
+    <div><button type="submit" class="btn btn-primary" id="c-submit">Send message</button></div>
+  </form>
+</main>
+<main class="done hidden" id="contact-done"><img src="assets/viustay-icon-colour.svg" alt=""><h1>Message sent.</h1><p>We'll reply on WhatsApp during working hours.</p><a class="btn btn-dark" href="index.html">Back to home</a></main>
+<footer id="site-footer"></footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/common.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var V = window.V, f = V.$('#contact-form'), err = V.$('#c-error');
+  f.addEventListener('submit', function (e) {
+    e.preventDefault(); err.classList.add('hidden');
+    var name = f.name.value.trim(), phone = f.phone.value.trim(), msg = f.message.value.trim();
+    var problem = !name ? 'Please enter your name.' : !V.phoneOk(phone) ? 'Please enter a valid WhatsApp number.' : !msg ? 'Please write a message.' : !f.consent.checked ? 'Please tick the box so we can reply.' : '';
+    if (problem) { err.textContent = problem; err.classList.remove('hidden'); return; }
+    var b = V.$('#c-submit'); b.disabled = true; b.textContent = 'Sending…';
+    V.insert('contact_messages', { name: name, phone: phone, kind: f.kind.value, message: msg })
+      .then(function () { V.$('#contact-wrap').classList.add('hidden'); V.$('#contact-done').classList.remove('hidden'); window.scrollTo(0, 0); })
+      .catch(function (e2) { console.error(e2); err.textContent = 'Something went wrong. Please WhatsApp us instead.'; err.classList.remove('hidden'); b.disabled = false; b.textContent = 'Send message'; });
+  });
+});
+</script>
+</body>
+</html>

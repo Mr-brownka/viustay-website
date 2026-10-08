@@ -48,7 +48,7 @@
           '<nav class="site-nav" aria-label="Main">' +
           (owners
             ? '<a href="index.html">Find a home</a><a href="owners.html#how">How it works</a><a href="owners.html#caretakers">Caretakers</a>'
-            : '<a href="homes.html">Rent</a><a href="homes.html?stay=short">Short stays</a><a href="owners.html">List your property</a>') +
+            : '<a href="homes.html">Rent</a><a href="homes.html?stay=short">Short stays</a><a href="how-it-works.html">How it works</a><a href="about.html">About</a><a href="owners.html">List your property</a>') +
           '</nav><div class="header-actions">' +
           (owners
             ? '<a class="btn btn-pill btn-light" href="dashboard.html">Manager log in</a>'
@@ -59,8 +59,24 @@
     var foot = V.$('#site-footer');
     if (foot) {
       foot.className = 'site-footer';
-      foot.innerHTML = '<div class="container"><span>&copy; ' + new Date().getFullYear() + ' Viustay · Find your place. We handle the rest.</span>' +
-        '<span><a href="owners.html">For owners</a> · <a href="privacy.html">Privacy</a> · <a href="' + V.wa('Hi Viustay') + '" target="_blank" rel="noopener">WhatsApp us</a></span></div>';
+      foot.innerHTML =
+        '<div class="container footer-grid">' +
+        '<div class="footer-brand"><img src="assets/viustay-logo-colour.svg" alt="Viustay" style="height:28px;width:auto"><p>Find your place. We handle the rest.</p><p>Mon–Sat, 8:00 AM – 5:00 PM</p></div>' +
+        '<nav aria-label="Renters"><strong>Renters</strong><a href="index.html">Guided search</a><a href="homes.html">All homes</a><a href="areas.html">Area guides</a><a href="how-it-works.html">How it works</a></nav>' +
+        '<nav aria-label="Owners"><strong>Owners</strong><a href="owners.html">For owners</a><a href="list-property.html">List your property</a><a href="dashboard.html">Manager log in</a></nav>' +
+        '<nav aria-label="Company"><strong>Company</strong><a href="about.html">About</a><a href="investors.html">Investors</a><a href="faq.html">FAQ</a><a href="contact.html">Contact</a></nav>' +
+        '<nav aria-label="Legal"><strong>Legal</strong><a href="terms.html">Terms</a><a href="privacy.html">Privacy</a></nav>' +
+        '</div><div class="container footer-base"><span>&copy; ' + new Date().getFullYear() + ' Viustay · Nairobi, Kenya</span><span>Draft website</span></div>';
+    }
+    // Floating WhatsApp button on every page except the dashboard
+    if (!body.hasAttribute('data-no-wa') && !V.$('.wa-float')) {
+      var wa = document.createElement('a');
+      wa.className = 'wa-float';
+      wa.href = V.wa('Hi Viustay, I have a question');
+      wa.target = '_blank'; wa.rel = 'noopener';
+      wa.setAttribute('aria-label', 'Chat with Viustay on WhatsApp');
+      wa.innerHTML = '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 2s.8 2.3 1 2.5c.1.2 1.6 2.5 4 3.5 1.5.6 2 .7 2.8.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2l-.5-.3Z"/></svg>';
+      body.appendChild(wa);
     }
   };
 

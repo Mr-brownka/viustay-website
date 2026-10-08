@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How Viustay works | Tenants and landlords</title>
+<meta name="description" content="How Viustay works for tenants and for landlords and managers in Nairobi.">
+<link rel="icon" href="assets/favicon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&family=Source+Sans+3:wght@400;600&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body data-header="main">
+<header id="site-header"></header>
+<section class="page-hero"><div class="container"><span class="kicker">How it works</span><h1>Four steps. We handle the rest.</h1><p>Whether you are looking for a home or filling one, here is exactly what happens.</p></div></section>
+<main class="container section stack" style="gap:28px">
+  <div class="tabs" role="tablist" aria-label="Who are you?">
+    <button type="button" role="tab" id="tab-t" aria-selected="true" aria-controls="panel-t">I'm looking for a home</button>
+    <button type="button" role="tab" id="tab-l" aria-selected="false" aria-controls="panel-l">I'm a landlord or manager</button>
+  </div>
+  <section id="panel-t" role="tabpanel" aria-labelledby="tab-t" class="stack">
+    <ol class="stage-list">
+      <li><span class="num">1</span><div><strong>Tell us what you need</strong><p>Area, budget, bedrooms and your must-haves. Takes a minute, no sign-up.</p></div></li>
+      <li><span class="num">2</span><div><strong>See homes that fit</strong><p>Only matches, each one visited and photographed by us.</p></div></li>
+      <li><span class="num">3</span><div><strong>View them in one trip</strong><p>Pick up to 3 homes. Our agent meets you and walks you through.</p></div></li>
+      <li><span class="num">4</span><div><strong>Move in</strong><p>We handle the landlord, the paperwork and the keys. Viewing fee: <span data-text="VIEWING_FEE_TEXT" class="placeholder">[VIEWING FEE]</span></p></div></li>
+    </ol>
+    <div class="actions"><a class="btn btn-primary" href="index.html">Start my search</a><a href="homes.html">Browse all homes</a></div>
+  </section>
+  <section id="panel-l" role="tabpanel" aria-labelledby="tab-l" class="stack hidden">
+    <ol class="stage-list">
+      <li><span class="num">1</span><div><strong>Tell us your vacancies</strong><p>Online in 3 steps, or on WhatsApp.</p></div></li>
+      <li><span class="num">2</span><div><strong>We visit and shoot</strong><p>Photos and video of every unit, listed with a Verified badge.</p></div></li>
+      <li><span class="num">3</span><div><strong>We bring matched tenants</strong><p>We run every viewing with your caretaker.</p></div></li>
+      <li><span class="num">4</span><div><strong>You pay when a tenant signs</strong><p><span data-text="PLACEMENT_FEE_TEXT" class="placeholder">[PLACEMENT FEE]</span>, due on lease signing and paid at move-in. Track it all in your dashboard.</p></div></li>
+    </ol>
+    <div class="actions"><a class="btn btn-primary" href="list-property.html">List your property</a><a href="owners.html">Learn more for owners</a></div>
+  </section>
+</main>
+<footer id="site-footer"></footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/common.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var V = window.V, tabs = V.$$('[role=tab]');
+  function show(id) {
+    tabs.forEach(function (t) { var on = t.id === id; t.setAttribute('aria-selected', on ? 'true' : 'false'); V.$('#' + t.getAttribute('aria-controls')).classList.toggle('hidden', !on); });
+  }
+  tabs.forEach(function (t) { t.addEventListener('click', function () { show(t.id); }); });
+  if (location.hash === '#landlords') show('tab-l');
+});
+</script>
+</body>
+</html>
