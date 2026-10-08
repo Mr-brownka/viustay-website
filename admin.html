@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin | Viustay</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="assets/favicon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&family=Source+Sans+3:wght@400;600&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body data-header="flow" data-steps="0" data-no-wa>
+<header id="site-header"></header>
+
+<main class="auth-box hidden" id="a-auth">
+  <h1 style="font-size:32px">Admin log in</h1>
+  <p class="lede" style="font-size:16px">Viustay team only.</p>
+  <form id="a-form" class="stack-sm" novalidate>
+    <label class="field">Email<input type="email" name="email" autocomplete="email"></label>
+    <label class="field">Password<input type="password" name="password" autocomplete="current-password"></label>
+    <p class="error hidden" id="a-error" role="alert"></p>
+    <button type="submit" class="btn btn-dark">Log in</button>
+  </form>
+  <p class="note">First time? Create your login on the <a href="dashboard.html?signup=1">manager login page</a> with your admin email, confirm it, then come back here.</p>
+</main>
+
+<main class="auth-box hidden" id="a-denied">
+  <h1 style="font-size:28px">This account isn't an admin</h1>
+  <p>Ask the account owner to add your email to the admins list.</p>
+  <button type="button" class="btn btn-outline" id="a-out2">Log out</button>
+</main>
+
+<div class="dash hidden" id="a-dash">
+  <nav class="dash-nav" aria-label="Admin">
+    <button type="button" class="tab" data-tab="viewings" aria-pressed="true">Viewings</button>
+    <button type="button" class="tab" data-tab="requests" aria-pressed="false">Home requests</button>
+    <button type="button" class="tab" data-tab="properties" aria-pressed="false">Properties</button>
+    <button type="button" class="tab" data-tab="messages" aria-pressed="false">Messages</button>
+    <span style="flex:1 1 auto"></span>
+    <a class="tab" href="https://docs.google.com/spreadsheets/d/1c4joIC5a7GxXDRFJIeCwpbrcdThPxiAteGNDO0ah3vo/edit" target="_blank" rel="noopener" style="text-decoration:none">Edit listings sheet</a>
+    <button type="button" class="tab" id="a-out">Log out</button>
+  </nav>
+  <main class="dash-main">
+    <div class="actions" style="justify-content:space-between">
+      <h1 id="a-title" style="font-size:30px">Viewings</h1>
+      <div class="actions" style="gap:10px">
+        <label class="check" style="align-items:center"><input type="checkbox" id="a-open" checked> Hide finished</label>
+        <button type="button" class="btn btn-outline" id="a-refresh" style="font-size:15px;padding:10px 16px">Refresh</button>
+      </div>
+    </div>
+    <p class="error hidden" id="a-load-error" role="alert"></p>
+    <div class="stack-sm" id="a-list"></div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/common.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>
