@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Homes for rent in Nairobi | Viustay</title>
+<meta name="description" content="Verified homes for rent in Nairobi. Every home visited and photographed by Viustay.">
+<link rel="icon" href="assets/favicon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&family=Source+Sans+3:wght@400;600&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body data-header="main">
+<header id="site-header"></header>
+<main class="container browse">
+  <aside>
+    <label class="field">Area
+      <input type="search" id="f-area" placeholder="e.g. Kilimani"></label>
+    <div class="stack-sm">
+      <strong style="font-size:13px;color:var(--muted)">Bedrooms</strong>
+      <div class="chips" id="f-beds"></div>
+    </div>
+    <div class="stack-sm">
+      <strong style="font-size:13px;color:var(--muted)">Max rent</strong>
+      <div class="chips" id="f-price"></div>
+    </div>
+    <div class="panel" style="padding:16px">
+      <strong style="font-family:var(--heading);font-size:17px;color:var(--emerald)">Not sure what you want?</strong>
+      <span style="font-size:14px;color:var(--muted)">Answer 3 quick questions and we'll shortlist homes for you.</span>
+      <a href="index.html" style="font-weight:600;font-size:14px">Start guided search</a>
+    </div>
+  </aside>
+  <section>
+    <div class="actions" style="justify-content:space-between;align-items:baseline">
+      <h1 id="browse-title" style="font-size:32px">Loading homes…</h1>
+      <span class="note">Every home visited and photographed by us</span>
+    </div>
+    <div class="panel hidden" id="browse-empty">
+      <h2 style="font-size:22px">No homes match these filters yet</h2>
+      <span style="color:var(--muted)">Tell us what you need and we'll find it for you.</span>
+      <div><a class="btn btn-primary" href="request.html">Find it for me</a></div>
+    </div>
+    <div class="cards" id="browse-cards"></div>
+    <p class="note hidden" id="sample-note">Sample listings shown until the Google Sheet is connected.</p>
+  </section>
+</main>
+<footer id="site-footer"></footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/common.js"></script>
+<script src="js/browse.js"></script>
+</body>
+</html>

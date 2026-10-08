@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Viustay | Find your place in Nairobi</title>
+<meta name="description" content="Tell us what you need and we'll shortlist verified homes in Nairobi, then take you to view them. Find your place. We handle the rest.">
+<link rel="icon" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&family=Source+Sans+3:wght@400;600&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body data-header="main">
+<header id="site-header"></header>
+<main class="container hero">
+  <section class="stack">
+    <h1>Find your place.<br>We handle the rest.</h1>
+    <div class="chips" role="group" aria-label="Type of stay">
+      <button type="button" class="chip" data-stay="long" aria-pressed="true">Long-term rent</button>
+      <button type="button" class="chip" data-stay="short" aria-pressed="false">Short stay</button>
+    </div>
+    <form id="search-form" class="stack-sm" style="max-width:460px" novalidate>
+      <label class="field">Where do you want to live?
+        <input type="text" name="area" placeholder="Area or landmark, e.g. Kilimani, near Yaya Centre" autocomplete="off"></label>
+      <div class="grid-2">
+        <label class="field">Bedrooms
+          <select name="bedrooms">
+            <option value="">Any</option>
+            <option value="0">Bedsitter / studio</option>
+            <option value="1" selected>1 bedroom</option>
+            <option value="2">2 bedrooms</option>
+            <option value="3">3+ bedrooms</option>
+          </select></label>
+        <label class="field">Move-in
+          <select name="movein">
+            <option>As soon as possible</option>
+            <option>Within 2 weeks</option>
+            <option>Next month</option>
+          </select></label>
+      </div>
+      <fieldset class="field" style="border:0;padding:0;margin:0">
+        <legend style="padding:0;margin-bottom:6px">Monthly budget (KES)</legend>
+        <div class="grid-2">
+          <input type="text" inputmode="numeric" name="min" aria-label="Minimum budget" placeholder="Min, e.g. 25,000">
+          <input type="text" inputmode="numeric" name="max" aria-label="Maximum budget" placeholder="Max, e.g. 45,000">
+        </div>
+      </fieldset>
+      <div class="actions" style="margin-top:6px">
+        <button type="submit" class="btn btn-primary">Continue</button>
+        <a href="homes.html">Skip, show me all homes</a>
+      </div>
+    </form>
+    <p class="note" style="margin:0">Step 1 of 4 · No sign-up needed</p>
+  </section>
+  <section aria-hidden="true">
+    <div class="map-art">
+      <div class="road" style="left:0;right:0;top:140px;height:26px"></div>
+      <div class="road" style="left:0;right:0;top:330px;height:18px"></div>
+      <div class="road" style="top:0;bottom:0;left:30%;width:22px"></div>
+      <div class="road" style="top:0;bottom:0;left:68%;width:16px"></div>
+      <div class="park" style="left:30px;top:30px;width:120px;height:90px"></div>
+      <div class="park" style="left:74%;top:190px;width:22%;height:120px"></div>
+      <img class="pin" src="assets/viustay-icon-colour.svg" alt="" style="left:20%;top:170px;width:46px">
+      <img class="pin" src="assets/viustay-icon-colour.svg" alt="" style="left:50%;top:70px">
+      <img class="pin" src="assets/viustay-icon-colour.svg" alt="" style="left:80%;top:340px">
+      <div class="map-card"><span class="note">We visit every home before you do</span><strong>Verified photos. Real prices.</strong></div>
+    </div>
+  </section>
+</main>
+<footer id="site-footer"></footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/common.js"></script>
+<script src="js/flow.js"></script>
+</body>
+</html>

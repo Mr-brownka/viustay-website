@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your matches | Viustay</title>
+<link rel="icon" href="assets/favicon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&family=Source+Sans+3:wght@400;600&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body data-header="flow" data-steps="4" data-step="3" data-page="matches">
+<header id="site-header"></header>
+<main class="container" style="padding-top:36px;padding-bottom:40px;display:flex;flex-direction:column;gap:24px">
+  <div class="actions" style="justify-content:space-between;align-items:flex-end">
+    <div class="stack-sm">
+      <span class="kicker">Step 3 of 4</span>
+      <h1 id="match-title" style="font-size:clamp(30px,4vw,38px)">Finding your matches…</h1>
+      <p class="lede" style="font-size:16px">Pick up to 3 to view in one trip. We'll line them up for you.</p>
+    </div>
+    <label class="field" style="flex-direction:row;align-items:center;gap:8px">Sort
+      <select id="sort" style="width:auto;padding:10px 12px">
+        <option value="best">Best match</option>
+        <option value="low">Lowest price</option>
+        <option value="high">Highest price</option>
+      </select></label>
+  </div>
+  <div class="cards" id="match-cards"></div>
+  <div class="panel" style="flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:space-between">
+    <span><strong>None of these feel right?</strong> Tell us and we'll find one for you.</span>
+    <a href="request.html" style="font-weight:600">Find it for me</a>
+  </div>
+</main>
+<div class="sticky-bar">
+  <div class="container">
+    <span class="grow" id="picked-label" aria-live="polite">0 of 3 homes picked for viewing</span>
+    <a href="must-haves.html">Back</a>
+    <a class="btn btn-primary" id="to-book" href="book.html">Book viewing</a>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/common.js"></script>
+<script src="js/flow.js"></script>
+</body>
+</html>

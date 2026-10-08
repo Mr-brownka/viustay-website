@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>List your property | Viustay</title>
+<link rel="icon" href="assets/favicon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&family=Source+Sans+3:wght@400;600&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body data-header="flow" data-steps="3" data-step="1" data-home="owners.html">
+<header id="site-header"></header>
+<main class="container narrow" style="padding-top:40px;padding-bottom:60px">
+  <form id="lp-form" novalidate>
+    <!-- Step 1 -->
+    <section class="stack" data-step-panel="1">
+      <div class="stack-sm"><span class="kicker">Step 1 of 3</span><h1 style="font-size:clamp(30px,4vw,38px)">Tell us about the building</h1></div>
+      <div class="stack-sm">
+        <strong style="font-size:14px">You are the…</strong>
+        <div class="chips" id="role-chips"></div>
+      </div>
+      <div class="grid-2">
+        <label class="field">Building name<input type="text" name="building_name" placeholder="e.g. Sunrise Apartments"></label>
+        <label class="field">Area / road<input type="text" name="location" placeholder="e.g. Kilimani, Argwings Kodhek Rd"></label>
+      </div>
+      <p class="error hidden" data-error="1" role="alert"></p>
+      <div class="actions"><button type="button" class="btn btn-primary" data-next="2">Continue</button><a href="owners.html">Back</a></div>
+    </section>
+    <!-- Step 2 -->
+    <section class="stack hidden" data-step-panel="2">
+      <div class="stack-sm"><span class="kicker">Step 2 of 3</span><h1 style="font-size:clamp(30px,4vw,38px)">Which units are vacant?</h1><p class="lede" style="font-size:16px">Add each type once and tell us how many.</p></div>
+      <div class="stack-sm" id="units"></div>
+      <button type="button" class="btn btn-outline" id="add-unit" style="align-self:flex-start;border-style:dashed">+ Add another unit type</button>
+      <p class="error hidden" data-error="2" role="alert"></p>
+      <div class="actions"><button type="button" class="btn btn-primary" data-next="3">Continue</button><button type="button" class="btn-link" data-next="1">Back</button></div>
+    </section>
+    <!-- Step 3 -->
+    <section class="stack hidden" data-step-panel="3">
+      <div class="stack-sm"><span class="kicker">Step 3 of 3</span><h1 style="font-size:clamp(30px,4vw,38px)">When can we visit?</h1><p class="lede" style="font-size:16px">We come to photograph the units and sign the listing form with you.</p></div>
+      <div class="grid-2">
+        <label class="field">Your name<input type="text" name="contact_name" autocomplete="name" placeholder="Full name"></label>
+        <label class="field">WhatsApp number<input type="tel" name="contact_phone" autocomplete="tel" placeholder="07XX XXX XXX"></label>
+        <label class="field">Email (for your dashboard login)<input type="email" name="contact_email" autocomplete="email" placeholder="you@example.com"></label>
+      </div>
+      <div class="stack-sm">
+        <strong style="font-size:14px">Best day for our visit</strong>
+        <div class="chips" id="visit-chips"></div>
+      </div>
+      <label class="check"><input type="checkbox" name="terms"><span>I agree to Viustay's placement terms (<span data-text="PLACEMENT_FEE_TEXT">[PLACEMENT FEE]</span>, due on lease signing) and the <a href="privacy.html" target="_blank">privacy notice</a>.</span></label>
+      <p class="error hidden" data-error="3" role="alert"></p>
+      <div class="actions"><button type="submit" class="btn btn-primary" id="lp-submit">Submit my listing</button><button type="button" class="btn-link" data-next="2">Back</button></div>
+    </section>
+  </form>
+  <section class="done hidden" id="lp-done" style="padding-top:30px">
+    <img src="assets/viustay-icon-colour.svg" alt="">
+    <h1 id="lp-done-title">Thanks. We'll be in touch.</h1>
+    <p>Our agent will WhatsApp you the day before to confirm. Once the photos are up, log in with your email to see your units and viewings.</p>
+    <div class="actions" style="justify-content:center">
+      <a class="btn btn-dark" href="dashboard.html?signup=1" id="lp-dash">Create your dashboard login</a>
+      <a href="owners.html" style="font-weight:600">Back to owners page</a>
+    </div>
+  </section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/common.js"></script>
+<script src="js/owners.js"></script>
+</body>
+</html>
