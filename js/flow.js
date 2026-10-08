@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', function () {
           whoBox.appendChild(chip(w, search.who === w, function () { search.who = w; V.setSearch(search); render(); }));
         });
         var hits = base.filter(function (l) { return V.matches(l, { must: search.must }); });
-        V.$('#match-count').textContent = hits.length;
+        var mc = V.$('#match-count'); if (mc.textContent !== String(hits.length)) { mc.textContent = hits.length; mc.classList.remove('bump'); void mc.offsetWidth; mc.classList.add('bump'); }
         V.$('#match-meter').style.width = (base.length ? Math.round(hits.length / Math.max(all.length, 1) * 100) : 0) + '%';
         V.$('#match-preview').innerHTML = hits.slice(0, 3).map(miniCard).join('') ||
           '<p style="margin:0">No exact matches yet. Remove a must-have, or <a href="request.html">let us find one for you</a>.</p>';

@@ -251,3 +251,34 @@ details.faq p { margin: 0; padding: 0 18px 16px; color: var(--muted); }
 .contact-list small { display: block; color: var(--faint); font-size: 13px; }
 .terms-nav { position: sticky; top: 16px; display: flex; flex-direction: column; gap: 8px; }
 .placeholder { background: #FCEBCB; color: #6B4300; border-radius: 4px; padding: 0 4px; font-weight: 600; }
+
+/* ---------- Motion ---------- */
+@keyframes vs-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+main, .page-hero .container { animation: vs-rise 0.45s ease-out both; }
+.page-hero .container { animation-delay: 0.05s; }
+.cards > *, .area-grid > *, .values > *, .stage-list > li, .how-grid > *, .trust > div { animation: vs-rise 0.5s ease-out both; }
+.cards > *:nth-child(2), .area-grid > *:nth-child(2), .values > *:nth-child(2), .stage-list > li:nth-child(2), .how-grid > *:nth-child(2), .trust > div:nth-child(2) { animation-delay: 0.07s; }
+.cards > *:nth-child(3), .area-grid > *:nth-child(3), .values > *:nth-child(3), .stage-list > li:nth-child(3), .how-grid > *:nth-child(3), .trust > div:nth-child(3) { animation-delay: 0.14s; }
+.cards > *:nth-child(n+4), .area-grid > *:nth-child(n+4), .stage-list > li:nth-child(n+4), .how-grid > *:nth-child(n+4), .trust > div:nth-child(n+4) { animation-delay: 0.21s; }
+.btn, .chip, .card, .area-card, .wa-float, .mini { transition: transform 0.15s ease, box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease; }
+.btn:hover, .wa-float:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(20, 40, 36, 0.18); }
+.btn:active, .chip:active { transform: scale(0.97); }
+.card:hover, .area-card:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(20, 40, 36, 0.12); }
+.mini:hover { transform: translateX(3px); }
+.big-number.bump { animation: vs-bump 0.3s ease-out; }
+@keyframes vs-bump { 50% { transform: scale(1.15); } }
+.map-art .pin { animation: vs-drop 0.6s cubic-bezier(.2, 1.4, .4, 1) both; }
+.map-art .pin:nth-of-type(2) { animation-delay: 0.15s; }
+.map-art .pin:nth-of-type(3) { animation-delay: 0.3s; }
+@keyframes vs-drop { from { opacity: 0; transform: translateY(-24px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+/* ---------- Trust strip ---------- */
+.trust-band { background: var(--white); border-top: 1px solid var(--line); margin-bottom: 8px; }
+.trust { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; padding-top: 28px; padding-bottom: 28px; }
+.trust > div { display: flex; gap: 12px; align-items: flex-start; }
+.trust svg { flex: none; color: var(--emerald); margin-top: 2px; }
+.trust strong { display: block; font-family: var(--heading); color: var(--emerald); font-size: 17px; }
+.trust span { font-size: 14px; color: var(--muted); }
+@media (max-width: 900px) { .trust { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 480px) { .trust { grid-template-columns: 1fr; } }
