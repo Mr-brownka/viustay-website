@@ -11,7 +11,7 @@ window.VIUSTAY_CONFIG = {
   // Google Sheet with your listings: File -> Share -> Publish to web ->
   // pick the listings tab -> "Comma-separated values (.csv)" -> copy link.
   // Leave empty to use the sample listings in data/sample-listings.csv.
-  LISTINGS_CSV_URL: '',
+  LISTINGS_CSV_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT2ppDgVK30OMt7_XhonTkgVuYG_haSSHneQreyqAHvlTQa6rxa6QS8BF-aIe_JKbahcmYQlPFH_1Rk/pub?gid=796984091&single=true&output=csv',
 
   // WhatsApp Business number, international format, digits only.
   WHATSAPP_NUMBER: '254748600342',
