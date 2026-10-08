@@ -5,8 +5,8 @@
 window.VIUSTAY_CONFIG = {
   // Supabase: Project Settings -> API. Leave empty to run in demo mode
   // (forms work but nothing is saved).
-  SUPABASE_URL: '',
-  SUPABASE_ANON_KEY: '',
+  SUPABASE_URL: 'https://yjvjakhxfhrsmixsfpzl.supabase.co',
+  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlqdmpha2h4Zmhyc21peHNmcHpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0NjYxMTQsImV4cCI6MjEwNzA0MjExNH0.2MsEePC1tiY2tB5eLaRTKNVD775fuqdHDdbRAx7XaLc',
 
   // Google Sheet with your listings: File -> Share -> Publish to web ->
   // pick the listings tab -> "Comma-separated values (.csv)" -> copy link.
