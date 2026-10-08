@@ -1,0 +1,11 @@
+id,status,type,bedrooms,rent,area,road,building_code,bathrooms,floor,furnished,amenities,available_from,deposit,notes,photos
+VS-001,available,1 bedroom,1,38000,Kilimani,Argwings Kodhek Rd,KIL-01,1,3rd,No,Water 24/7;Security guard;Parking;Lift;Backup power,1 Nov,1 month,"Bright unit on the quiet side. Kitchen recently redone. 5 min walk to the matatu stage, 10 min to Yaya Centre.",
+VS-002,available,1 bedroom,1,42000,Kilimani,Near Yaya Centre,KIL-02,1,5th,No,Water 24/7;Security guard;Lift;Balcony,Now,1 month,Modern block with lift and a small gym.,
+VS-003,available,1 bedroom,1,35000,Kilimani,Lenana Rd,KIL-03,1,2nd,No,Water 24/7;Security guard;Balcony,15 Oct,1 month,Quiet road with lots of trees. Caretaker on site.,
+VS-004,available,1 bedroom,1,45000,Kilimani,Rose Ave,KIL-04,2,4th,Yes,Water 24/7;Security guard;Backup power;Furnished;Parking,Now,2 months,Fully furnished with a guest toilet.,
+VS-005,available,1 bedroom,1,32000,Kilimani,Kindaruma Rd,KIL-05,1,1st,No,Water 24/7;Security guard,1 Nov,1 month,Good value close to shops.,
+VS-006,available,Studio,0,22000,Kilimani,Kindaruma Rd,KIL-05,1,Ground,No,Water 24/7;Security guard;Near a matatu stage,Now,1 month,Compact studio for one person.,
+VS-007,available,2 bedroom,2,55000,Kilimani,Ralph Bunche Rd,KIL-06,2,6th,No,Water 24/7;Security guard;Parking;Lift;Backup power,1 Nov,1 month,Family-friendly with a children's play area.,
+VS-008,available,2 bedroom,2,65000,Lavington,James Gichuru Rd,LAV-01,2,3rd,No,Water 24/7;Security guard;Parking;Backup power;Pet friendly,Now,2 months,Pool and gym in the compound.,
+VS-009,available,Bedsitter,0,15000,South B,Mchumbu Rd,SB-01,1,2nd,No,Water 24/7;Near a matatu stage,Now,1 month,Affordable bedsitter close to transport.,
+VS-010,available,3 bedroom,3,95000,Kileleshwa,Wood Ave,KLW-01,3,2nd,No,Water 24/7;Security guard;Parking;Backup power;Balcony,1 Dec,2 months,All rooms en-suite plus DSQ.,
