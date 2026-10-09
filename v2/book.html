@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Book your viewing | Viustay</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Viustay">
+<meta property="og:title" content="Book your viewing | Viustay">
+<meta property="og:description" content="Tell us what you need and we shortlist verified homes in Nairobi, then take you to view them in one trip.">
+<meta property="og:url" content="https://mr-brownka.github.io/viustay-website/v2/book.html">
+<meta property="og:image" content="https://mr-brownka.github.io/viustay-website/assets/share.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#FAFBFA">
+<link rel="icon" href="assets/favicon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&family=Source+Sans+3:wght@400;600&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/glass.css">
+<script src="js/look.js"></script>
+</head>
+<body data-header="flow" data-steps="3" data-step="3" data-page="book">
+<header id="site-header"></header>
+<main class="container step-page" id="book-form-wrap">
+  <form class="step-main" id="book-form" novalidate>
+    <div class="stack-sm">
+      <span class="kicker">Step 3 of 3</span>
+      <h1>When can you view?</h1>
+      <p class="lede">An agent meets you and walks you through every home in one trip.</p>
+    </div>
+    <div class="stack-sm">
+      <strong style="font-size:14px">Pick a day</strong>
+      <div class="chips" id="day-chips"></div>
+    </div>
+    <div class="stack-sm">
+      <strong style="font-size:14px">Pick a time</strong>
+      <div class="chips" id="time-chips"></div>
+    </div>
+    <div class="grid-2" style="max-width:560px">
+      <label class="field">Your name<input type="text" name="name" autocomplete="name" placeholder="Full name" required></label>
+      <label class="field">WhatsApp number<input type="tel" name="phone" autocomplete="tel" placeholder="07XX XXX XXX" required></label>
+    </div>
+    <label class="check"><input type="checkbox" name="consent" required><span>I agree that Viustay can contact me on WhatsApp about these viewings, as set out in the <a href="privacy.html" target="_blank">privacy notice</a>.</span></label>
+    <p class="error hidden" id="book-error" role="alert"></p>
+    <div class="actions">
+      <button type="submit" class="btn btn-primary" id="book-submit">Confirm viewing</button>
+      <a href="matches.html">Back</a>
+    </div>
+  </form>
+  <aside class="step-side panel">
+    <h2 style="font-size:20px">Your viewing</h2>
+    <div class="stack-sm" id="book-homes"></div>
+    <div class="stack-sm" style="border-top:1px solid #E2DBCD;padding-top:12px;font-size:14px">
+      <div class="row-between"><span>When</span><strong id="book-when">–</strong></div>
+      <div class="row-between"><span>Viewing fee</span><strong data-text="VIEWING_FEE_TEXT">[VIEWING FEE]</strong></div>
+    </div>
+  </aside>
+</main>
+<main class="done hidden" id="book-done">
+  <img src="assets/viustay-icon-colour.svg" alt="">
+  <h1>You're booked.</h1>
+  <p id="done-text">We'll send the details and your agent's number to your WhatsApp.</p>
+  <div class="actions" style="justify-content:center">
+    <a class="btn btn-dark" href="index.html">Back to home</a>
+    <a class="btn btn-outline" id="done-wa" href="#">Message us on WhatsApp</a>
+  </div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/common.js"></script>
+<script src="js/flow.js"></script>
+</body>
+</html>

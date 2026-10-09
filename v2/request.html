@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>We'll find it for you | Viustay</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Viustay">
+<meta property="og:title" content="We'll find it for you | Viustay">
+<meta property="og:description" content="Tell us what you need and we shortlist verified homes in Nairobi, then take you to view them in one trip.">
+<meta property="og:url" content="https://mr-brownka.github.io/viustay-website/v2/request.html">
+<meta property="og:image" content="https://mr-brownka.github.io/viustay-website/assets/share.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#FAFBFA">
+<link rel="icon" href="assets/favicon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&family=Source+Sans+3:wght@400;600&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/glass.css">
+<script src="js/look.js"></script>
+</head>
+<body data-header="flow" data-steps="0">
+<header id="site-header"></header>
+<main class="container step-page" id="req-wrap">
+  <form class="step-main" id="req-form" novalidate>
+    <div class="stack-sm">
+      <h1>No match yet. We'll find one.</h1>
+      <p class="lede">Our scouts check new homes every day. Leave your details and we'll WhatsApp you within 48 hours.</p>
+    </div>
+    <div class="panel" style="flex-direction:row;flex-wrap:wrap;align-items:center;gap:10px;padding:16px 18px" id="req-search">
+      <strong style="font-size:14px;color:var(--muted)">Your search:</strong>
+    </div>
+    <div class="grid-2" style="max-width:560px">
+      <label class="field">Your name<input type="text" name="name" autocomplete="name" placeholder="Full name"></label>
+      <label class="field">WhatsApp number<input type="tel" name="phone" autocomplete="tel" placeholder="07XX XXX XXX"></label>
+    </div>
+    <label class="field" style="max-width:560px">Anything else we should know? (optional)
+      <textarea name="details" rows="3" placeholder="e.g. near my office on Ngong Rd, ground floor preferred"></textarea></label>
+    <label class="check"><input type="checkbox" name="consent"><span>I agree that Viustay can contact me on WhatsApp about homes, as set out in the <a href="privacy.html" target="_blank">privacy notice</a>.</span></label>
+    <p class="error hidden" id="req-error" role="alert"></p>
+    <div class="actions">
+      <button type="submit" class="btn btn-primary" id="req-submit">Find it for me</button>
+      <a href="homes.html">Browse all homes instead</a>
+    </div>
+  </form>
+</main>
+<main class="done hidden" id="req-done">
+  <img src="assets/viustay-icon-colour.svg" alt="">
+  <h1>We're on it.</h1>
+  <p>Expect a WhatsApp from us within 48 hours with homes that fit.</p>
+  <a class="btn btn-dark" href="homes.html">Browse homes meanwhile</a>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/common.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var V = window.V, s = V.getSearch(), box = V.$('#req-search');
+  var tags = [];
+  if (s.area) tags.push(s.area);
+  if (s.bedrooms !== undefined && s.bedrooms !== '') tags.push(['Bedsitter / studio', '1 bedroom', '2 bedrooms', '3+ bedrooms'][Number(s.bedrooms)]);
+  if (s.max) tags.push('Up to KES ' + V.money(s.max));
+  (s.must || []).forEach(function (m) { tags.push(m); });
+  if (!tags.length) box.classList.add('hidden');
+  tags.forEach(function (t) { var e = document.createElement('span'); e.className = 'tag-pill'; e.style.background = '#fff'; e.textContent = t; box.appendChild(e); });
+  var a = document.createElement('a'); a.href = 'index.html'; a.textContent = 'Edit'; a.style.fontWeight = '600'; a.style.fontSize = '14px'; box.appendChild(a);
+
+  var form = V.$('#req-form'), err = V.$('#req-error');
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    err.classList.add('hidden');
+    var name = form.name.value.trim(), phone = form.phone.value.trim();
+    var problem = !name ? 'Please enter your name.' : !V.phoneOk(phone) ? 'Please enter a valid WhatsApp number.' : !form.consent.checked ? 'Please tick the box so we can contact you.' : '';
+    if (problem) { err.textContent = problem; err.classList.remove('hidden'); return; }
+    var btn = V.$('#req-submit'); btn.disabled = true; btn.textContent = 'Sending…';
+    V.insert('home_requests', { name: name, phone: phone, details: form.details.value.trim() || null, search: s })
+      .then(function () { V.$('#req-wrap').classList.add('hidden'); V.$('#req-done').classList.remove('hidden'); window.scrollTo(0, 0); })
+      .catch(function (e2) { console.error(e2); err.textContent = 'Something went wrong. Please try again or WhatsApp us.'; err.classList.remove('hidden'); btn.disabled = false; btn.textContent = 'Find it for me'; });
+  });
+});
+</script>
+</body>
+</html>

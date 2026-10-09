@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your must-haves | Viustay</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Viustay">
+<meta property="og:title" content="Your must-haves | Viustay">
+<meta property="og:description" content="Tell us what you need and we shortlist verified homes in Nairobi, then take you to view them in one trip.">
+<meta property="og:url" content="https://mr-brownka.github.io/viustay-website/v2/must-haves.html">
+<meta property="og:image" content="https://mr-brownka.github.io/viustay-website/assets/share.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#FAFBFA">
+<link rel="icon" href="assets/favicon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&family=Source+Sans+3:wght@400;600&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/glass.css">
+<script src="js/look.js"></script>
+</head>
+<body data-header="flow" data-steps="4" data-step="2" data-page="musthaves">
+<header id="site-header"></header>
+<main class="container step-page">
+  <section class="step-main">
+    <div class="stack-sm">
+      <span class="kicker">Step 2 of 4</span>
+      <h1>What can't you live without?</h1>
+      <p class="lede">Tap what matters. Your matches update as you go.</p>
+    </div>
+    <div class="stack-sm">
+      <strong style="font-size:14px">Must-haves</strong>
+      <div class="chips" id="must-chips"></div>
+    </div>
+    <div class="stack-sm">
+      <strong style="font-size:14px">Who's moving in?</strong>
+      <div class="chips" id="who-chips"></div>
+    </div>
+    <div class="actions">
+      <a class="btn btn-primary" id="to-matches" href="matches.html">See my matches</a>
+      <a href="index.html">Back</a>
+    </div>
+  </section>
+  <aside class="step-side panel" aria-live="polite">
+    <div><span class="big-number" id="match-count">–</span> <span style="color:var(--muted)">homes match so far</span></div>
+    <div class="meter"><span id="match-meter" style="width:0"></span></div>
+    <div class="stack-sm" id="match-preview"></div>
+  </aside>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/common.js"></script>
+<script src="js/flow.js"></script>
+</body>
+</html>

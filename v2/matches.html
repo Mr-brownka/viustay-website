@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your matches | Viustay</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Viustay">
+<meta property="og:title" content="Your matches | Viustay">
+<meta property="og:description" content="Tell us what you need and we shortlist verified homes in Nairobi, then take you to view them in one trip.">
+<meta property="og:url" content="https://mr-brownka.github.io/viustay-website/v2/matches.html">
+<meta property="og:image" content="https://mr-brownka.github.io/viustay-website/assets/share.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#FAFBFA">
+<link rel="icon" href="assets/favicon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&family=Source+Sans+3:wght@400;600&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/glass.css">
+<link rel="stylesheet" href="css/chat.css">
+<script src="js/look.js"></script>
+</head>
+<body data-header="flow" data-steps="3" data-step="2" data-page="matches">
+<header id="site-header"></header>
+<main class="c-wrap r-main">
+  <div class="r-head"><h1 id="r-h">Finding your matches…</h1><a href="index.html">Start over</a></div>
+  <button type="button" class="r-bar c-glass nudge" id="r-bar" aria-label="Change your search">
+    <span class="ic"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h9M15 5h2M3 10h3M9 10h8M3 15h7M13 15h4" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/><circle cx="13.5" cy="5" r="1.8" fill="none" stroke="#F2A93B" stroke-width="1.6"/><circle cx="7.5" cy="10" r="1.8" fill="none" stroke="#F2A93B" stroke-width="1.6"/><circle cx="11.5" cy="15" r="1.8" fill="none" stroke="#F2A93B" stroke-width="1.6"/></svg></span>
+    <span class="tx"><small>YOUR SEARCH</small><span id="r-bar-txt"></span></span>
+    <span class="ed">Change</span>
+  </button>
+  <div class="r-grid" id="r-grid"></div>
+  <div class="r-help c-glass"><span><strong>None of these feel right?</strong> Tell us and we'll find one for you.</span><a class="btn btn-pill btn-outline" href="request.html">Find it for me</a></div>
+</main>
+<div class="r-pick c-glass" id="r-pick"><span id="r-picktxt"></span><span class="dots" id="r-dots"></span><a class="btn btn-primary" id="r-book" href="book.html">Book viewing</a></div>
+<div class="r-scrim" id="r-scrim"></div>
+<div class="r-sheet" id="r-sheet" role="dialog" aria-modal="true" aria-labelledby="r-sheet-h">
+  <header><h2 id="r-sheet-h">Change your search</h2><button type="button" id="r-reset">Reset</button></header>
+  <div class="body" id="r-sheet-body"></div>
+  <footer><button type="button" class="btn btn-primary" id="r-done">Show homes</button></footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/common.js"></script>
+<script src="js/chat.js"></script>
+<script src="js/results.js"></script>
+</body>
+</html>

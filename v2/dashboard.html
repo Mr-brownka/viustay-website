@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manager dashboard | Viustay</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Viustay">
+<meta property="og:title" content="Manager dashboard | Viustay">
+<meta property="og:description" content="Tell us what you need and we shortlist verified homes in Nairobi, then take you to view them in one trip.">
+<meta property="og:url" content="https://mr-brownka.github.io/viustay-website/v2/dashboard.html">
+<meta property="og:image" content="https://mr-brownka.github.io/viustay-website/assets/share.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#FAFBFA">
+<meta name="robots" content="noindex">
+<link rel="icon" href="assets/favicon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&family=Source+Sans+3:wght@400;600&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/glass.css">
+<script src="js/look.js"></script>
+</head>
+<body data-header="flow" data-steps="0" data-home="owners.html" data-no-wa>
+<header id="site-header"></header>
+
+<!-- Log in / sign up -->
+<main class="auth-box hidden" id="auth">
+  <h1 id="auth-title" style="font-size:32px">Manager log in</h1>
+  <p class="lede" style="font-size:16px" id="auth-lede">See your vacant units, booked viewings and placements.</p>
+  <form id="auth-form" class="stack-sm" novalidate>
+    <label class="field">Email<input type="email" name="email" autocomplete="email" required></label>
+    <label class="field" id="pw-field">Password<input type="password" name="password" autocomplete="current-password" minlength="8" required></label>
+    <p class="error hidden" id="auth-error" role="alert"></p>
+    <p class="note hidden" id="auth-info" role="status" style="font-size:15px;color:var(--emerald);font-weight:600"></p>
+    <button type="submit" class="btn btn-dark" id="auth-submit">Log in</button>
+  </form>
+  <div class="actions" style="font-size:15px;gap:6px 16px">
+    <button type="button" class="btn-link" id="toggle-mode">New here? Create a login</button>
+    <button type="button" class="btn-link" id="forgot">Forgot password?</button>
+  </div>
+  <p class="note">Use the same email you gave us when listing your building, so your units show up automatically.</p>
+</main>
+
+<!-- Dashboard -->
+<div class="dash hidden" id="dash">
+  <nav class="dash-nav" aria-label="Dashboard">
+    <button type="button" class="tab" data-tab="overview" aria-pressed="true">Overview</button>
+    <button type="button" class="tab" data-tab="units" aria-pressed="false">Units</button>
+    <button type="button" class="tab" data-tab="viewings" aria-pressed="false">Viewings</button>
+    <button type="button" class="tab" data-tab="fees" aria-pressed="false">Placements &amp; fees</button>
+    <span style="flex:1 1 auto"></span>
+    <div style="background:rgba(255,255,255,.08);border-radius:10px;padding:12px;font-size:13px;line-height:1.4">Coming later: rent collection, maintenance requests, tenant screening</div>
+    <button type="button" class="tab" id="logout">Log out</button>
+  </nav>
+  <main class="dash-main">
+    <div class="actions" style="justify-content:space-between">
+      <div class="stack-sm" style="gap:2px">
+        <span class="note" id="dash-building"></span>
+        <h1 id="dash-title" style="font-size:30px">Overview</h1>
+      </div>
+      <a class="btn btn-primary" href="list-property.html" style="font-size:15px;padding:12px 20px">+ Add vacancy</a>
+    </div>
+    <div id="empty-state" class="box hidden">
+      <h2 style="font-size:20px">We're setting up your building</h2>
+      <p style="margin:6px 0 0;color:var(--muted)">After our visit, your units, viewings and placements will appear here. Questions? <a data-wa="Hi Viustay, a question about my dashboard" href="#">WhatsApp us</a>.</p>
+    </div>
+    <section data-panel="overview">
+      <div class="stats" id="stats"></div>
+      <div style="display:flex;flex-wrap:wrap;gap:18px;margin-top:18px">
+        <div class="box" style="flex:1 1 360px;min-width:0"><h2 style="font-size:18px;color:var(--ink);margin-bottom:8px">Upcoming viewings</h2><div id="upcoming"></div></div>
+        <div class="box" style="flex:1 1 360px;min-width:0"><h2 style="font-size:18px;color:var(--ink);margin-bottom:8px">Longest vacant</h2><div id="longest"></div></div>
+      </div>
+    </section>
+    <section data-panel="units" class="hidden"><div class="table-wrap"><table><thead><tr><th>Unit</th><th>Type</th><th>Rent (KES)</th><th>Status</th><th>Days vacant</th><th>Viewings</th></tr></thead><tbody id="units-body"></tbody></table></div></section>
+    <section data-panel="viewings" class="hidden"><div class="table-wrap"><table><thead><tr><th>Date</th><th>Time</th><th>Home</th><th>Status</th></tr></thead><tbody id="viewings-body"></tbody></table></div>
+      <p class="note">Tenant contacts stay with Viustay; our agent coordinates each viewing with your caretaker.</p></section>
+    <section data-panel="fees" class="hidden"><div class="table-wrap"><table><thead><tr><th>Unit</th><th>Lease signed</th><th>Move-in</th><th>Fee (KES)</th><th>Status</th></tr></thead><tbody id="fees-body"></tbody></table></div></section>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/common.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>

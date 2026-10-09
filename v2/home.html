@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home for rent | Viustay</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Viustay">
+<meta property="og:title" content="Verified home for rent in Nairobi | Viustay">
+<meta property="og:description" content="Visited and photographed by Viustay. Tap to see photos, price and book a viewing.">
+<meta property="og:url" content="https://mr-brownka.github.io/viustay-website/v2/home.html">
+<meta property="og:image" content="https://mr-brownka.github.io/viustay-website/assets/share.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#FAFBFA">
+<link rel="icon" href="assets/favicon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&family=Source+Sans+3:wght@400;600&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/glass.css">
+<script src="js/look.js"></script>
+</head>
+<body data-header="main">
+<header id="site-header"></header>
+<main class="container" style="padding-top:24px;padding-bottom:60px;display:flex;flex-direction:column;gap:20px">
+  <div class="actions" style="justify-content:space-between">
+    <a href="homes.html" style="font-size:14px;font-weight:600">Back to all homes</a>
+    <div class="actions" style="gap:10px">
+      <button type="button" class="chip" id="share-btn">Share</button>
+    </div>
+  </div>
+  <div id="not-found" class="panel hidden">
+    <h1 style="font-size:26px">This home is no longer available</h1>
+    <p style="margin:0">It may have been taken. <a href="homes.html">See other homes</a> or <a href="request.html">ask us to find one</a>.</p>
+  </div>
+  <div id="listing" class="hidden" style="display:flex;flex-direction:column;gap:20px">
+    <div class="gallery">
+      <div class="main-photo" id="main-photo"><span class="badge" style="left:14px;top:14px;font-size:13px;padding:6px 12px">Verified by Viustay</span><span id="photo-placeholder">Photo coming soon</span><span class="counter" id="photo-counter"></span></div>
+      <div class="thumbs" id="thumbs"></div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+      <section style="flex:999 1 560px;min-width:0;display:flex;flex-direction:column;gap:26px">
+        <div class="stack-sm">
+          <h1 id="l-title" style="font-size:clamp(28px,4vw,34px)"></h1>
+          <span id="l-sub" style="font-size:16px;color:var(--muted)"></span>
+        </div>
+        <div class="stack-sm">
+          <h2 style="font-size:20px;color:var(--ink)">What's included</h2>
+          <div class="amenities" id="l-amenities"></div>
+        </div>
+        <div class="stack-sm" id="l-notes-wrap">
+          <h2 style="font-size:20px;color:var(--ink)">Our agent's notes</h2>
+          <p id="l-notes" style="margin:0;font-size:16px;line-height:1.55;color:var(--muted)"></p>
+        </div>
+        <div class="stack-sm">
+          <h2 style="font-size:20px;color:var(--ink)">How it works</h2>
+          <div class="how-grid">
+            <div style="border:1px solid var(--line)"><strong style="color:var(--emerald)">1 · Book</strong><span style="font-size:14px;color:var(--muted)">Pick a day and time</span></div>
+            <div style="border:1px solid var(--line)"><strong style="color:var(--emerald)">2 · View</strong><span style="font-size:14px;color:var(--muted)">Our agent walks you through</span></div>
+            <div style="border:1px solid var(--line)"><strong style="color:var(--emerald)">3 · Move in</strong><span style="font-size:14px;color:var(--muted)">We handle the landlord and paperwork</span></div>
+          </div>
+          <span class="note">The exact location is shared after you book a viewing.</span>
+        </div>
+      </section>
+      <aside class="book-box" style="flex:1 1 320px;min-width:0">
+        <span class="price" style="font-size:30px" id="l-price"></span>
+        <div class="stack-sm" style="font-size:14px">
+          <div class="row-between"><span>Deposit</span><strong id="l-deposit">–</strong></div>
+          <div class="row-between"><span>Available</span><strong id="l-available">–</strong></div>
+          <div class="row-between"><span>Viewing fee</span><strong data-text="VIEWING_FEE_TEXT">[VIEWING FEE]</strong></div>
+        </div>
+        <a class="btn btn-primary" id="l-book" href="book.html">Book a viewing</a>
+        <a class="btn btn-outline" id="l-wa" href="#" target="_blank" rel="noopener">Ask on WhatsApp</a>
+        <span class="note" id="l-ref"></span>
+      </aside>
+    </div>
+  </div>
+</main>
+<footer id="site-footer"></footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/common.js"></script>
+<script src="js/listing.js"></script>
+</body>
+</html>

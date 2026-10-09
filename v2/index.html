@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Viustay | Find your place in Nairobi</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Viustay">
+<meta property="og:title" content="Viustay | Find your place in Nairobi">
+<meta property="og:description" content="Tell us what you need and we'll shortlist verified homes in Nairobi, then take you to view them. Find your place. We handle the rest.">
+<meta property="og:url" content="https://mr-brownka.github.io/viustay-website/v2/">
+<meta property="og:image" content="https://mr-brownka.github.io/viustay-website/assets/share.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#FAFBFA">
+<meta name="description" content="Tell us what you need and we'll shortlist verified homes in Nairobi, then take you to view them. Find your place. We handle the rest.">
+<link rel="icon" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&family=Source+Sans+3:wght@400;600&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/glass.css">
+<link rel="stylesheet" href="css/chat.css">
+<script src="js/look.js"></script>
+</head>
+<body data-header="main" data-page="home2">
+<header id="site-header"></header>
+<main class="c-wrap">
+  <section class="c-hero" aria-labelledby="c-h">
+    <div class="c-intro">
+      <span class="c-eyebrow"><i></i>Verified homes in Nairobi</span>
+      <h1 id="c-h">Let's find your family's <em>next home</em>.</h1>
+      <p>Seven quick questions, about a minute. We match you with homes we've checked in person.</p>
+      <div class="c-progress" aria-live="polite"><div class="track"><i id="c-prog"></i></div><span id="c-progtxt">Question 1 of 7</span></div>
+      <div class="c-chat c-glass" id="c-chat" aria-live="polite"></div>
+    </div>
+    <aside class="c-panel c-glass" aria-label="Homes that match">
+      <h3>Homes that match</h3>
+      <div class="c-count"><b id="c-cnt">–</b><span id="c-cntlbl">verified homes</span></div>
+      <ul class="c-facts" id="c-facts"></ul>
+      <div class="c-minis" id="c-minis"></div>
+    </aside>
+  </section>
+
+  <section class="c-more" aria-labelledby="how-h">
+    <h2 id="how-h">How it works</h2>
+    <div class="c-steps">
+      <div class="c-step c-glass"><span class="n">STEP 1</span><h3>Tell us what you need</h3><p>Area, bedrooms, budget and the things you can't live without.</p></div>
+      <div class="c-step c-glass"><span class="n">STEP 2</span><h3>See verified homes</h3><p>Every home is visited by our team. Real photos, real prices.</p></div>
+      <div class="c-step c-glass"><span class="n">STEP 3</span><h3>One viewing trip</h3><p>Pick up to 3 homes and we take you to all of them in one trip.</p></div>
+    </div>
+    <div class="c-trust">
+      <span class="c-glass"><i>✓</i>Verified homes</span>
+      <span class="c-glass"><i>✓</i>One trip, up to 3 homes</span>
+      <span class="c-glass"><i>✓</i>Placement fee only when you move in</span>
+      <span class="c-glass"><i>✓</i>WhatsApp support, Mon–Sat</span>
+    </div>
+  </section>
+</main>
+<div class="c-pill c-glass" id="c-pill"><span><b id="c-pillcnt">–</b> homes match</span><button class="btn btn-primary" type="button" id="c-pillbtn">Show</button></div>
+<footer id="site-footer"></footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/common.js"></script>
+<script src="js/chat.js"></script>
+</body>
+</html>
