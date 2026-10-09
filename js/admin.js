@@ -50,6 +50,8 @@ document.addEventListener('DOMContentLoaded', function () {
       V.db.rpc('is_admin').then(function (res) {
         if (res.error || !res.data) { show('#a-denied'); return; }
         show('#a-dash');
+        var last = null; try { last = localStorage.getItem('vs-admin-tab'); } catch (e) {}
+        if (last === 'survey') { var sb = V.$('.dash-nav [data-tab="survey"]'); if (sb) sb.click(); }
         loadAll();
       });
     });
@@ -63,13 +65,15 @@ document.addEventListener('DOMContentLoaded', function () {
       return V.db.from(TABS[k].table).select('*').order('created_at', { ascending: false }).limit(300);
     })).then(function (res) {
       res.forEach(function (r, i) { if (r.error) throw r.error; data[keys[i]] = r.data || []; });
-      renderTabs(); render();
+      renderTabs(); if (current !== 'survey') render();
     }).catch(function (e) { console.error(e); err(V.$('#a-load-error'), 'Could not load leads. Did you run supabase/add-admin.sql?'); });
   }
 
   function renderTabs() {
     V.$$('.dash-nav [data-tab]').forEach(function (t) {
       var k = t.getAttribute('data-tab');
+      t.setAttribute('aria-pressed', k === current ? 'true' : 'false');
+      if (!TABS[k]) return;
       var fresh = (data[k] || []).filter(function (x) { return x.status === 'new'; });
       var n = k === 'viewings' ? fresh.map(function (x) { return x.booking_ref; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).length : fresh.length;
       t.textContent = TABS[k].title + (n ? ' (' + n + ' new)' : '');
@@ -87,6 +91,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function render() {
+    if (!TABS[current]) return;
     var k = current, rows = data[k] || [], hide = V.$('#a-open').checked, html = '';
     V.$('#a-title').textContent = TABS[k].title;
     var keep = function (s) { return !hide || TABS[k].closed.indexOf(s) < 0; };
@@ -137,7 +142,15 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  V.$$('.dash-nav [data-tab]').forEach(function (t) { t.addEventListener('click', function () { current = t.getAttribute('data-tab'); renderTabs(); render(); }); });
+  V.$$('.dash-nav [data-tab]').forEach(function (t) { t.addEventListener('click', function () {
+    current = t.getAttribute('data-tab');
+    var survey = current === 'survey';
+    V.$('#a-main').classList.toggle('hidden', survey);
+    V.$('#s-main').classList.toggle('hidden', !survey);
+    try { localStorage.setItem('vs-admin-tab', current); } catch (e) {}
+    renderTabs();
+    if (survey) window.VSurvey.open(); else render();
+  }); });
   V.$('#a-open').addEventListener('change', render);
   V.$('#a-refresh').addEventListener('click', loadAll);
   start();

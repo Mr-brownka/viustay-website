@@ -36,11 +36,12 @@
     <button type="button" class="tab" data-tab="requests" aria-pressed="false">Home requests</button>
     <button type="button" class="tab" data-tab="properties" aria-pressed="false">Properties</button>
     <button type="button" class="tab" data-tab="messages" aria-pressed="false">Messages</button>
+    <button type="button" class="tab" data-tab="survey" aria-pressed="false">Field survey</button>
     <span style="flex:1 1 auto"></span>
     <a class="tab" href="https://docs.google.com/spreadsheets/d/1c4joIC5a7GxXDRFJIeCwpbrcdThPxiAteGNDO0ah3vo/edit" target="_blank" rel="noopener" style="text-decoration:none">Edit listings sheet</a>
     <button type="button" class="tab" id="a-out">Log out</button>
   </nav>
-  <main class="dash-main">
+  <main class="dash-main" id="a-main">
     <div class="actions" style="justify-content:space-between">
       <h1 id="a-title" style="font-size:30px">Viewings</h1>
       <div class="actions" style="gap:10px">
@@ -51,11 +52,14 @@
     <p class="error hidden" id="a-load-error" role="alert"></p>
     <div class="stack-sm" id="a-list"></div>
   </main>
+  <main class="dash-main hidden" id="s-main"></main>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="js/config.js"></script>
 <script src="js/common.js"></script>
+<script src="js/survey-config.js"></script>
+<script src="js/survey.js"></script>
 <script src="js/admin.js"></script>
 </body>
 </html>

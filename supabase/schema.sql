@@ -147,3 +147,22 @@ create table public.contact_messages (
 alter table public.contact_messages enable row level security;
 create policy "public can send contact messages" on public.contact_messages
   for insert to anon, authenticated with check (status = 'new');
+
+-- Field survey (also in add-survey.sql)
+create table if not exists public.survey_responses (
+  id          uuid primary key default gen_random_uuid(),
+  created_at  timestamptz not null default now(),
+  type        text not null check (type in ('fam', 'ind')),
+  place       text,
+  answers     jsonb not null default '{}'::jsonb,
+  created_by  text default (auth.jwt() ->> 'email')
+);
+create index if not exists survey_responses_created_at on public.survey_responses (created_at desc);
+
+alter table public.survey_responses enable row level security;
+revoke all on public.survey_responses from anon;
+grant select, insert, delete on public.survey_responses to authenticated;
+
+create policy "admins add survey"    on public.survey_responses for insert to authenticated with check (public.is_admin());
+create policy "admins read survey"   on public.survey_responses for select to authenticated using (public.is_admin());
+create policy "admins delete survey" on public.survey_responses for delete to authenticated using (public.is_admin());
