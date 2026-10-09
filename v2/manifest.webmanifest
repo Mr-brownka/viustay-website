@@ -1,0 +1,23 @@
+{
+  "name": "Viustay – Find your home in Nairobi",
+  "short_name": "Viustay",
+  "description": "Verified homes in Nairobi. Tell us what you need, see matches, book one viewing trip.",
+  "id": "./",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FAFBFA",
+  "theme_color": "#0E5E54",
+  "categories": ["lifestyle", "business"],
+  "icons": [
+    { "src": "assets/app-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/app-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/app-icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Find a home", "url": "./index.html" },
+    { "name": "All homes", "url": "./homes.html" },
+    { "name": "List your property", "url": "./owners.html" }
+  ]
+}

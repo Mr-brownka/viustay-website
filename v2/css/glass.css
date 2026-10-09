@@ -202,3 +202,20 @@ body[data-page="matches"] .vs-looks, body[data-page="home2"] .vs-looks { bottom:
 /* Listing detail photos */
 .gallery .main-photo, .gallery .thumbs button { background-color: #1A8F7A; background-image: linear-gradient(135deg, #1A8F7A, #0A3F4A); color: rgba(255, 255, 255, .85); }
 .gallery .main-photo[style*="background-image"], .gallery .thumbs button[style*="background-image"] { background-color: transparent; }
+
+/* ---------- Install app ---------- */
+.vs-install { gap: 6px; }
+.vs-install[hidden] { display: none !important; }
+.vs-install-foot { margin-top: 12px; }
+.vs-toast { position: fixed; left: 50%; bottom: 96px; transform: translate(-50%, 16px); opacity: 0; z-index: 70; background: var(--ink); color: var(--page); padding: 10px 18px; border-radius: 999px; font-size: 14px; transition: opacity .25s, transform .25s; max-width: calc(100% - 32px); text-align: center; }
+.vs-toast.on { opacity: 1; transform: translate(-50%, 0); }
+.vs-ios-scrim { position: fixed; inset: 0; z-index: 60; background: rgba(4, 20, 18, .4); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+.vs-ios { position: fixed; z-index: 61; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); max-width: 440px; margin: 0 auto; padding: 22px; border-radius: 24px; background: var(--sheet); border: 1px solid var(--glass-edge); box-shadow: 0 30px 80px rgba(0, 0, 0, .3); display: flex; flex-direction: column; gap: 12px; align-items: flex-start; animation: vs-rise .3s ease-out both; color: var(--ink); }
+.vs-ios img { width: 64px; height: 64px; border-radius: 16px; }
+.vs-ios h2 { font-size: 22px; }
+.vs-ios ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.vs-ios li { display: flex; gap: 12px; align-items: center; font-size: 16px; }
+.vs-ios li .n { flex: none; width: 28px; height: 28px; border-radius: 50%; background: #F2A93B; color: #2A1A02; display: grid; place-items: center; font-weight: 700; }
+.vs-ios li svg { vertical-align: -3px; color: var(--accent); }
+.vs-ios p { margin: 0; color: var(--muted); font-size: 14px; }
+.vs-ios .btn { align-self: stretch; }
