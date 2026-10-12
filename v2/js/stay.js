@@ -145,6 +145,9 @@ document.addEventListener('DOMContentLoaded', function () {
       $('#pickup-wrap').classList.remove('hidden');
       $('#pickup-text').textContent = T('Add airport or bus-station pickup by a Viustay agent (+{x})', { x: kes(S.airport_pickup_fee) });
     }
+    // Dates picked in the search carry over
+    var sc = (V.getSearch() || {}).chat || {};
+    if (sc.checkin && sc.checkout && sc.checkin >= today) { f.check_in.value = sc.checkin; f.check_out.value = sc.checkout; f.check_out.min = addDays(sc.checkin, 1); }
     var t = stored();
     if (new URLSearchParams(location.search).get('pay') && t && !t.paid) { showPay(t); return; }
     update();

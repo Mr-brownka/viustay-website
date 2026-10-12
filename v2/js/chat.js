@@ -40,7 +40,57 @@
     var s = toSearch(A);
     return all.filter(function (l) { return V.matches(l, s); });
   }
-  window.VSSearch = { STEPS: STEPS, BUDGETS: BUDGETS, WHEN: WHEN, WHEN_SHORT: WHEN_SHORT, NAMES: NAMES, label: label, name: name, toSearch: toSearch, matchList: matchList };
+
+  // ---------- Calendar (move-in date, or check-in → check-out for short stays) ----------
+  function iso(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function calendar(o) {
+    var start = o.start || null, end = o.end || null;
+    var today = new Date(); today.setHours(0, 0, 0, 0);
+    var view = new Date((start ? new Date(start + 'T00:00:00') : today)); view.setDate(1);
+    var box = document.createElement('div'); box.className = 'cal';
+    function nights(a, b) { return Math.round((new Date(b + 'T00:00:00') - new Date(a + 'T00:00:00')) / 864e5); }
+    function draw() {
+      var y = view.getFullYear(), m = view.getMonth();
+      var first = new Date(y, m, 1), days = new Date(y, m + 1, 0).getDate(), pad = (first.getDay() + 6) % 7;
+      var minMonth = today.getFullYear() * 12 + today.getMonth(), cur = y * 12 + m;
+      var h = '<div class="cal-head"><button type="button" class="cal-nav" data-nav="-1" aria-label="' + T('Previous month') + '"' + (cur <= minMonth ? ' disabled' : '') + '>‹</button><b>' +
+        V.esc(V.date(first, { month: 'long', year: 'numeric' })) + '</b><button type="button" class="cal-nav" data-nav="1" aria-label="' + T('Next month') + '"' + (cur >= minMonth + 11 ? ' disabled' : '') + '>›</button></div><div class="cal-dow">';
+      for (var d0 = 0; d0 < 7; d0++) { var dd = new Date(2024, 0, 1 + d0); h += '<span>' + V.esc(V.date(dd, { weekday: 'narrow' })) + '</span>'; }
+      h += '</div><div class="cal-grid">';
+      for (var p = 0; p < pad; p++) h += '<span></span>';
+      for (var d = 1; d <= days; d++) {
+        var di = iso(new Date(y, m, d)), past = new Date(y, m, d) < today;
+        var cls = di === start ? ' sel start' : di === end ? ' sel end' : (start && end && di > start && di < end ? ' mid' : '');
+        if (di === iso(today)) cls += ' today';
+        h += '<button type="button" class="cal-day' + cls + '" data-d="' + di + '"' + (past ? ' disabled' : '') + '>' + d + '</button>';
+      }
+      h += '</div>';
+      var note = o.mode === 'range' ? (start && end ? T(nights(start, end) === 1 ? '{n} night' : '{n} nights', { n: nights(start, end) }) + ' · ' + V.date(start, { day: 'numeric', month: 'short' }) + ' → ' + V.date(end, { day: 'numeric', month: 'short' }) :
+        start ? T('Now tap your check-out date') : T('Tap your check-in date, then your check-out date')) : (start ? V.date(start, { weekday: 'long', day: 'numeric', month: 'long' }) : T('Tap the day you\'d like to move in'));
+      h += '<p class="cal-note">' + V.esc(note) + '</p>';
+      box.innerHTML = h;
+    }
+    box.addEventListener('click', function (e) {
+      var b = e.target.closest('button'); if (!b || b.disabled) return;
+      if (b.hasAttribute('data-nav')) { view.setMonth(view.getMonth() + Number(b.getAttribute('data-nav'))); draw(); return; }
+      var di = b.getAttribute('data-d');
+      if (o.mode === 'range') {
+        if (!start || end || di <= start) { start = di; end = null; draw(); return; }
+        end = di; draw(); setTimeout(function () { o.onPick(start, end); }, 250); return;
+      }
+      start = di; draw(); setTimeout(function () { o.onPick(start); }, 200);
+    });
+    draw();
+    return box;
+  }
+  function setWhen(A, a, b) {
+    if (b) {
+      var n = Math.round((new Date(b + 'T00:00:00') - new Date(a + 'T00:00:00')) / 864e5);
+      A.checkin = a; A.checkout = b; A.when_iso = a;
+      A.when = V.date(a, { day: 'numeric', month: 'short' }) + ' → ' + V.date(b, { day: 'numeric', month: 'short' }) + ' · ' + T(n === 1 ? '{n} night' : '{n} nights', { n: n });
+    } else { A.when_iso = a; delete A.checkin; delete A.checkout; A.when = V.date(a, { day: 'numeric', month: 'short', year: 'numeric' }); }
+  }
+  window.VSSearch = { STEPS: STEPS, BUDGETS: BUDGETS, WHEN: WHEN, WHEN_SHORT: WHEN_SHORT, NAMES: NAMES, label: label, name: name, toSearch: toSearch, matchList: matchList, calendar: calendar, setWhen: setWhen };
 
   var chat = document.getElementById('c-chat');
   if (!chat) return;
@@ -101,7 +151,11 @@
   }
   function goTo(i, edit) { cur = i; editing = !!edit; render('back'); topOfStage(); }
   function next(i) {
-    if (editing) { editing = false; cur = furthest >= N ? N : furthest; }
+    if (editing) {
+      // After a change, ask anything that now needs answering (e.g. budget after switching to a short stay)
+      var miss = -1; for (var j = 0; j < Math.min(furthest, N); j++) { if (label(A, STEPS[j].k) === null) { miss = j; break; } }
+      if (miss >= 0) cur = miss; else { editing = false; cur = furthest >= N ? N : furthest; }
+    }
     else { furthest = Math.max(furthest, i + 1); cur = i + 1; }
     render('fwd'); topOfStage();
   }
@@ -183,16 +237,13 @@
       });
       r2.appendChild(f1); r2.appendChild(f2); r2.appendChild(ok); area.appendChild(r2);
     } else if (s.type === 'when') {
-      var g4 = el('div', 'q-opts');
-      (short() ? WHEN_SHORT : WHEN).forEach(function (w) {
-        var b = opt(T(w), A.when === w);
-        b.addEventListener('click', function () { pickAndGo(b, i, function () { A.when = w; }); });
-        g4.appendChild(b);
-      });
-      area.appendChild(g4);
-      var r3 = el('div', 'c-inputs'); var f = el('label', 'c-field'); f.innerHTML = '<span>' + T('Pick a date') + '</span><input type="date" style="width:150px">';
-      f.querySelector('input').addEventListener('change', function (e) { if (!e.target.value) return; A.when = V.date(e.target.value, { day: 'numeric', month: 'short' }); next(i); });
-      r3.appendChild(f); area.appendChild(r3);
+      var shortStay = short();
+      if (shortStay) area.appendChild(el('p', 'q-hint', T('Pick your check-in and check-out dates.')));
+      area.appendChild(calendar({ mode: shortStay ? 'range' : 'single', start: shortStay ? A.checkin : A.when_iso, end: shortStay ? A.checkout : null,
+        onPick: function (a, b) { setWhen(A, a, b); next(i); } }));
+      var sk = el('button', 'btn btn-pill c-ghost', shortStay ? T('Not sure of my dates yet') : T('Not sure yet')); sk.type = 'button';
+      sk.addEventListener('click', function () { delete A.checkin; delete A.checkout; delete A.when_iso; A.when = 'Flexible'; next(i); });
+      area.appendChild(sk);
     }
     return area;
   }

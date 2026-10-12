@@ -88,6 +88,12 @@
     var body = $('r-sheet-body'); body.innerHTML = '';
     S.STEPS.forEach(function (s) {
       var g = el('div', 'r-group'); g.appendChild(el('b', '', S.name(s.k))); var chips = el('div', 'chips');
+      if (s.type === 'when') {
+        var sh = A.stay === 'short';
+        g.appendChild(S.calendar({ mode: sh ? 'range' : 'single', start: sh ? A.checkin : A.when_iso, end: sh ? A.checkout : null,
+          onPick: function (a, b2) { S.setWhen(A, a, b2); save(); } }));
+        body.appendChild(g); return;
+      }
       var opts = s.o ? s.o.map(function (o) { return [o[0], T(o[1] || o[0])]; }) : s.type === 'budget' ? S.BUDGETS[A.stay || 'long'].map(function (o) { return [o[0], o[1].replace('Under ', T('Under') + ' ')]; }) : (A.stay === 'short' ? S.WHEN_SHORT : S.WHEN).map(function (w) { return [w, T(w)]; });
       if (s.type === 'budget' && A.budget && !opts.some(function (o) { return o[0] === A.budget; })) opts.unshift([A.budget, S.label(A, 'budget')]);
       if (s.type === 'when' && A.when && !opts.some(function (o) { return o[0] === A.when; })) opts.unshift([A.when, T(A.when)]);

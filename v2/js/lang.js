@@ -433,7 +433,17 @@ window.VS_DICT = {
   "Nearest estate: {x} (under 1 km from you). Not right? Pick another from the list.": "Mtaa wa karibu: {x} (chini ya km 1 kutoka kwako). Si sahihi? Chagua mwingine kwenye orodha.",
   "Nearest estate: {x} (about {km} km from you). Not right? Pick another from the list.": "Mtaa wa karibu: {x} (takriban km {km} kutoka kwako). Si sahihi? Chagua mwingine kwenye orodha.",
   "{n} home": "Nyumba {n}",
-  "{n} homes": "Nyumba {n}"
+  "{n} homes": "Nyumba {n}",
+  "Previous month": "Mwezi uliopita",
+  "Now tap your check-out date": "Sasa gusa tarehe ya kutoka",
+  "Tap your check-in date, then your check-out date": "Gusa tarehe ya kuingia, kisha tarehe ya kutoka",
+  "Tap the day you'd like to move in": "Gusa siku ungependa kuhamia",
+  "Pick your check-in and check-out dates.": "Chagua tarehe za kuingia na kutoka.",
+  "Not sure of my dates yet": "Bado sina uhakika wa tarehe",
+  "Not sure yet": "Bado sina uhakika",
+  "Flexible": "Wakati wowote",
+  "Nairobi, found for you.": "Nairobi, tumekutafutia.",
+  "Tap to start": "Gusa kuanza"
  },
  "so": {
   "Find a home": "Raadi guri",
@@ -868,6 +878,16 @@ window.VS_DICT = {
   "Nearest estate: {x} (under 1 km from you). Not right? Pick another from the list.": "Xaafadda ugu dhow: {x} (ka yar 1 km). Ma saxna? Liiska ka dooro mid kale.",
   "Nearest estate: {x} (about {km} km from you). Not right? Pick another from the list.": "Xaafadda ugu dhow: {x} (qiyaastii {km} km). Ma saxna? Liiska ka dooro mid kale.",
   "{n} home": "{n} guri",
-  "{n} homes": "{n} guri"
+  "{n} homes": "{n} guri",
+  "Previous month": "Bishii hore",
+  "Now tap your check-out date": "Hadda taabo taariikhda ka bixitaanka",
+  "Tap your check-in date, then your check-out date": "Taabo taariikhda soo gelitaanka, kadibna ta ka bixitaanka",
+  "Tap the day you'd like to move in": "Taabo maalinta aad jeceshahay inaad soo guurto",
+  "Pick your check-in and check-out dates.": "Dooro taariikhaha soo gelitaanka iyo ka bixitaanka.",
+  "Not sure of my dates yet": "Weli ma hubo taariikhahayga",
+  "Not sure yet": "Weli ma hubo",
+  "Flexible": "Wakhti kasta",
+  "Nairobi, found for you.": "Nairobi, annaga ayaa kuu raadinayna.",
+  "Tap to start": "Taabo si aad u bilowdo"
  }
 };

@@ -17,6 +17,7 @@
     try { localStorage.setItem(KEY, '1'); sessionStorage.removeItem(STEP); sessionStorage.removeItem('vs-onb-goal'); } catch (e) {}
     o.classList.add('out'); document.documentElement.classList.remove('onb-open');
     setTimeout(function () { if (o.parentNode) o.parentNode.removeChild(o); }, 300);
+    try { window.dispatchEvent(new Event('vs-onboarded')); } catch (e) {}
     if (goal === 'owner') { location.href = 'owners.html'; return; }
     if (goal === 'short' && window.VSChat) window.VSChat.preset({ stay: 'short' });
     if (goal === 'long' && window.VSChat) window.VSChat.preset({ stay: 'long' });

@@ -143,7 +143,8 @@
       '<path class="vee" d="M13.5 19.5 L20 29 L26.5 19.5" fill="none" stroke="#F4F1EB" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="word">viustay</span>';
     b.appendChild(o);
     var done = false;
-    function end() { if (done) return; done = true; o.classList.add('out'); setTimeout(function () { if (o.parentNode) o.parentNode.removeChild(o); }, 320); }
+    window.VS_LAUNCHING = true;
+    function end() { if (done) return; done = true; o.classList.add('out'); window.VS_LAUNCHING = false; try { window.dispatchEvent(new Event('vs-launch-done')); } catch (e) {} setTimeout(function () { if (o.parentNode) o.parentNode.removeChild(o); }, 320); }
     o.addEventListener('click', end);
     setTimeout(end, window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches ? 450 : 1150);
   })();

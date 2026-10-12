@@ -17,6 +17,11 @@ window.VIUSTAY_CONFIG = {
   // Every row in it is treated as a short stay. Leave empty to keep short stays in the main tab.
   SHORT_STAYS_CSV_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRZpKU2QyAmH0Ol-zEePPBtk3EJQ8d1gIPXiV9SvCm-7SHVmdMj_NuDjcsERvfovmmboE0oO5ku-3Ui/pub?output=tsv',
 
+  // Home page intro: a photo (or an .mp4 video loop) of Nairobi behind "Let's find your family's next home".
+  // Default photo: Nairobi skyline by Kenny Murgor on Unsplash (free licence).
+  INTRO_IMAGE: 'https://images.unsplash.com/photo-1693902997450-7e912c0d3554?auto=format&fit=crop&w=1800&q=70',
+  INTRO_VIDEO: '',
+
   // WhatsApp Business number, international format, digits only.
   WHATSAPP_NUMBER: '254748600342',
 
