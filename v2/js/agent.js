@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function () {
     me = { name: 'Hassan Ali' };
     trips = [
       { id: 1, ref: 'VS-7KQ2PA', date: tm, slot: '9:00 AM', status: 'confirmed', response: 'pending', pickup_area: 'South B', pickup_note: 'Gate B, Capital Centre side', homes: [{ title: '1 bedroom, Argwings Kodhek Rd', area: 'Kilimani' }, { title: '2 bedroom, James Gichuru Rd', area: 'Lavington' }], pay: 1600, km: 24.3, drive_min: 66, wait_min: 40, client: 'Amina', attempts_left: 5 },
-      { id: 2, ref: 'VS-3MD9TE', date: t, slot: '11:30 AM', status: 'confirmed', response: 'accepted', pickup_area: 'Kilimani', pickup_note: '', homes: [{ title: 'Studio, Yaya area', area: 'Kilimani' }], pay: 700, km: 6.1, drive_min: 17, wait_min: 20, client: 'Brian', phone: '0722000111', attempts_left: 5 },
+      { id: 2, ref: 'VS-3MD9TE', date: t, slot: '11:30 AM', status: 'confirmed', response: 'accepted', pickup_area: 'Kilimani', pickup_note: '', homes: [{ title: 'Studio, Yaya area', area: 'Kilimani' }], pay: 700, km: 6.1, drive_min: 17, wait_min: 20, client: 'Brian', phone: '0722000111', attempts_left: 5, pay_after: true, total: 1650, lat: -1.3201, lng: 36.8269 },
       { id: 3, ref: 'VS-9PLX2B', date: '2026-10-09', slot: '2:00 PM', status: 'completed', response: 'accepted', pickup_area: 'Parklands', homes: [{ title: '1 bedroom, Parklands', area: 'Parklands' }], pay: 650, km: 4, drive_min: 11, wait_min: 20, client: 'Fatma', attempts_left: 5 }
     ];
     vouchers = [{ id: 1, created_at: new Date().toISOString(), kind: 'trip', amount: 650, status: 'approved', trip_ref: 'VS-9PLX2B' }];
@@ -90,9 +90,9 @@ document.addEventListener('DOMContentLoaded', function () {
   function tripCard(t) {
     var homes = '<ol class="t-homes">' + (t.homes || []).map(function (h) { return '<li>' + V.esc(h.title || h.id) + (h.area ? ' · ' + V.esc(h.area) : '') + '</li>'; }).join('') + '</ol>';
     var badge = t.status === 'completed' ? '<span class="t-badge ok">Done · voucher claimed</span>' : t.status === 'no_show' ? '<span class="t-badge bad">Client didn\'t come</span>' :
-      t.response === 'pending' ? '<span class="t-badge warn">New: please accept</span>' : t.issue ? '<span class="t-badge warn">Reported · Viustay is checking</span>' : '<span class="t-badge ok">Accepted</span>';
+      t.response === 'pending' ? '<span class="t-badge warn">New: please accept</span>' : t.issue ? (t.issue === 'unpaid' ? '<span class="t-badge warn">Not paid yet · Viustay is following up</span>' : '<span class="t-badge warn">Reported · Viustay is checking</span>') : '<span class="t-badge ok">Accepted</span>';
     var h = '<article class="t-card" data-id="' + t.id + '"><div class="row-between" style="flex-wrap:wrap;gap:8px"><strong style="font-size:18px">' + dayFmt(t.date) + ', ' + V.esc(t.slot) + '</strong>' + badge + '</div>' +
-      '<div class="t-kv"><span>Pickup</span><span><strong>' + V.esc(t.pickup_area) + '</strong>' + (t.pickup_note ? ' · ' + V.esc(t.pickup_note) : '') + '</span>' +
+      '<div class="t-kv"><span>Pickup</span><span><strong>' + V.esc(t.pickup_area) + '</strong>' + (t.pickup_note ? ' · ' + V.esc(t.pickup_note) : '') + (t.lat ? '<br><a target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=' + t.lat + ',' + t.lng + '">Open the exact pin in Maps</a>' : '') + '</span>' +
       '<span>Client</span><span>' + V.esc(t.client || '') + (t.phone ? ' · ' + V.esc(t.phone) : '') + '</span>' +
       '<span>Trip</span><span>About ' + t.km + ' km · ' + V.Trip.mins(t.drive_min) + ' driving + ' + V.Trip.mins(t.wait_min) + ' viewing</span>' +
       '<span>Your pay</span><strong>' + kes(t.pay) + '</strong></div>' + homes;
@@ -100,12 +100,17 @@ document.addEventListener('DOMContentLoaded', function () {
       h += '<div class="t-actions"><button class="btn btn-primary" data-act="accept">Accept trip</button><button class="btn btn-outline" data-act="decline">Can\'t do it</button></div>';
     } else if (t.status === 'confirmed' && t.response === 'accepted') {
       if (t.phone) h += '<div class="t-actions"><a class="btn btn-dark" href="tel:+' + intl(t.phone) + '">Call ' + V.esc(t.client) + '</a><a class="btn btn-outline" target="_blank" rel="noopener" href="https://wa.me/' + intl(t.phone) + '?text=' + encodeURIComponent('Hi ' + t.client + ', this is your Viustay agent for today\'s viewing trip.') + '">WhatsApp</a></div>';
-      if (t.date <= today() && !t.issue) {
+      if (t.pay_after && t.date <= today() && !t.issue) {
+        h += '<div class="stack-sm" style="border-top:1px solid var(--line);padding-top:12px"><strong style="font-size:15px">End the trip</strong>' +
+          '<span class="note">After the last viewing, the client pays <strong>' + kes(t.total) + '</strong> by M-Pesa' + (S.till ? ' to Till <strong>' + V.esc(S.till) + '</strong> (' + V.esc(S.pay_name || 'Viustay') + ')' : '') + '. Type the code from their M-Pesa SMS.</span>' +
+          '<div class="t-codebox"><input maxlength="14" autocapitalize="characters" autocomplete="off" placeholder="e.g. SJK3ABCD12" aria-label="Client\'s M-Pesa code" data-code><button class="btn btn-primary" data-act="claim">Release client</button></div><p class="t-msg" data-msg></p>' +
+          '<div class="t-actions"><button class="btn btn-outline" data-act="unpaid">Client can\'t pay now</button><button class="btn btn-outline" data-act="no_show">Client didn\'t come</button></div></div>';
+      } else if (t.date <= today() && !t.issue) {
         h += '<div class="stack-sm" style="border-top:1px solid var(--line);padding-top:12px"><strong style="font-size:15px">Finish the trip</strong><span class="note">After the last viewing, ask the client for their 4-digit trip code.</span>' +
           '<div class="t-codebox"><input inputmode="numeric" maxlength="4" pattern="[0-9]*" aria-label="Trip code" data-code><button class="btn btn-primary" data-act="claim">Claim voucher</button></div><p class="t-msg" data-msg></p>' +
           '<div class="t-actions"><button class="btn btn-outline" data-act="no_code">Client can\'t find the code</button><button class="btn btn-outline" data-act="no_show">Client didn\'t come</button></div></div>';
       } else if (t.date > today()) {
-        h += '<span class="note">You\'ll finish this trip with the client\'s code on the day.</span>';
+        h += '<span class="note">' + (t.pay_after ? 'On the day, you end the trip when the client has paid by M-Pesa.' : 'You\'ll finish this trip with the client\'s code on the day.') + '</span>';
       }
     }
     return h + '</article>';
@@ -158,27 +163,29 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (act === 'claim') {
-      var code = (card.querySelector('[data-code]').value || '').replace(/[^0-9]/g, '');
-      if (code.length !== 4) { say('bad', 'Enter the 4-digit code from the client.'); return; }
+      var raw = card.querySelector('[data-code]').value || '';
+      var code = t.pay_after ? raw.replace(/[^A-Za-z0-9]/g, '').toUpperCase() : raw.replace(/[^0-9]/g, '');
+      if (t.pay_after && !/^[A-Z0-9]{8,12}$/.test(code)) { say('bad', 'Type the M-Pesa code from the client\'s SMS, like SJK3ABCD12.'); return; }
+      if (!t.pay_after && code.length !== 4) { say('bad', 'Enter the 4-digit code from the client.'); return; }
       btn.disabled = true;
-      var p = V.demo ? Promise.resolve(code === '1234' ? { ok: true, amount: t.pay } : { ok: false, error: 'wrong', left: 4 }) : rpc('claim_trip', { p_trip: id, p_code: code });
+      var p = V.demo ? Promise.resolve(code === '1234' || t.pay_after ? { ok: true, amount: t.pay } : { ok: false, error: 'wrong', left: 4 }) : rpc('claim_trip', { p_trip: id, p_code: code });
       p.then(function (r) {
         btn.disabled = false;
         if (r.ok) {
           t.status = 'completed';
           vouchers.unshift({ created_at: new Date().toISOString(), kind: 'trip', amount: r.amount, status: 'claimed', trip_ref: t.ref });
           render();
-          var c = $('[data-id="' + id + '"]'); if (c) c.insertAdjacentHTML('afterbegin', '<p class="t-msg ok"><strong>Voucher claimed: ' + kes(r.amount) + '.</strong> Thank you!</p>');
+          var c = $('[data-id="' + id + '"]'); if (c) c.insertAdjacentHTML('afterbegin', '<p class="t-msg ok"><strong>' + (t.pay_after ? 'Client released. ' : '') + 'Voucher claimed: ' + kes(r.amount) + '.</strong> Thank you!</p>');
           return;
         }
         var E = { wrong: 'That code is wrong. ' + r.left + ' tries left. Ask the client to check their booking message.', locked: 'Too many wrong codes. Tap "Client can\'t find the code" and Viustay will check.',
-          too_early: 'You can finish this trip on the day.', not_open: 'This trip is closed. Tap Refresh.', not_yours: 'This trip isn\'t assigned to you.' };
+          too_early: 'You can finish this trip on the day.', bad_mpesa: 'That doesn\'t look like an M-Pesa code. Check the client\'s SMS.', used_mpesa: 'That M-Pesa code was already used for another trip.', not_open: 'This trip is closed. Tap Refresh.', not_yours: 'This trip isn\'t assigned to you.' };
         say('bad', E[r.error] || 'Could not claim. Try again.');
       }).catch(function () { btn.disabled = false; say('bad', 'No connection. Try again.'); });
     }
 
-    if (act === 'no_code' || act === 'no_show') {
-      var q = act === 'no_show' ? 'Report that the client didn\'t come? Do this at the pickup point: your location will be saved with the report.' : 'Report that the client can\'t find the code? Viustay will call them to confirm the trip.';
+    if (act === 'no_code' || act === 'no_show' || act === 'unpaid') {
+      var q = act === 'unpaid' ? 'Tell Viustay the client hasn\'t paid? We\'ll call them. You still get your pay once they do.' : act === 'no_show' ? 'Report that the client didn\'t come? Do this at the pickup point: your location will be saved with the report.' : 'Report that the client can\'t find the code? Viustay will call them to confirm the trip.';
       if (!confirm(q)) return;
       btn.disabled = true;
       var send = function (lat, lng) {

@@ -8,7 +8,7 @@
   T.DEFAULTS = {
     base: 150, per_km: 40, per_min: 4, wait_per_hour: 300, view_min: 20, road_factor: 1.4, speed_kmh: 22,
     min_fare: 500, round_to: 50, return_trip: true, viewing_fee: 950,
-    slots: ['9:00 AM', '11:30 AM', '2:00 PM'], trips_per_agent_day: 2, days_ahead: 6, closed_days: [0], cutoff: '18:00',
+    slots: ['9:00 AM', '11:30 AM', '2:00 PM'], trips_per_agent_day: 2, days_ahead: 6, calendar_days: 60, closed_days: [0], cutoff: '18:00',
     pay_window_min: 30, callout_fee: 300, placement_bonus_pct: 15, till: '', pay_name: 'Viustay', payout_day: 'Friday', airport_pickup_fee: 2500,
     rates_are_placeholders: true,
     pickups: [

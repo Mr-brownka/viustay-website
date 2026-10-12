@@ -1,225 +1,333 @@
-// v2 booking: pickup estate (or phone location), open slots, live price, M-Pesa payment, trip code.
+// v2 booking: one screen at a time. Intro -> pickup pin -> day & time -> who -> fee sheet -> booked.
+// Nothing is paid now: the client pays by M-Pesa when the trip ends.
 document.addEventListener('DOMContentLoaded', function () {
-  var V = window.V, T = V.Trip, t_ = V.t;
-  var $ = V.$;
+  var V = window.V, T = V.Trip, t_ = V.t, $ = V.$;
   var search = V.getSearch();
   var params = new URLSearchParams(location.search);
   var ids = params.get('id') ? [params.get('id')] : (search.picked || []);
-  var S = T.DEFAULTS, homes = [], slotData = null, quote = null;
-  var pick = { day: null, slot: null, pickup: null };
-  var STORE = 'vs-trip';
+  var S = T.DEFAULTS, homes = [], cal = null, quote = null;
+  var pick = { lat: null, lng: null, area: null, acc: null, how: null, day: null, slot: null };
+  var NAIROBI = [-1.2864, 36.8172];
+  var map = null, mapMode = false, step = null, introDone = false, dataReady = false;
+  var PEOPLE = 'vs-people';
 
-  function store(o) { try { localStorage.setItem(STORE, JSON.stringify(o)); } catch (e) {} }
-  function stored() { try { return JSON.parse(localStorage.getItem(STORE) || 'null'); } catch (e) { return null; } }
   function kes(n) { return 'KES ' + V.money(n); }
-  function dayFmt(iso) { return V.date(iso); }
   function showErr(el, t) { el.textContent = t || ''; el.classList.toggle('hidden', !t); }
-  function chip(label, on, disabled, fn) {
-    var b = document.createElement('button');
-    b.type = 'button'; b.className = 'chip square'; b.textContent = label;
-    b.setAttribute('aria-pressed', on ? 'true' : 'false');
-    if (disabled) b.disabled = true; else b.addEventListener('click', fn);
-    return b;
-  }
-  function flash(el, text) { if (el.textContent === text) return; el.textContent = text; el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
+  function iso(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function dayObj(s) { return new Date(s + 'T00:00:00'); }
+  function wd(s) { return V.date(s, { weekday: 'short' }); }
+  function dayLong(s) { return V.date(s, { weekday: 'short', day: 'numeric', month: 'short' }); }
   function rpc(name, args) {
     return V.ensureDb().then(function (db) { return db.rpc(name, args || {}); }).then(function (r) { if (r.error) throw r.error; return r.data; });
   }
+  function getLS(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } }
+  function setLS(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
   var ERR = {
     slot_full: 'Sorry, that time was just taken. Please pick another time.',
     bad_date: 'That day is no longer open. Please pick another day.',
-    bad_slot: 'Please pick a time.', bad_pickup: 'Please choose your estate.', bad_phone: 'Please enter a valid M-Pesa number.',
-    bad_name: 'Please enter your name.', bad_homes: 'Pick 1 to 3 homes first.', bad_distance: 'We could not work out the trip. Please choose your estate again.',
-    bad_mpesa: 'That doesn\'t look like an M-Pesa code. It\'s 10 letters and numbers, like SJK3ABCD12.',
-    not_found: 'We couldn\'t find that booking. Please WhatsApp us.', not_open: 'This booking can\'t take a payment any more. Please WhatsApp us.'
+    bad_slot: 'Please pick a time.', bad_pickup: 'Please set your pickup spot again.', bad_phone: 'Please enter a valid phone number.',
+    bad_name: 'Please enter your name.', bad_homes: 'Pick 1 to 3 homes first.', bad_distance: 'We could not work out the trip. Please set your pickup spot again.'
   };
   function errText(e) { var m = (e && e.message) || ''; var k = Object.keys(ERR).filter(function (x) { return m.indexOf(x) >= 0; })[0]; return t_(k ? ERR[k] : 'Something went wrong. Please try again or WhatsApp us.'); }
 
-  // ---------- slots ----------
-  function localSlots() {
+  // ---------- screens ----------
+  var SCREENS = { pickup: '#s-pickup', when: '#s-when', who: '#s-who', done: '#s-done', empty: '#s-empty' };
+  var ORDER = ['pickup', 'when', 'who'];
+  function show(name, dir) {
+    var prev = step; step = name;
+    Object.keys(SCREENS).forEach(function (k) { $(SCREENS[k]).classList.toggle('hidden', k !== name); });
+    var el = $(SCREENS[name]);
+    el.classList.remove('in-right', 'in-left'); void el.offsetWidth;
+    if (prev) el.classList.add(dir === 'back' ? 'in-left' : 'in-right');
+    var n = ORDER.indexOf(name) + 1;
+    $('#bk-head').classList.toggle('hidden', !n);
+    if (n) {
+      $('#bk-steptext').textContent = t_('Step {n} of 3', { n: n });
+      V.$$('.bk-segs i').forEach(function (s, i) { s.classList.toggle('on', i < n); });
+    }
+    window.scrollTo(0, 0);
+    if (name === 'pickup' && map) setTimeout(function () { map.invalidateSize(); }, 50);
+  }
+  function go(name) { try { history.pushState({ bk: name }, ''); } catch (e) {} show(name, 'fwd'); }
+  window.addEventListener('popstate', function (e) {
+    closeSheets();
+    var s = e.state && e.state.bk;
+    if (step === 'done') { location.href = 'index.html'; return; }
+    if (s && ORDER.indexOf(s) >= 0) show(s, 'back');
+  });
+  $('#bk-back').addEventListener('click', function () {
+    if (step === 'pickup') { if (document.referrer && history.length > 2) history.go(-1); else location.href = 'matches.html'; return; }
+    history.back();
+  });
+
+  // ---------- 1. intro ----------
+  $('#bk-you').textContent = t_('You');
+  function start() {
+    if (!introDone || !dataReady) return;
+    var intro = $('#bk-intro'); intro.classList.add('out');
+    setTimeout(function () { intro.classList.add('hidden'); }, 450);
+    if (!homes.length) { show('empty'); return; }
+    try { history.replaceState({ bk: 'pickup' }, ''); } catch (e) {}
+    show('pickup');
+  }
+  setTimeout(function () { introDone = true; start(); }, 3300);
+
+  // ---------- 2. pickup ----------
+  function initMap() {
+    if (!window.L || map) return;
+    try {
+      var box = document.createElement('div'); box.className = 'bk-map-leaflet';
+      $('#bk-map').insertBefore(box, $('#bk-map').firstChild);
+      map = L.map(box, { zoomControl: false, attributionControl: true }).setView(NAIROBI, 12);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' }).addTo(map);
+      map.on('movestart', function () { if (mapMode) $('#bk-map').classList.add('moving'); });
+      map.on('moveend', function () {
+        $('#bk-map').classList.remove('moving');
+        if (mapMode) { var c = map.getCenter(); if (pick.lat === null || T.km([c.lat, c.lng], [pick.lat, pick.lng]) > 0.003) setPin(c.lat, c.lng, null, 'map'); }
+      });
+      $('.bk-map-fallback').classList.add('hidden');
+    } catch (e) { console.warn('map', e); map = null; }
+  }
+  function setPin(lat, lng, acc, how) {
+    var n = T.nearestPickup(lat, lng, S.pickups);
+    var hint = $('#bk-loc-hint');
+    if (!n || n.km > 15) {
+      pick.lat = null; pick.area = null;
+      hint.textContent = t_('That spot is outside the areas we cover in Nairobi. Move the pin closer, or WhatsApp us.');
+      $('#bk-mapcard').classList.add('hidden'); $('#go-when').disabled = true;
+      return false;
+    }
+    pick.lat = +lat.toFixed(6); pick.lng = +lng.toFixed(6); pick.area = n.pickup.name; pick.acc = acc; pick.how = how;
+    $('#bk-loc-title').textContent = t_('Near {x}', { x: n.pickup.name });
+    $('#bk-loc-sub').textContent = how === 'gps' ? t_('Your location · accurate to {m} m', { m: Math.max(5, Math.round(acc || 20)) }) : t_('Pin on the map · drag the map to adjust');
+    $('#bk-mapcard').classList.remove('hidden');
+    $('#bk-centerpin').classList.remove('hidden'); $('#bk-gps').classList.add('hidden');
+    $('#bk-locbtns').classList.add('hidden'); $('#bk-after').classList.remove('hidden');
+    $('#go-when').disabled = false;
+    hint.textContent = how === 'map' ? t_('Move the map so the pin sits on your pickup spot.') : '';
+    return true;
+  }
+  function dropPin() { var p = $('#bk-centerpin'); p.classList.remove('drop'); void p.offsetWidth; p.classList.add('drop'); }
+  $('#bk-useloc').addEventListener('click', function () {
+    var btn = $('#bk-useloc'), hint = $('#bk-loc-hint');
+    if (!navigator.geolocation) { hint.textContent = t_('This phone can\'t share its location. Drop a pin on the map instead.'); return; }
+    btn.disabled = true; hint.textContent = t_('Finding you…');
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      btn.disabled = false;
+      var c = pos.coords;
+      mapMode = false;
+      if (map) map.setView([c.latitude, c.longitude], 17, { animate: true });
+      if (setPin(c.latitude, c.longitude, c.accuracy, 'gps')) { dropPin(); setTimeout(function () { mapMode = true; }, 900); }
+    }, function () {
+      btn.disabled = false;
+      hint.textContent = t_('Location is off. Turn it on and try again, or drop a pin on the map.');
+    }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 });
+  });
+  function useMap() {
+    if (!map) { $('#bk-loc-hint').textContent = t_('The map couldn\'t load. Please use your location, or WhatsApp us.'); return; }
+    mapMode = true;
+    if (pick.lat === null) map.setView(map.getCenter(), Math.max(map.getZoom(), 14));
+    var c = map.getCenter();
+    if (setPin(c.lat, c.lng, null, 'map')) dropPin();
+  }
+  $('#bk-usemap').addEventListener('click', useMap);
+  $('#bk-move').addEventListener('click', useMap);
+  $('#go-when').addEventListener('click', function () { if (pick.lat !== null) go('when'); });
+
+  // ---------- 3. day & time ----------
+  function localCal() {
     var now = new Date(), cut = String(S.cutoff || '18:00').split(':');
     var d = new Date(); d.setHours(0, 0, 0, 0);
     d.setDate(d.getDate() + ((now.getHours() * 60 + now.getMinutes()) < (+cut[0] * 60 + +(cut[1] || 0)) ? 1 : 2));
     var days = [];
-    while (days.length < S.days_ahead) {
-      if ((S.closed_days || []).indexOf(d.getDay()) < 0) {
-        var iso = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-        days.push({ day: iso, slots: S.slots.map(function (s) { return { slot: s, open: true }; }) });
-      }
+    for (var i = 0; i < (S.calendar_days || 60); i++) {
+      if ((S.closed_days || []).indexOf(d.getDay()) < 0) days.push({ day: iso(d), slots: S.slots.map(function (s) { return { slot: s, open: true }; }) });
       d.setDate(d.getDate() + 1);
     }
     return { agents: -1, days: days };
   }
-  function loadSlots() {
-    if (V.demo) return Promise.resolve(localSlots());
-    return rpc('trip_slots').catch(function (e) { console.warn('slots', e); return localSlots(); });
+  function loadCal() {
+    if (V.demo) return Promise.resolve(localCal());
+    return rpc('trip_calendar').catch(function () { return rpc('trip_slots'); }).catch(function (e) { console.warn('slots', e); return localCal(); });
   }
+  function isOpen(d) { return d && d.slots.some(function (x) { return x.open; }); }
+  function dayData(s) { return cal && cal.days.filter(function (d) { return d.day === s; })[0]; }
+  function strip() { return cal.days.filter(isOpen).slice(0, 7); }
 
-  function renderSlots() {
-    var dBox = $('#day-chips'), tBox = $('#time-chips');
-    dBox.innerHTML = ''; tBox.innerHTML = '';
-    if (!slotData || slotData.agents === 0) {
-      tBox.innerHTML = '';
-      dBox.innerHTML = '<p class="t-rule" style="margin:0">' + t_('Viewing trips open soon: no agents are free yet.') + ' <a href="' + V.wa('Hi Viustay, I would like to book a viewing trip.') + '" target="_blank" rel="noopener">' + t_('WhatsApp us and we\'ll arrange it.') + '</a></p>';
-      return;
+  function renderWhen() {
+    var box = $('#bk-days'), tBox = $('#bk-times');
+    box.innerHTML = ''; tBox.innerHTML = '';
+    $('#bk-noagents').innerHTML = '';
+    if (!cal || cal.agents === 0 || !cal.days.some(isOpen)) {
+      box.innerHTML = '';
+      $('#bk-noagents').innerHTML = t_('Viewing trips open soon: no agents are free yet.') + ' <a href="' + V.wa('Hi Viustay, I would like to book a viewing trip.') + '" target="_blank" rel="noopener">' + t_('WhatsApp us and we\'ll arrange it.') + '</a>';
+      $('#bk-calbtn').classList.add('hidden'); $('#go-who').disabled = true; return;
     }
-    slotData.days.forEach(function (d) {
-      var any = d.slots.some(function (x) { return x.open; });
-      dBox.appendChild(chip(dayFmt(d.day) + (any ? '' : ' · ' + t_('Full')), d.day === pick.day, !any, function () { pick.day = d.day; pick.slot = null; firstOpenSlot(); renderSlots(); update(); }));
+    var days = strip(), inStrip = days.some(function (d) { return d.day === pick.day; });
+    days.forEach(function (d) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'bk-day';
+      b.setAttribute('aria-pressed', String(d.day === pick.day));
+      b.innerHTML = '<small>' + V.esc(wd(d.day)) + '</small><b>' + dayObj(d.day).getDate() + '</b><small>' + V.esc(V.date(d.day, { month: 'short' })) + '</small>';
+      b.setAttribute('aria-label', dayLong(d.day));
+      b.addEventListener('click', function () { pickDay(d.day); });
+      box.appendChild(b);
     });
-    var day = slotData.days.filter(function (d) { return d.day === pick.day; })[0];
+    // full days skipped inside the strip
+    var last = days[days.length - 1].day;
+    var full = cal.days.filter(function (d) { return d.day < last && !isOpen(d); }).map(function (d) { return dayLong(d.day); });
+    $('#bk-fullnote').textContent = full.length ? t_(full.length === 1 ? '{x} is fully booked, so the next open day was added.' : '{x} are fully booked, so the next open days were added.', { x: full.join(', ') }) : '';
+    $('#bk-custom').classList.toggle('hidden', inStrip || !pick.day);
+    if (!inStrip && pick.day) $('#bk-custom-text').textContent = dayLong(pick.day);
+    var day = dayData(pick.day);
     (day ? day.slots : []).forEach(function (x) {
-      tBox.appendChild(chip(x.slot + (x.open ? '' : ' · ' + t_('Full')), x.slot === pick.slot, !x.open, function () { pick.slot = x.slot; renderSlots(); update(); }));
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'bk-time';
+      b.textContent = x.slot + (x.open ? '' : ' · ' + t_('Full'));
+      b.setAttribute('aria-pressed', String(x.slot === pick.slot));
+      if (!x.open) b.disabled = true; else b.addEventListener('click', function () { pick.slot = x.slot; renderWhen(); });
+      tBox.appendChild(b);
+    });
+    $('#go-who').disabled = !(pick.day && pick.slot);
+  }
+  function pickDay(s) {
+    pick.day = s;
+    var d = dayData(s), open = d ? d.slots.filter(function (x) { return x.open; }) : [];
+    if (!open.some(function (x) { return x.slot === pick.slot; })) pick.slot = open[0] ? open[0].slot : null;
+    renderWhen();
+  }
+  $('#go-who').addEventListener('click', function () { if (pick.day && pick.slot) { renderSaved(); go('who'); } });
+
+  // calendar sheet
+  var calMonth = null;
+  function monthsRange() { var a = dayObj(cal.days[0].day), b = dayObj(cal.days[cal.days.length - 1].day); return [new Date(a.getFullYear(), a.getMonth(), 1), new Date(b.getFullYear(), b.getMonth(), 1)]; }
+  function renderCal() {
+    var r = monthsRange(), m = calMonth, y = m.getFullYear(), mo = m.getMonth();
+    $('#cal-title').textContent = V.date(iso(m), { month: 'long', year: 'numeric' });
+    $('#cal-prev').disabled = m <= r[0]; $('#cal-next').disabled = m >= r[1];
+    var wdBox = $('#cal-wd'); wdBox.innerHTML = '';
+    for (var w = 0; w < 7; w++) { var s = document.createElement('span'); s.textContent = V.date(iso(new Date(2026, 9, 5 + w)), { weekday: 'narrow' }); wdBox.appendChild(s); }
+    var g = $('#cal-grid'); g.innerHTML = '';
+    var lead = (new Date(y, mo, 1).getDay() + 6) % 7;
+    for (var i = 0; i < lead; i++) { var bl = document.createElement('span'); bl.className = 'blank'; g.appendChild(bl); }
+    var n = new Date(y, mo + 1, 0).getDate();
+    for (var dd = 1; dd <= n; dd++) {
+      (function (ds) {
+        var b = document.createElement('button'), d = dayData(ds), open = isOpen(d);
+        b.type = 'button'; b.textContent = dayObj(ds).getDate();
+        b.setAttribute('aria-label', dayLong(ds) + (open ? '' : ' · ' + t_(d ? 'Full' : 'Closed')));
+        if (!open) { b.disabled = true; if (d) b.className = 'full'; }
+        else b.addEventListener('click', function () { pickDay(ds); closeSheets(); });
+        b.setAttribute('aria-pressed', String(ds === pick.day));
+        g.appendChild(b);
+      })(iso(new Date(y, mo, dd)));
+    }
+  }
+  $('#bk-calbtn').addEventListener('click', function () {
+    var base = pick.day ? dayObj(pick.day) : dayObj(cal.days[0].day);
+    calMonth = new Date(base.getFullYear(), base.getMonth(), 1);
+    renderCal(); openSheet('#cal-wrap');
+  });
+  $('#cal-prev').addEventListener('click', function () { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() - 1, 1); renderCal(); });
+  $('#cal-next').addEventListener('click', function () { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 1); renderCal(); });
+
+  // ---------- sheets ----------
+  function openSheet(id) { $(id).classList.remove('hidden'); var f = $(id).querySelector('h2'); if (f) { f.setAttribute('tabindex', '-1'); f.focus({ preventScroll: true }); } }
+  function closeSheets() { V.$$('.bk-sheet-wrap').forEach(function (w) { w.classList.add('hidden'); }); }
+  V.$$('[data-close]').forEach(function (b) { b.addEventListener('click', closeSheets); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeSheets(); });
+
+  // ---------- 4. who ----------
+  function people() { var p = getLS(PEOPLE); return Array.isArray(p) ? p.filter(function (x) { return x && x.name && x.phone; }).slice(0, 3) : []; }
+  function renderSaved() {
+    var list = people(), box = $('#bk-saved');
+    $('#bk-saved-wrap').classList.toggle('hidden', !list.length);
+    box.innerHTML = '';
+    var name = $('#bk-name').value.trim(), phone = $('#bk-phone').value.trim();
+    list.forEach(function (p) {
+      var on = p.name === name && p.phone === phone;
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'bk-saved-item'; b.setAttribute('aria-pressed', String(on));
+      b.innerHTML = '<span class="bk-face">' + V.esc(p.name.charAt(0).toUpperCase()) + '</span><span class="bk-who"><b>' + V.esc(p.name) + '</b><span>' + V.esc(p.phone) + '</span></span><span class="bk-use">' + t_(on ? 'Selected' : 'Use') + '</span>';
+      b.addEventListener('click', function () { $('#bk-name').value = p.name; $('#bk-phone').value = p.phone; showErr($('#bk-error')); renderSaved(); });
+      box.appendChild(b);
     });
   }
-  function firstOpenSlot() {
-    var day = slotData && slotData.days.filter(function (d) { return d.day === pick.day; })[0];
-    var open = day ? day.slots.filter(function (x) { return x.open; })[0] : null;
-    pick.slot = open ? open.slot : null;
-  }
-  function firstOpenDay() {
-    var d = slotData && slotData.days.filter(function (x) { return x.slots.some(function (y) { return y.open; }); })[0];
-    pick.day = d ? d.day : null; firstOpenSlot();
+  ['#bk-name', '#bk-phone'].forEach(function (s) { $(s).addEventListener('input', function () { if (people().length) renderSaved(); }); });
+  function remember(name, phone) {
+    var list = people().filter(function (p) { return p.phone.replace(/\D/g, '') !== phone.replace(/\D/g, ''); });
+    list.unshift({ name: name, phone: phone }); setLS(PEOPLE, list.slice(0, 3));
   }
 
-  // ---------- pickup ----------
-  function setPickup(name) {
-    pick.pickup = S.pickups.filter(function (p) { return p.name === name; })[0] || null;
-    $('#pickup').value = pick.pickup ? pick.pickup.name : '';
-    try { if (pick.pickup) localStorage.setItem('vs-pickup', pick.pickup.name); } catch (e) {}
-    update();
-  }
-  $('#pickup').addEventListener('change', function (e) { $('#loc-hint').textContent = ''; setPickup(e.target.value); });
-  $('#use-loc').addEventListener('click', function () {
-    var btn = $('#use-loc'), hint = $('#loc-hint');
-    if (!navigator.geolocation) { hint.textContent = t_('This phone can\'t share its location. Please pick your estate from the list.'); return; }
-    btn.disabled = true; hint.textContent = t_('Finding you…');
-    navigator.geolocation.getCurrentPosition(function (pos) {
-      btn.disabled = false;
-      var n = T.nearestPickup(pos.coords.latitude, pos.coords.longitude, S.pickups);
-      if (!n) { hint.textContent = t_('Please pick your estate from the list.'); return; }
-      if (n.km > 15) { hint.textContent = t_('You seem to be outside Nairobi (the nearest estate we cover is {x}, {km} km away). Please pick your estate from the list.', { x: n.pickup.name, km: Math.round(n.km) }); return; }
-      setPickup(n.pickup.name);
-      hint.textContent = t_(n.km < 1 ? 'Nearest estate: {x} (under 1 km from you). Not right? Pick another from the list.' : 'Nearest estate: {x} (about {km} km from you). Not right? Pick another from the list.', { x: n.pickup.name, km: n.km.toFixed(1) });
-    }, function () {
-      btn.disabled = false;
-      hint.textContent = t_('Location is off, so please pick your estate from the list. We don\'t save your location.');
-    }, { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 });
+  $('#go-fee').addEventListener('click', function () {
+    var name = $('#bk-name').value.trim(), phone = $('#bk-phone').value.trim(), err = $('#bk-error');
+    var problem = !name ? ERR.bad_name : !V.phoneOk(phone) ? ERR.bad_phone : '';
+    showErr(err, problem ? t_(problem) : '');
+    if (problem) { (name ? $('#bk-phone') : $('#bk-name')).focus(); return; }
+    quote = T.quote({ lat: pick.lat, lng: pick.lng }, homes, S);
+    $('#fee-fare').textContent = kes(quote.fare); $('#fee-fee').textContent = kes(quote.viewing_fee); $('#fee-total').textContent = kes(quote.total);
+    showErr($('#fee-error'));
+    openSheet('#fee-wrap');
   });
 
-  // ---------- price + summary ----------
-  function miniCard(l) {
-    return '<a class="mini" href="home.html?id=' + encodeURIComponent(l.id) + '"><span class="thumb" style="' + V.photoStyle(l.photoList[0]) + '"></span>' +
-      '<span><span style="font-weight:600">' + V.esc(l.title) + '</span><small>' + V.esc(l.area || '') + ' · KES ' + V.money(l.rent) + ' / mo</small></span></a>';
-  }
-  function update() {
-    $('#book-when').textContent = pick.day && pick.slot ? dayFmt(pick.day) + ', ' + pick.slot : '–';
-    quote = pick.pickup && homes.length ? T.quote(pick.pickup, homes, S) : null;
-    var list = quote ? quote.order : homes;
-    $('#book-homes').innerHTML = list.length ? list.map(miniCard).join('') :
-      '<p style="margin:0">' + t_('No homes picked yet. <a href="matches.html">Pick homes</a> or <a href="homes.html">browse all</a>.') + '</p>';
-    if (quote) {
-      $('#t-route').innerHTML = '<span><b>' + V.esc(pick.pickup.name) + '</b> → ' + t_(homes.length === 1 ? '{n} home' : '{n} homes', { n: homes.length }) + (S.return_trip ? ' → ' + t_('back to {x}', { x: V.esc(pick.pickup.name) }) : '') + '</span>' +
-        '<span>' + t_('About {km} km · {drive} driving + {wait} at viewings', { km: quote.km, drive: T.mins(quote.drive_min), wait: T.mins(quote.wait_min) }) + '</span>';
-      flash($('#p-fare'), kes(quote.fare)); flash($('#p-fee'), kes(quote.viewing_fee)); flash($('#p-total'), kes(quote.total));
-      $('#p-note').textContent = (quote.guess ? t_('Some homes\' exact spots are estimated.') + ' ' : '') + t_('You pay by M-Pesa on the next step.');
-      $('#book-submit').textContent = t_('Continue to payment') + ' · ' + kes(quote.total);
-    } else {
-      $('#t-route').innerHTML = ''; $('#p-fare').textContent = '–'; $('#p-total').textContent = '–'; $('#p-fee').textContent = kes(S.viewing_fee);
-      $('#book-submit').textContent = t_('Continue to payment');
-      $('#p-note').textContent = t_('Pick your estate to see the price. You pay by M-Pesa on the next step.');
-    }
-    $('#book-submit').disabled = !homes.length || !slotData || slotData.agents === 0;
-  }
-
-  // ---------- payment screen ----------
-  var timer = null;
-  function showPay(t) {
-    $('#book-form-wrap').classList.add('hidden'); $('#book-done').classList.add('hidden'); $('#pay-wrap').classList.remove('hidden');
-    $('#pay-ref').textContent = t.ref;
-    $('#pay-h').textContent = t_('Pay {x} by M-Pesa', { x: kes(t.total) });
-    $('#pay-steps').innerHTML = '<li><span>' + t_('Open <strong>M-Pesa</strong> and go to <b>Lipa na M-Pesa → Buy Goods and Services</b>.') + '</span></li>' +
-      '<li><span>' + t_('Till number:') + ' <strong>' + V.esc(S.till || '[TILL NUMBER]') + '</strong> <span class="note">' + (S.pay_name ? '(' + V.esc(S.pay_name) + ')' : '') + '</span></span></li>' +
-      '<li><span>' + t_('Amount:') + ' <strong>' + kes(t.total) + '</strong></span></li>' +
-      '<li><span>' + t_('Enter your PIN. You\'ll get an SMS from M-Pesa with a code like <b>SJK3ABCD12</b>.') + '</span></li>';
-    $('#pay-help').href = V.wa('Hi Viustay, I need help paying for booking ' + t.ref + '.');
-    clearInterval(timer);
-    function tick() {
-      var left = Math.max(0, Math.round((new Date(t.expires_at) - Date.now()) / 1000));
-      $('#pay-timer').innerHTML = left ? t_('We\'re holding your slot for <b>{t}</b>.', { t: Math.floor(left / 60) + ':' + String(left % 60).padStart(2, '0') }) :
-        t_('Your slot is no longer held, but you can still pay: we\'ll keep it if it\'s free.');
-      if (!left) clearInterval(timer);
-    }
-    tick(); timer = setInterval(tick, 1000);
-    window.scrollTo(0, 0);
-    setTimeout(function () { $('#pay-form').mpesa.focus(); }, 100);
-  }
-  $('#pay-form').addEventListener('submit', function (e) {
-    e.preventDefault();
-    var t = stored(), code = e.target.mpesa.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase(), err = $('#pay-error');
-    showErr(err);
-    if (!t) { showErr(err, t_(ERR.not_found)); return; }
-    if (!/^[A-Z0-9]{8,12}$/.test(code)) { showErr(err, t_(ERR.bad_mpesa)); return; }
-    var btn = $('#pay-submit'); btn.disabled = true; btn.textContent = t_('Checking…');
-    var p = V.demo ? Promise.resolve({ ok: true, code: String(Math.floor(1000 + Math.random() * 9000)) }) : rpc('submit_payment', { p_ref: t.ref, p_phone: t.phone, p_mpesa: code });
-    p.then(function (r) {
-      t.paid = true; store(t);
-      clearInterval(timer);
-      $('#pay-wrap').classList.add('hidden'); $('#book-done').classList.remove('hidden');
-      $('#done-code').textContent = r.code;
-      $('#done-text').textContent = t_('{day} at {slot}, pickup in {place}. Booking {ref}.', { day: dayFmt(t.date), slot: t.slot, place: t.pickup, ref: t.ref });
-      $('#done-trip').href = 'trip.html?ref=' + encodeURIComponent(t.ref);
-      $('#done-wa').href = V.wa('Hi Viustay, I just paid for viewing trip ' + t.ref + ' (M-Pesa ' + code + ').');
-      search.picked = []; V.setSearch(search);
-      window.scrollTo(0, 0);
-    }).catch(function (e2) {
-      console.error(e2); showErr(err, errText(e2));
-    }).then(function () { btn.disabled = false; btn.textContent = t_('Confirm payment'); });
-  });
-
-  // ---------- booking ----------
-  $('#book-form').addEventListener('submit', function (e) {
-    e.preventDefault();
-    var f = e.target, err = $('#book-error');
-    showErr(err);
-    var name = f.name.value.trim(), phone = f.phone.value.trim();
-    var problem = !homes.length ? ERR.bad_homes : !pick.pickup ? ERR.bad_pickup : !pick.day ? 'Please pick a day.' : !pick.slot ? ERR.bad_slot :
-      !name ? ERR.bad_name : !V.phoneOk(phone) ? ERR.bad_phone : !f.consent.checked ? 'Please tick the box to agree.' : '';
-    if (problem) { showErr(err, t_(problem)); return; }
-    var btn = $('#book-submit'); btn.disabled = true; btn.textContent = t_('Holding your slot…');
+  // ---------- 5. confirm ----------
+  $('#fee-confirm').addEventListener('click', function () {
+    var btn = $('#fee-confirm'), name = $('#bk-name').value.trim(), phone = $('#bk-phone').value.trim();
+    btn.disabled = true; btn.textContent = t_('Booking…');
     var payload = {
-      name: name, phone: phone, date: pick.day, slot: pick.slot, pickup_area: pick.pickup.name, pickup_note: f.pickup_note.value.trim(),
-      distance_km: quote.km, search: search,
+      name: name, phone: phone, date: pick.day, slot: pick.slot, pickup_area: pick.area, pickup_lat: pick.lat, pickup_lng: pick.lng,
+      pickup_note: $('#bk-note').value.trim(), distance_km: quote.km, search: search,
       homes: quote.order.map(function (l) { return { id: l.id, title: l.title, area: l.area, rent: l.rent, building_code: l.building_code || null }; })
     };
-    var p = V.demo ? Promise.resolve({ ref: 'VS-DEMO' + Math.floor(Math.random() * 90 + 10), total: quote.total, expires_at: new Date(Date.now() + S.pay_window_min * 60000).toISOString() })
-      : rpc('create_trip', { p: payload });
+    var p = V.demo ? Promise.resolve({ ref: 'VS-DEMO' + Math.floor(Math.random() * 90 + 10), total: quote.total }) : rpc('create_trip', { p: payload });
     p.then(function (r) {
-      var t = { ref: r.ref, phone: phone, total: r.total, expires_at: r.expires_at, date: pick.day, slot: pick.slot, pickup: pick.pickup.name };
-      store(t); showPay(t);
-    }).catch(function (e2) {
-      console.error(e2); showErr(err, errText(e2));
-      if (/slot_full|bad_date/.test(e2.message || '')) loadSlots().then(function (d) { slotData = d; firstOpenDay(); renderSlots(); update(); });
-      btn.disabled = false; update();
-    });
+      remember(name, phone);
+      setLS('vs-trip', { ref: r.ref, phone: phone });
+      search.picked = []; V.setSearch(search);
+      closeSheets(); done(r, name);
+    }).catch(function (e) {
+      console.error(e);
+      var m = (e && e.message) || '';
+      if (/slot_full|bad_date/.test(m)) {
+        closeSheets();
+        loadCal().then(function (d) { cal = d; pickDay(pick.day); });
+        show('when', 'back'); $('#bk-fullnote').textContent = errText(e);
+      } else showErr($('#fee-error'), errText(e));
+    }).then(function () { btn.disabled = false; btn.textContent = t_('Confirm booking'); });
   });
 
-  // ---------- start ----------
-  function ruleText() { var h = +String(S.cutoff || '18:00').split(':')[0]; $('#rule-text').textContent = t_('Free cancellation until {t} the evening before. After that, the viewing fee isn\'t refunded.', { t: (h % 12 || 12) + (h < 12 ? ' am' : ' pm') }); }
-  ruleText();
-  Promise.all([V.loadListings(), T.loadSettings(), loadSlots()]).then(function (res) {
-    S = res[1]; slotData = res[2];
-    homes = res[0].filter(function (l) { return ids.indexOf(l.id) >= 0; });
-    var sel = $('#pickup');
-    S.pickups.slice().sort(function (a, b) { return a.name.localeCompare(b.name); }).forEach(function (p) {
-      var o = document.createElement('option'); o.value = p.name; o.textContent = p.name; sel.appendChild(o);
-    });
-    var last = null; try { last = localStorage.getItem('vs-pickup'); } catch (e) {}
-    if (last) setPickup(last);
-    ruleText();
-    firstOpenDay(); renderSlots(); update();
-    // Came back to finish paying
-    var t = stored();
-    if (params.get('pay') && t && !t.paid) showPay(t);
-  }).catch(function (e) { console.error(e); showErr($('#book-error'), t_('The booking page could not load. Please refresh.')); });
+  // ---------- 6. done ----------
+  function done(r, name) {
+    try { history.replaceState({ bk: 'done' }, ''); } catch (e) {}
+    show('done');
+    $('#bk-thanks').textContent = t_('Thank you, {name}. We\'ll take care of the rest.', { name: name.split(' ')[0] });
+    var note = $('#bk-note').value.trim();
+    $('#bk-summary').innerHTML =
+      '<div><span>' + t_('When') + '</span><b>' + V.esc(dayLong(pick.day)) + ', ' + V.esc(pick.slot) + '</b></div>' +
+      '<div><span>' + t_('Pickup') + '</span><b>' + V.esc(t_('Near {x}', { x: pick.area })) + (note ? '<br><small style="font-weight:400">' + V.esc(note) + '</small>' : '') + '</b></div>' +
+      '<div><span>' + t_('Homes') + '</span><b>' + V.esc(t_(homes.length === 1 ? '{n} home' : '{n} homes', { n: homes.length })) + '</b></div>' +
+      '<div><span>' + t_('Booking') + '</span><b>' + V.esc(r.ref) + '</b></div>' +
+      '<div class="bk-sumpay"><span>' + t_('Pay after the trip') + '</span><b>' + kes(r.total || quote.total) + '</b></div>';
+    $('#bk-see').href = 'trip.html?ref=' + encodeURIComponent(r.ref);
+  }
+
+  // ---------- load ----------
+  function feeRule() {
+    var h = +String(S.cutoff || '18:00').split(':')[0];
+    $('#fee-rule').innerHTML = t_('Free to cancel until {t} the day before.', { t: (h % 12 || 12) + (h < 12 ? ' am' : ' pm') }) + ' ' +
+      t_('By booking you agree to our <a href="terms.html" target="_blank">terms</a> and <a href="privacy.html" target="_blank">privacy notice</a>.');
+  }
+  initMap();
+  Promise.all([V.loadListings(), T.loadSettings()]).then(function (res) {
+    S = res[1];
+    homes = res[0].filter(function (l) { return ids.indexOf(l.id) >= 0; }).slice(0, 3);
+    feeRule();
+    return loadCal();
+  }).then(function (d) {
+    cal = d;
+    var first = cal && cal.days.filter(isOpen)[0];
+    if (first) pickDay(first.day); else renderWhen();
+  }).catch(function (e) {
+    console.error(e); cal = { agents: 0, days: [] }; renderWhen();
+  }).then(function () { dataReady = true; start(); });
 });

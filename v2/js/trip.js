@@ -39,20 +39,30 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // ---------- viewing trip ----------
-  var TRIP = { awaiting_payment: ['warn', 'Waiting for payment'], expired: ['bad', 'Not paid in time'], paid: ['ok', 'Paid · we\'re confirming your homes'],
+  var TRIP = { booked: ['ok', 'Booked · we\'re confirming your homes'], awaiting_payment: ['warn', 'Waiting for payment'], expired: ['bad', 'Not paid in time'], paid: ['ok', 'Paid · we\'re confirming your homes'],
     confirmed: ['ok', 'Confirmed'], completed: ['ok', 'Trip done'], no_show: ['bad', 'Missed trip'], cancelled: ['bad', 'Cancelled'] };
   function drawTrip(box, t, phone) {
     var st = t.status === 'confirmed' && t.agent ? ['ok', 'Your agent is ready'] : TRIP[t.status] || ['', t.status];
-    var n = t.status === 'completed' ? 4 : t.status === 'confirmed' ? (t.agent ? 3 : 2) : t.status === 'paid' ? 1 : 0;
+    var after = !!t.pay_after;
+    var n = after ? (t.status === 'completed' ? 3 : t.status === 'confirmed' ? (t.agent ? 2 : 1) : 0)
+      : t.status === 'completed' ? 4 : t.status === 'confirmed' ? (t.agent ? 3 : 2) : t.status === 'paid' ? 1 : 0;
+    if (after && t.status === 'completed') st = ['ok', 'Trip done · paid'];
     var h = '<div class="t-card"><div class="row-between" style="flex-wrap:wrap;gap:8px"><span><span class="kicker">' + T('Viewing trip') + '</span><br><strong style="font-size:18px">' + V.esc(t.ref) + '</strong></span><span class="t-badge ' + st[0] + '">' + V.esc(T(st[1])) + '</span></div>';
-    if (['cancelled', 'expired', 'no_show'].indexOf(t.status) < 0) h += progress(['Booked', 'Paid', 'Confirmed', 'Agent ready', 'Done'], n);
+    if (['cancelled', 'expired', 'no_show'].indexOf(t.status) < 0) h += progress(after ? ['Booked', 'Confirmed', 'Agent ready', 'Done'] : ['Booked', 'Paid', 'Confirmed', 'Agent ready', 'Done'], n);
     h += '<div class="t-kv"><span>' + T('When') + '</span><strong>' + V.esc(long(t.date)) + ', ' + V.esc(t.slot) + '</strong>' +
       '<span>' + T('Pickup') + '</span><span>' + V.esc(t.pickup_area) + (t.pickup_note ? ' · ' + V.esc(t.pickup_note) : '') + '</span>' +
-      '<span>' + T('Paid') + '</span><span>' + (t.mpesa_code ? kes(t.total) + ' · M-Pesa ' + V.esc(t.mpesa_code) : kes(t.total) + ' (' + T('not paid yet') + ')') + '</span></div>' +
+      '<span>' + T(after && !t.mpesa_code ? 'To pay' : 'Paid') + '</span><span>' + (t.mpesa_code ? kes(t.total) + ' · M-Pesa ' + V.esc(t.mpesa_code) : kes(t.total) + ' (' + T(after ? 'after the trip' : 'not paid yet') + ')') + '</span></div>' +
       '<strong style="font-size:15px">' + T('Homes, in visiting order') + '</strong><ol class="t-homes">' + (t.homes || []).map(function (x) { return '<li><a href="home.html?id=' + encodeURIComponent(x.id) + '">' + V.esc(x.title || x.id) + '</a>' + (x.area ? ' · ' + V.esc(x.area) : '') + '</li>'; }).join('') + '</ol></div>';
     if (t.status === 'awaiting_payment') {
       try { localStorage.setItem('vs-trip', JSON.stringify({ ref: t.ref, phone: phone, total: t.total, expires_at: t.expires_at, date: t.date, slot: t.slot, pickup: t.pickup_area })); } catch (e) {}
       h += '<div class="t-card"><p style="margin:0">' + T('Your slot is held until you pay. Pay by M-Pesa and enter the confirmation code.') + '</p><div><a class="btn btn-primary" href="book.html?pay=1">' + T('Finish paying') + '</a></div></div>';
+    }
+    var day = t.today || today();
+    if (after && t.status === 'confirmed' && !t.mpesa_code && t.date <= day) {
+      h += '<form class="t-card pay-after-form"><strong style="font-size:17px">' + T('Pay after your viewing') + '</strong>' +
+        (t.till ? '<ol class="t-steps"><li><span>' + T('Open <strong>M-Pesa</strong> and go to <b>Lipa na M-Pesa → Buy Goods and Services</b>.') + '</span></li><li><span>' + T('Till number:') + ' <strong>' + V.esc(t.till) + '</strong> ' + (t.pay_name ? '<span class="note">(' + V.esc(t.pay_name) + ')</span>' : '') + '</span></li><li><span>' + T('Amount:') + ' <strong>' + kes(t.total) + '</strong></span></li></ol>'
+          : '<span>' + T('Your agent will show you how to pay {x} by M-Pesa.', { x: kes(t.total) }) + '</span>') +
+        '<label class="field">' + T('M-Pesa confirmation code') + '<input name="mpesa" autocomplete="off" autocapitalize="characters" maxlength="14" placeholder="e.g. SJK3ABCD12"></label><p class="t-msg"></p><div><button class="btn btn-primary" type="submit">' + T('I\'ve paid') + '</button></div></form>';
     }
     if (t.code) h += '<div class="t-code"><span>' + T('Your trip code') + '</span><b>' + V.esc(t.code) + '</b><span>' + T('Give this code to your agent at the <strong>end</strong> of your trip, not before.') + '</span></div>';
     if (t.agent) {
@@ -61,13 +71,26 @@ document.addEventListener('DOMContentLoaded', function () {
         '<div class="stack-sm" style="gap:4px"><strong style="font-size:18px">' + V.esc(a.name) + '</strong><span>' + V.esc(a.car || '') + '</span>' + (a.plate ? '<span><span class="t-plate">' + V.esc(a.plate) + '</span></span>' : '') + '</div></div>' +
         (t.status === 'confirmed' ? '<div class="t-actions"><a class="btn btn-dark" href="tel:+' + intl(a.phone) + '">' + T('Call {name}', { name: V.esc(a.name.split(' ')[0]) }) + '</a><a class="btn btn-outline" target="_blank" rel="noopener" href="https://wa.me/' + intl(a.phone) + '">WhatsApp</a></div>' : '') +
         '<span class="note">' + T('Check the plate before you get in. Your agent never asks for cash: everything is paid to Viustay.') + '</span></div>';
-    } else if (t.status === 'paid' || t.status === 'confirmed') {
+    } else if (t.status === 'paid' || t.status === 'confirmed' || t.status === 'booked') {
       h += '<div class="t-card"><strong style="font-size:15px">' + T('Your agent') + '</strong><span>' + T('We\'ll show your agent\'s name, photo and car plate here the day before your trip.') + '</span></div>';
     }
     if (t.status === 'completed' && !t.rating) h += rateForm('How was your agent?');
     else if (t.rating) h += '<div class="t-card"><span>' + T('Thanks for your rating') + ' ' + '★★★★★'.slice(0, t.rating) + '</span></div>';
     h += '<div class="t-actions"><a class="btn btn-outline" target="_blank" rel="noopener" href="' + V.wa('Hi Viustay, about my viewing trip ' + t.ref + ': ') + '">' + T('Change or cancel on WhatsApp') + '</a></div>';
     box.innerHTML = h; rating(box, 'trip', t, phone);
+    var pf = box.querySelector('.pay-after-form');
+    if (pf) pf.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var code = pf.mpesa.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase(), msg = pf.querySelector('.t-msg'), btn = pf.querySelector('button');
+      if (!/^[A-Z0-9]{8,12}$/.test(code)) { msg.className = 't-msg bad'; msg.textContent = T('That doesn\'t look like an M-Pesa code. It\'s 10 letters and numbers, like SJK3ABCD12.'); return; }
+      btn.disabled = true;
+      (V.demo ? Promise.resolve({ ok: true }) : rpc('submit_payment', { p_ref: t.ref, p_phone: phone, p_mpesa: code })).then(function () {
+        t.mpesa_code = code; t.status = 'completed'; draw(box, t, phone);
+      }).catch(function (e2) {
+        btn.disabled = false; msg.className = 't-msg bad';
+        msg.textContent = /used_mpesa/.test(e2.message || '') ? T('That M-Pesa code was already used. Please check it, or WhatsApp us.') : T('Could not send. Please try again.');
+      });
+    });
   }
 
   // ---------- short stay ----------
@@ -102,7 +125,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (isStay(ref)) return { ref: ref, kind: 'stay', status: 'confirmed', listing_id: 'VS-102', title: '1 bedroom, Off Waiyaki Way', area: 'Westlands', guests: 2, nights: 3,
       check_in: today(), check_out: today(), check_in_time: '2:00 PM', check_out_time: '11:00 AM', total: 25000, mpesa_code: 'QWE123RTY9', checkin_info: 'Sarit View Apartments, Block B, 6th floor.\nCaretaker: John, 0712 000 000.' };
     return { ref: ref, status: 'confirmed', date: today(), slot: '9:00 AM', pickup_area: 'South B', pickup_note: 'Gate B', homes: [{ id: 'VS-001', title: '1 bedroom, Argwings Kodhek Rd', area: 'Kilimani' }],
-      total: 2550, mpesa_code: 'SJK3ABCD12', code: '4821', agent: { name: 'Hassan Ali', phone: '0712345678', car: 'Toyota Axio, silver', plate: 'KDA 123A' } };
+      total: 2550, pay_after: true, till: '123456', pay_name: 'Viustay', agent: { name: 'Hassan Ali', phone: '0712345678', car: 'Toyota Axio, silver', plate: 'KDA 123A' } };
   }
   function load(ref, phone) {
     var box = document.createElement('div'); box.className = 'stack-sm'; box.style.gap = '14px';

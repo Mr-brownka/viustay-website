@@ -55,9 +55,9 @@
 
   // ---------- trips ----------
   function needsAction(t) {
-    return t.status === 'paid' || (t.status === 'confirmed' && (!t.agent_id || t.agent_response !== 'accepted')) || (t.status === 'confirmed' && t.issue);
+    return t.status === 'paid' || t.status === 'booked' || (t.status === 'confirmed' && (!t.agent_id || t.agent_response !== 'accepted')) || (t.status === 'confirmed' && t.issue);
   }
-  var STATUS = { awaiting_payment: ['warn', 'Waiting for payment'], paid: ['warn', 'Paid: check M-Pesa'], confirmed: ['ok', 'Confirmed'], completed: ['ok', 'Completed'], no_show: ['bad', 'No-show'], cancelled: ['bad', 'Cancelled'], expired: ['bad', 'Expired'] };
+  var STATUS = { booked: ['warn', 'Booked: check homes'], awaiting_payment: ['warn', 'Waiting for payment'], paid: ['warn', 'Paid: check M-Pesa'], confirmed: ['ok', 'Confirmed'], completed: ['ok', 'Completed'], no_show: ['bad', 'No-show'], cancelled: ['bad', 'Cancelled'], expired: ['bad', 'Expired'] };
 
   function tripCard(t) {
     var a = agent(t.agent_id), st = STATUS[t.status] || ['', t.status];
@@ -66,10 +66,10 @@
     var h = '<article class="t-card" data-trip="' + t.id + '"' + (needsAction(t) ? ' style="box-shadow:inset 4px 0 0 #F2A93B"' : '') + '>' +
       '<div class="row-between" style="flex-wrap:wrap;gap:8px"><strong style="font-size:18px">' + V.esc(t.client_name) + ' · ' + V.esc(t.client_phone) + '</strong><span class="t-badge ' + st[0] + '">' + st[1] + '</span></div>' +
       '<div class="t-kv"><span>Trip</span><strong>' + dayFmt(t.trip_date) + ', ' + V.esc(t.slot) + ' · ' + V.esc(t.booking_ref) + '</strong>' +
-      '<span>Pickup</span><span>' + V.esc(t.pickup_area) + (t.pickup_note ? ' · ' + V.esc(t.pickup_note) : '') + '</span>' +
-      '<span>Money</span><span>' + kes(t.total) + ' = ' + kes(t.fare) + ' agent + ' + kes(t.viewing_fee) + ' fee' + (t.mpesa_code ? ' · M-Pesa <strong>' + V.esc(t.mpesa_code) + '</strong> ' + when(t.paid_at) : '') + '</span>' +
+      '<span>Pickup</span><span>' + V.esc(t.pickup_area) + (t.pickup_note ? ' · ' + V.esc(t.pickup_note) : '') + (t.pickup_lat ? ' · <a target="_blank" rel="noopener" href="https://www.google.com/maps?q=' + t.pickup_lat + ',' + t.pickup_lng + '">exact pin</a>' : '') + '</span>' +
+      '<span>Money</span><span>' + kes(t.total) + ' = ' + kes(t.fare) + ' agent + ' + kes(t.viewing_fee) + ' fee' + (t.mpesa_code ? ' · M-Pesa <strong>' + V.esc(t.mpesa_code) + '</strong> ' + when(t.paid_at) : t.pay_after ? ' · <em>client pays after the trip</em>' : '') + '</span>' +
       '<span>Route</span><span>' + t.distance_km + ' km · ' + V.Trip.mins(t.drive_min) + ' driving + ' + V.Trip.mins(t.wait_min) + ' viewing</span>' +
-      '<span>Code</span><span>' + V.esc(t.trip_code) + '</span>' +
+      (t.pay_after ? '' : '<span>Code</span><span>' + V.esc(t.trip_code) + '</span>') +
       (t.rating ? '<span>Rating</span><span>' + '★★★★★'.slice(0, t.rating) + (t.rating_note ? ' · ' + V.esc(t.rating_note) : '') + '</span>' : '') +
       '</div><ol class="t-homes">' + (t.homes || []).map(function (x) { return '<li>' + V.esc(x.title || x.id) + ' (' + V.esc(x.id) + (x.area ? ', ' + V.esc(x.area) : '') + ')</li>'; }).join('') + '</ol>';
 
@@ -78,6 +78,10 @@
       act += '<p class="t-warn">Find <strong>' + V.esc(t.mpesa_code) + '</strong> for <strong>' + kes(t.total) + '</strong> in your M-Pesa statement, call the buildings to check the homes are still free, then confirm.</p>' +
         '<div class="t-actions"><button class="btn btn-primary" data-t="confirm">Payment checked: confirm trip</button><button class="btn btn-outline" data-t="cancel">Payment not found: cancel</button></div>';
     }
+    if (t.status === 'booked') {
+      act += '<p class="t-warn">New booking, nothing paid yet (the client pays ' + kes(t.total) + ' after the trip). Call the buildings to check the homes are still free, then confirm.</p>' +
+        '<div class="t-actions"><button class="btn btn-primary" data-t="confirm">Homes checked: confirm trip</button></div>';
+    }
     if (t.status === 'confirmed') {
       var opts = data.agents.filter(function (x) { return x.active || x.id === t.agent_id; }).map(function (x) { return '<option value="' + x.id + '"' + (x.id === t.agent_id ? ' selected' : '') + '>' + V.esc(x.name) + '</option>'; }).join('');
       var resp = !t.agent_id ? '<span class="t-badge warn">No agent yet</span>' : t.agent_response === 'accepted' ? '<span class="t-badge ok">' + V.esc(a ? a.name : '') + ' accepted</span>' :
@@ -85,17 +89,18 @@
       act += '<div class="t-inline"><select data-agent aria-label="Agent"><option value="">Choose agent</option>' + opts + '</select><button class="btn btn-outline" data-t="assign" style="font-size:14px;padding:8px 12px;min-height:38px">' + (t.agent_id ? 'Change agent' : 'Assign') + '</button>' + resp + '</div>';
       if (t.issue === 'no_code') act += '<p class="t-warn">' + V.esc(a ? a.name : 'Agent') + ' says the client can\'t find the code. Call ' + V.esc(t.client_name) + ' to confirm the trip happened.</p><div class="t-actions"><button class="btn btn-primary" data-t="complete">Client confirmed: complete trip</button><button class="btn btn-outline" data-t="clear">Clear report</button></div>';
       if (t.issue === 'no_show') act += '<p class="t-warn">' + V.esc(a ? a.name : 'Agent') + ' reports the client didn\'t come (' + when(t.issue_at) + ')' + (t.issue_lat ? ' · <a target="_blank" rel="noopener" href="https://www.google.com/maps?q=' + t.issue_lat + ',' + t.issue_lng + '">where the agent was</a>' : '') + '.</p><div class="t-actions"><button class="btn btn-primary" data-t="noshow">Confirm no-show (' + kes(S.callout_fee) + ' call-out to agent)</button><button class="btn btn-outline" data-t="clear">Not a no-show</button></div>';
+      if (t.issue === 'unpaid') act += '<p class="t-warn">' + V.esc(a ? a.name : 'Agent') + ' says ' + V.esc(t.client_name) + ' hasn\'t paid ' + kes(t.total) + ' (' + when(t.issue_at) + '). Call them. When the money is in, enter the M-Pesa code.</p><div class="t-actions"><button class="btn btn-primary" data-t="paidcode">Client paid: enter M-Pesa code</button><button class="btn btn-outline" data-t="clear">Clear report</button></div>';
       if (t.issue === 'other') act += '<p class="t-warn">Agent reported a problem: ' + V.esc(t.issue_note || '') + '</p>';
       if (a && t.agent_response === 'accepted') {
         var msg = 'Hi ' + t.client_name.split(' ')[0] + ', your Viustay viewing trip ' + t.booking_ref + ' is confirmed for ' + dayFmt(t.trip_date) + ' at ' + t.slot + '. Pickup: ' + t.pickup_area + (t.pickup_note ? ' (' + t.pickup_note + ')' : '') +
-          '. Your agent: ' + a.name + (a.car ? ', ' + a.car : '') + (a.plate ? ', ' + a.plate : '') + '. Your trip code is ' + t.trip_code + ': give it to the agent at the END of the trip. See your trip: ' + siteUrl() + 'trip.html?ref=' + t.booking_ref;
+          '. Your agent: ' + a.name + (a.car ? ', ' + a.car : '') + (a.plate ? ', ' + a.plate : '') + (t.pay_after ? '. Nothing to pay before: at the end of the trip you pay ' + kes(t.total) + ' by M-Pesa' + (S.till ? ' to Till ' + S.till + ' (' + (S.pay_name || 'Viustay') + ')' : '') + '. See your trip: ' : '. Your trip code is ' + t.trip_code + ': give it to the agent at the END of the trip. See your trip: ') + siteUrl() + 'trip.html?ref=' + t.booking_ref;
         act += '<div class="t-actions"><a class="btn btn-dark" target="_blank" rel="noopener" href="' + wa(t.client_phone, msg) + '">Send confirmation to ' + V.esc(t.client_name.split(' ')[0]) + '</a></div>';
       }
     }
     if (t.status === 'completed' && t.agent_id && !data.vouchers.some(function (v) { return v.trip_id === t.id && v.kind === 'placement'; })) {
       act += '<div class="t-actions"><button class="btn btn-outline" data-t="placement">Client signed: add placement bonus</button></div>';
     }
-    if (['awaiting_payment', 'paid', 'confirmed'].indexOf(t.status) >= 0) {
+    if (['booked', 'awaiting_payment', 'paid', 'confirmed'].indexOf(t.status) >= 0) {
       act += '<div class="t-actions"><button class="btn btn-outline" data-t="cancel" style="font-size:14px;padding:6px 12px;min-height:34px">Cancel trip</button><a class="btn btn-outline" style="font-size:14px;padding:6px 12px;min-height:34px" target="_blank" rel="noopener" href="' + wa(t.client_phone, 'Hi ' + t.client_name.split(' ')[0] + ', this is Viustay about your viewing trip ' + t.booking_ref + '.') + '">WhatsApp client</a></div>';
     }
     return h + act + '</article>';
@@ -105,7 +110,7 @@
     var active = data.agents.filter(function (a) { return a.active; }).length;
     var lists = {
       action: data.trips.filter(needsAction),
-      upcoming: data.trips.filter(function (t) { return ['paid', 'confirmed'].indexOf(t.status) >= 0 && t.trip_date >= today(); }).reverse(),
+      upcoming: data.trips.filter(function (t) { return ['booked', 'paid', 'confirmed'].indexOf(t.status) >= 0 && t.trip_date >= today(); }).reverse(),
       unpaid: data.trips.filter(function (t) { return t.status === 'awaiting_payment'; }),
       all: data.trips
     };
@@ -138,6 +143,12 @@
     }
     if (act === 'complete') p = setTrip(t, { status: 'completed', issue: null }, 'done').then(function () { return addVoucher({ trip_id: t.id, agent_id: t.agent_id, kind: 'trip', amount: t.fare, note: 'Code confirmed by phone' }); });
     if (act === 'noshow') p = setTrip(t, { status: 'no_show' }, 'cancelled').then(function () { return addVoucher({ trip_id: t.id, agent_id: t.agent_id, kind: 'callout', amount: S.callout_fee }); });
+    if (act === 'paidcode') {
+      var code = (prompt('M-Pesa code for ' + kes(t.total) + ' from ' + t.client_name + ':', '') || '').replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+      if (!code) return;
+      if (!/^[A-Z0-9]{8,12}$/.test(code)) { alert('That doesn\'t look like an M-Pesa code.'); return; }
+      p = setTrip(t, { mpesa_code: code, paid_at: new Date().toISOString(), status: 'completed', issue: null }, 'done').then(function () { return t.agent_id ? addVoucher({ trip_id: t.id, agent_id: t.agent_id, kind: 'trip', amount: t.fare, note: 'Client paid: M-Pesa ' + code }) : null; });
+    }
     if (act === 'clear') p = setTrip(t, { issue: null, issue_note: null });
     if (act === 'placement') {
       var fee = V.num(prompt('Placement fee the client paid Viustay (KES)?', ''));
@@ -286,7 +297,7 @@
   var FIELDS = [
     ['base', 'Base fare (KES)'], ['per_km', 'Per km (KES)'], ['per_min', 'Per minute driving (KES)'], ['wait_per_hour', 'Waiting per hour (KES)'],
     ['view_min', 'Minutes per viewing'], ['min_fare', 'Minimum fare (KES)'], ['round_to', 'Round fare up to (KES)'], ['viewing_fee', 'Viewing fee (KES)'],
-    ['road_factor', 'Road factor (× straight line)'], ['speed_kmh', 'Average speed (km/h)'], ['trips_per_agent_day', 'Trips per agent per day'], ['days_ahead', 'Days open for booking'],
+    ['road_factor', 'Road factor (× straight line)'], ['speed_kmh', 'Average speed (km/h)'], ['trips_per_agent_day', 'Trips per agent per day'], ['calendar_days', 'How many days ahead clients can book'],
     ['pay_window_min', 'Minutes to pay before slot is freed'], ['callout_fee', 'No-show call-out to agent (KES)'], ['placement_bonus_pct', 'Agent placement bonus (% of fee)'],
     ['airport_pickup_fee', 'Short stays: airport pickup (KES, 0 = off)']
   ];
