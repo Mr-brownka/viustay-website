@@ -13,6 +13,10 @@ window.VIUSTAY_CONFIG = {
   // Leave empty to use the sample listings in data/sample-listings.csv.
   LISTINGS_CSV_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT2ppDgVK30OMt7_XhonTkgVuYG_haSSHneQreyqAHvlTQa6rxa6QS8BF-aIe_JKbahcmYQlPFH_1Rk/pub?gid=796984091&single=true&output=csv',
 
+  // Optional: a separate tab for short stays (publish that tab as CSV and paste the link).
+  // Every row in it is treated as a short stay. Leave empty to keep short stays in the main tab.
+  SHORT_STAYS_CSV_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRZpKU2QyAmH0Ol-zEePPBtk3EJQ8d1gIPXiV9SvCm-7SHVmdMj_NuDjcsERvfovmmboE0oO5ku-3Ui/pub?output=tsv',
+
   // WhatsApp Business number, international format, digits only.
   WHATSAPP_NUMBER: '254748600342',
 

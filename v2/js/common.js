@@ -162,6 +162,10 @@
 
   // ---------- CSV parsing (handles quotes and commas inside quotes) ----------
   V.parseCSV = function (text) {
+    text = text || '';
+    // Tab-separated (a sheet published as .tsv): split on tabs instead of commas
+    var first = text.split(/\r?\n/)[0] || '';
+    var SEP = first.indexOf('\t') >= 0 && first.indexOf(',') < 0 ? '\t' : ',';
     var rows = [], row = [], field = '', q = false;
     for (var i = 0; i < text.length; i++) {
       var c = text[i];
@@ -170,7 +174,7 @@
         else if (c === '"') { q = false; }
         else { field += c; }
       } else if (c === '"') { q = true; }
-      else if (c === ',') { row.push(field); field = ''; }
+      else if (c === SEP) { row.push(field); field = ''; }
       else if (c === '\n' || c === '\r') {
         if (c === '\r' && text[i + 1] === '\n') i++;
         row.push(field); rows.push(row); row = []; field = '';
@@ -191,20 +195,28 @@
   // Sheet columns: id, status, type, bedrooms, rent, area, road, building_code,
   // bathrooms, floor, furnished, amenities, available_from, deposit, notes, photos
   var listingsPromise = null;
-  V.loadListings = function () {
-    if (listingsPromise) return listingsPromise;
-    var url = cfg.LISTINGS_CSV_URL || 'data/sample-listings.csv';
-    var KEY = 'vs-listings-v1', cached = null;
+  // Fetch a published sheet tab. The copy saved on this phone shows instantly (if under 12 hours old); the sheet refreshes it quietly.
+  function sheetText(url, KEY) {
+    var cached = null;
     try { cached = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) {}
     var fresh = fetch(url, { cache: 'no-store' })
       .then(function (r) { if (!r.ok) throw new Error('Could not load listings'); return r.text(); })
       .then(function (t) { try { localStorage.setItem(KEY, JSON.stringify({ url: url, t: Date.now(), csv: t })); } catch (e) {} return t; });
-    // Use the copy saved on this phone straight away (if it's from the last 12 hours); the sheet refreshes it quietly.
     var useCache = cached && cached.url === url && (Date.now() - cached.t) < 12 * 3600 * 1000;
-    if (useCache) fresh.catch(function () {});
-    listingsPromise = (useCache ? Promise.resolve(cached.csv) : fresh)
-      .then(function (t) {
-        return V.parseCSV(t).filter(function (l) {
+    if (useCache) { fresh.catch(function () {}); return Promise.resolve(cached.csv); }
+    return fresh;
+  }
+  V.loadListings = function () {
+    if (listingsPromise) return listingsPromise;
+    var url = cfg.LISTINGS_CSV_URL || 'data/sample-listings.csv';
+    // Short stays can live in their own tab of the sheet (SHORT_STAYS_CSV_URL); every row there is a short stay.
+    var shortUrl = cfg.SHORT_STAYS_CSV_URL || '';
+    listingsPromise = Promise.all([
+      sheetText(url, 'vs-listings-v1'),
+      shortUrl ? sheetText(shortUrl, 'vs-shortstays-v1').catch(function () { return ''; }) : Promise.resolve('')
+    ]).then(function (res) {
+      var rows = V.parseCSV(res[0]).concat(V.parseCSV(res[1] || '').map(function (r) { r.stay = 'short'; return r; }));
+      return rows.filter(function (l) {
           return l.id && (l.status || 'available').toLowerCase() === 'available';
         }).map(function (l) {
           l.rent = V.num(l.rent) || 0;
@@ -225,7 +237,7 @@
           l.sample = !cfg.LISTINGS_CSV_URL;
           return l;
         });
-      });
+    });
     return listingsPromise;
   };
   V.getListing = function (id) {
