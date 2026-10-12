@@ -261,14 +261,14 @@ html[data-look="night"] .sk { background: linear-gradient(90deg, rgba(255, 255, 
 @media (prefers-reduced-motion: reduce) { .sk { animation: none; } }
 
 /* ---------- Launch animation ---------- */
-.vs-launch { position: fixed; inset: 0; z-index: 1000; background: #0E5E54; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; transition: opacity .3s ease; cursor: pointer; }
+.vs-launch { position: fixed; inset: 0; z-index: 1000; background: #0E5E54; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 21px; transition: opacity .3s ease; cursor: pointer; }
 .vs-launch.out { opacity: 0; pointer-events: none; }
-.vs-launch svg { width: 84px; height: 97px; overflow: visible; }
+.vs-launch svg { width: 126px; height: 146px; overflow: visible; }
 .vs-launch .pin { transform-origin: 20px 44px; animation: vl-drop .5s cubic-bezier(.2, 1.4, .4, 1) both; }
 .vs-launch .roof, .vs-launch .vee { stroke-dasharray: 30; stroke-dashoffset: 30; }
 .vs-launch .roof { animation: vl-draw .35s .35s ease-out forwards; }
 .vs-launch .vee { animation: vl-draw .35s .55s ease-out forwards; }
-.vs-launch .word { font: 600 30px var(--heading, sans-serif); color: #F4F1EB; letter-spacing: -.01em; opacity: 0; animation: vl-fade .3s .7s ease-out forwards; }
+.vs-launch .word { font: 600 45px var(--heading, sans-serif); color: #F4F1EB; letter-spacing: -.01em; opacity: 0; animation: vl-fade .3s .7s ease-out forwards; }
 @keyframes vl-drop { from { transform: translateY(-40px) scale(.7); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes vl-draw { to { stroke-dashoffset: 0; } }
 @keyframes vl-fade { to { opacity: 1; } }

@@ -443,7 +443,8 @@ window.VS_DICT = {
   "Not sure yet": "Bado sina uhakika",
   "Flexible": "Wakati wowote",
   "Nairobi, found for you.": "Nairobi, tumekutafutia.",
-  "Tap to start": "Gusa kuanza"
+  "Tap to start": "Gusa kuanza",
+  "Find your home in Nairobi": "Tafuta nyumba yako Nairobi"
  },
  "so": {
   "Find a home": "Raadi guri",
@@ -888,6 +889,7 @@ window.VS_DICT = {
   "Not sure yet": "Weli ma hubo",
   "Flexible": "Wakhti kasta",
   "Nairobi, found for you.": "Nairobi, annaga ayaa kuu raadinayna.",
-  "Tap to start": "Taabo si aad u bilowdo"
+  "Tap to start": "Taabo si aad u bilowdo",
+  "Find your home in Nairobi": "Ka raadi gurigaaga Nairobi"
  }
 };

@@ -31,7 +31,7 @@
         c.textContent.split(/(\s+)/).forEach(function (w) {
           if (!w) return;
           if (/^\s+$/.test(w)) { frag.appendChild(document.createTextNode(w)); return; }
-          var sp = document.createElement('span'); sp.className = 'iw'; sp.style.animationDelay = (0.15 + n++ * 0.09) + 's'; sp.textContent = w; frag.appendChild(sp);
+          var sp = document.createElement('span'); sp.className = 'iw'; sp.style.animationDelay = (0.3 + n++ * 0.16) + 's'; sp.textContent = w; frag.appendChild(sp);
         });
         node.replaceChild(frag, c);
       } else wrap(c);
@@ -51,10 +51,10 @@
     if (gone) return; gone = true; clearTimeout(timer);
     o.classList.add('out');
     root.classList.remove('intro-wait'); root.classList.add('intro-pop');
-    setTimeout(function () { if (o.parentNode) o.parentNode.removeChild(o); root.classList.remove('intro-pop'); }, 900);
+    setTimeout(function () { if (o.parentNode) o.parentNode.removeChild(o); root.classList.remove('intro-pop'); }, 1200);
   }
   o.addEventListener('click', finish);
-  function startClock() { if (!timer && !gone) timer = setTimeout(finish, reduce ? 1200 : 2000); }
+  function startClock() { if (!timer && !gone) timer = setTimeout(finish, reduce ? 3500 : 5000); }
   function ready() { return !window.VS_LAUNCHING && !(onboarding && document.querySelector('.onb:not(.out)')); }
   function check() { if (ready()) startClock(); }
   window.addEventListener('vs-launch-done', function () { setTimeout(check, 50); });
