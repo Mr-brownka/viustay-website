@@ -8,85 +8,67 @@
 <meta property="og:site_name" content="Viustay">
 <meta property="og:title" content="Viustay | Find your place in Nairobi">
 <meta property="og:description" content="Tell us what you need and we'll shortlist verified homes in Nairobi, then take you to view them. Find your place. We handle the rest.">
-<meta property="og:url" content="https://mr-brownka.github.io/viustay-website/">
+<meta property="og:url" content="https://mr-brownka.github.io/viustay-website/v2/">
 <meta property="og:image" content="https://mr-brownka.github.io/viustay-website/assets/share.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#0E5E54">
+<meta name="theme-color" content="#FAFBFA">
 <meta name="description" content="Tell us what you need and we'll shortlist verified homes in Nairobi, then take you to view them. Find your place. We handle the rest.">
 <link rel="icon" href="assets/favicon.png">
+<link rel="preconnect" href="https://docs.google.com" crossorigin>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Viustay">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&family=Source+Sans+3:wght@400;600&display=swap">
 <link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/glass.css">
+<link rel="stylesheet" href="css/chat.css">
+<script src="js/look.js"></script>
 </head>
-<body data-header="main">
+<body data-header="main" data-page="home2">
 <header id="site-header"></header>
-<main class="container hero">
-  <section class="stack">
-    <h1>Find your place.<br>We handle the rest.</h1>
-    <div class="chips" role="group" aria-label="Type of stay">
-      <button type="button" class="chip" data-stay="long" aria-pressed="true">Long-term rent</button>
-      <button type="button" class="chip" data-stay="short" aria-pressed="false">Short stay</button>
+<main class="c-wrap">
+  <section class="c-hero" aria-labelledby="c-h">
+    <div class="c-intro">
+      <span class="c-eyebrow"><i></i>Verified homes in Nairobi</span>
+      <h1 id="c-h">Let's find your family's <em>next home</em>.</h1>
+      <p>Seven quick questions, about a minute. We match you with homes we've checked in person.</p>
+      <div class="c-progress" aria-live="polite"><div class="track"><i id="c-prog"></i></div><span id="c-progtxt">Question 1 of 7</span></div>
+      <div class="c-chat c-glass" id="c-chat" aria-live="polite"></div>
     </div>
-    <form id="search-form" class="stack-sm" style="max-width:460px" novalidate>
-      <label class="field">Where do you want to live?
-        <input type="text" name="area" placeholder="Area or landmark, e.g. Kilimani, near Yaya Centre" autocomplete="off"></label>
-      <div class="grid-2">
-        <label class="field">Bedrooms
-          <select name="bedrooms">
-            <option value="">Any</option>
-            <option value="0">Bedsitter / studio</option>
-            <option value="1" selected>1 bedroom</option>
-            <option value="2">2 bedrooms</option>
-            <option value="3">3+ bedrooms</option>
-          </select></label>
-        <label class="field">Move-in
-          <select name="movein">
-            <option>As soon as possible</option>
-            <option>Within 2 weeks</option>
-            <option>Next month</option>
-          </select></label>
-      </div>
-      <fieldset class="field" style="border:0;padding:0;margin:0">
-        <legend style="padding:0;margin-bottom:6px">Monthly budget (KES)</legend>
-        <div class="grid-2">
-          <input type="text" inputmode="numeric" name="min" aria-label="Minimum budget" placeholder="Min, e.g. 25,000">
-          <input type="text" inputmode="numeric" name="max" aria-label="Maximum budget" placeholder="Max, e.g. 45,000">
-        </div>
-      </fieldset>
-      <div class="actions" style="margin-top:6px">
-        <button type="submit" class="btn btn-primary">Continue</button>
-        <a href="homes.html">Skip, show me all homes</a>
-      </div>
-    </form>
-    <p class="note" style="margin:0">Step 1 of 4 · No sign-up needed</p>
+    <aside class="c-panel c-glass" aria-label="Homes that match">
+      <h3>Homes that match</h3>
+      <div class="c-count"><b id="c-cnt">–</b><span id="c-cntlbl">verified homes</span></div>
+      <ul class="c-facts" id="c-facts"></ul>
+      <div class="c-minis" id="c-minis"></div>
+    </aside>
   </section>
-  <section aria-hidden="true">
-    <div class="map-art">
-      <div class="road" style="left:0;right:0;top:140px;height:26px"></div>
-      <div class="road" style="left:0;right:0;top:330px;height:18px"></div>
-      <div class="road" style="top:0;bottom:0;left:30%;width:22px"></div>
-      <div class="road" style="top:0;bottom:0;left:68%;width:16px"></div>
-      <div class="park" style="left:30px;top:30px;width:120px;height:90px"></div>
-      <div class="park" style="left:74%;top:190px;width:22%;height:120px"></div>
-      <img class="pin" src="assets/viustay-icon-colour.svg" alt="" style="left:20%;top:170px;width:46px">
-      <img class="pin" src="assets/viustay-icon-colour.svg" alt="" style="left:50%;top:70px">
-      <img class="pin" src="assets/viustay-icon-colour.svg" alt="" style="left:80%;top:340px">
-      <div class="map-card"><span class="note">We visit every home before you do</span><strong>Verified photos. Real prices.</strong></div>
+
+  <section class="c-more" aria-labelledby="how-h">
+    <h2 id="how-h">How it works</h2>
+    <div class="c-steps">
+      <div class="c-step c-glass"><span class="n">STEP 1</span><h3>Tell us what you need</h3><p>Area, bedrooms, budget and the things you can't live without.</p></div>
+      <div class="c-step c-glass"><span class="n">STEP 2</span><h3>See verified homes</h3><p>Every home is visited by our team. Real photos, real prices.</p></div>
+      <div class="c-step c-glass"><span class="n">STEP 3</span><h3>One viewing trip</h3><p>Pick up to 3 homes and we take you to all of them in one trip.</p></div>
+    </div>
+    <div class="c-trust">
+      <span class="c-glass"><i>✓</i>Verified homes</span>
+      <span class="c-glass"><i>✓</i>One trip, up to 3 homes</span>
+      <span class="c-glass"><i>✓</i>Placement fee only when you move in</span>
+      <span class="c-glass"><i>✓</i>WhatsApp support, Mon–Sat</span>
     </div>
   </section>
 </main>
-<section class="trust-band" aria-label="Why Viustay"><div class="container trust">
-  <div><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg><p style="margin:0"><strong>Every home visited</strong><span>We check each one before you do.</span></p></div>
-  <div><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3.5"/><path d="M8 6l1.5-2h5L16 6"/></svg><p style="margin:0"><strong>Real photos, real prices</strong><span>No bait listings.</span></p></div>
-  <div><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg><p style="margin:0"><strong>One-trip viewings</strong><span>Up to 3 homes, one agent, one visit.</span></p></div>
-  <div><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/></svg><p style="margin:0"><strong>We handle the rest</strong><span>Landlord, paperwork and keys.</span></p></div>
-</div></section>
+<div class="c-pill c-glass" id="c-pill"><span><b id="c-pillcnt">–</b> homes match</span><button class="btn btn-primary" type="button" id="c-pillbtn">Show</button></div>
 <footer id="site-footer"></footer>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="js/config.js"></script>
 <script src="js/common.js"></script>
-<script src="js/flow.js"></script>
+<script src="js/install.js"></script>
+<script src="js/chat.js"></script>
 </body>
 </html>

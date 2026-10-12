@@ -6,8 +6,17 @@
 <title>Admin | Viustay</title>
 <meta name="robots" content="noindex">
 <link rel="icon" href="assets/favicon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Viustay">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&family=Source+Sans+3:wght@400;600&display=swap">
 <link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/glass.css">
+<link rel="stylesheet" href="css/trips.css">
+<script src="js/look.js"></script>
 </head>
 <body data-header="flow" data-steps="0" data-no-wa>
 <header id="site-header"></header>
@@ -32,6 +41,9 @@
 
 <div class="dash hidden" id="a-dash">
   <nav class="dash-nav" aria-label="Admin">
+    <button type="button" class="tab" data-tab="trips" aria-pressed="false">Trips</button>
+    <button type="button" class="tab" data-tab="agents" aria-pressed="false">Agents &amp; pay</button>
+    <button type="button" class="tab" data-tab="fares" aria-pressed="false">Fare settings</button>
     <button type="button" class="tab" data-tab="viewings" aria-pressed="true">Viewings</button>
     <button type="button" class="tab" data-tab="requests" aria-pressed="false">Home requests</button>
     <button type="button" class="tab" data-tab="properties" aria-pressed="false">Properties</button>
@@ -53,13 +65,17 @@
     <div class="stack-sm" id="a-list"></div>
   </main>
   <main class="dash-main hidden" id="s-main"></main>
+  <main class="dash-main hidden" id="t-main"></main>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="js/config.js"></script>
 <script src="js/common.js"></script>
+<script src="js/install.js"></script>
 <script src="js/survey-config.js"></script>
 <script src="js/survey.js"></script>
+<script src="js/trip-math.js"></script>
+<script src="js/trips-admin.js"></script>
 <script src="js/admin.js"></script>
 </body>
 </html>

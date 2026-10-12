@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent | Viustay</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="assets/favicon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Viustay">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&family=Source+Sans+3:wght@400;600&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/glass.css">
+<link rel="stylesheet" href="css/trips.css">
+<script src="js/look.js"></script>
+</head>
+<body data-header="flow" data-steps="0" data-no-wa data-no-looks data-home="agent.html">
+<header id="site-header"></header>
+
+<main class="auth-box hidden" id="g-auth">
+  <h1 style="font-size:32px" id="g-auth-title">Agent log in</h1>
+  <p class="lede" style="font-size:16px">For Viustay agents. Use the email Viustay registered for you.</p>
+  <form id="g-form" class="stack-sm" novalidate>
+    <label class="field">Email<input type="email" name="email" autocomplete="email"></label>
+    <label class="field">Password<input type="password" name="password" autocomplete="current-password"></label>
+    <p class="error hidden" id="g-error" role="alert"></p>
+    <p class="t-msg ok hidden" id="g-ok"></p>
+    <button type="submit" class="btn btn-dark" id="g-submit">Log in</button>
+  </form>
+  <p class="note"><a href="#" id="g-switch">First time? Create your password</a></p>
+</main>
+
+<main class="auth-box hidden" id="g-denied">
+  <h1 style="font-size:28px">This login isn't linked to an agent</h1>
+  <p>Ask Viustay to add your email to the agents list, then log in again.</p>
+  <button type="button" class="btn btn-outline" id="g-out2">Log out</button>
+</main>
+
+<main class="container hidden" id="g-dash" style="max-width:760px;padding-top:24px;padding-bottom:60px;display:flex;flex-direction:column;gap:18px">
+  <div class="row-between" style="flex-wrap:wrap;gap:10px">
+    <div class="stack-sm" style="gap:2px"><span class="kicker">Viustay agent</span><h1 style="font-size:30px" id="g-hello">Hello</h1></div>
+    <div class="t-actions"><button type="button" class="btn btn-outline" id="g-refresh">Refresh</button><button type="button" class="btn btn-outline" id="g-out">Log out</button></div>
+  </div>
+  <div class="t-sum" id="g-sum"></div>
+  <div class="t-tabs" role="group" aria-label="Sections">
+    <button type="button" class="chip" data-g="trips" aria-pressed="true">Trips</button>
+    <button type="button" class="chip" data-g="pay" aria-pressed="false">My pay</button>
+  </div>
+  <p class="error hidden" id="g-load-error" role="alert"></p>
+  <div id="g-list" class="stack-sm" style="gap:14px"></div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/common.js"></script>
+<script src="js/install.js"></script>
+<script src="js/trip-math.js"></script>
+<script src="js/agent.js"></script>
+</body>
+</html>

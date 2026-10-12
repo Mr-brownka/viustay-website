@@ -5,8 +5,23 @@
   window.V = V;
 
   V.cfg = cfg;
-  V.demo = !(cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY && window.supabase);
-  V.db = V.demo ? null : window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
+  // Speed: browsing pages don't load the database library at all. Pages that save
+  // (booking, requests, owners, dashboards) include it, and V.ensureDb() loads it on demand anywhere else.
+  var SB_URL = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js';
+  V.demo = !(cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY);
+  V.db = (!V.demo && window.supabase) ? window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY) : null;
+  var dbPromise = null;
+  V.ensureDb = function () {
+    if (V.db || V.demo) return Promise.resolve(V.db);
+    if (dbPromise) return dbPromise;
+    dbPromise = new Promise(function (resolve, reject) {
+      var sc = document.createElement('script'); sc.src = SB_URL; sc.async = true;
+      sc.onload = function () { V.db = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY); resolve(V.db); };
+      sc.onerror = function () { dbPromise = null; reject(new Error('Could not reach the database')); };
+      document.head.appendChild(sc);
+    });
+    return dbPromise;
+  };
 
   // ---------- tiny DOM helpers ----------
   V.$ = function (sel, root) { return (root || document).querySelector(sel); };
@@ -36,7 +51,7 @@
         slot.className = 'light-header';
         slot.innerHTML =
           '<div class="container" style="display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px;padding-top:14px;padding-bottom:14px">' +
-          '<a class="brand" href="' + home + '"><img src="assets/viustay-logo-colour.svg" alt="Viustay home"></a>' +
+          '<a class="brand" href="' + home + '"><img class="logo-pearl" src="assets/viustay-logo-colour.svg" alt="Viustay home"><img class="logo-night" src="assets/viustay-logo-white.svg" alt="Viustay home"></a>' +
           '<span style="flex:1 1 auto"></span><span class="muted" id="flow-summary"></span></div>' +
           (steps ? '<div class="container"><div class="progress" aria-label="Step ' + step + ' of ' + steps + '">' + bars + '</div></div>' : '');
       } else {
@@ -44,16 +59,24 @@
         slot.className = 'site-header';
         slot.innerHTML =
           '<div class="container">' +
-          '<a class="brand" href="' + (owners ? 'owners.html' : 'index.html') + '"><img src="assets/viustay-logo-white.svg" alt="Viustay home">' + (owners ? '<span class="tag">for owners</span>' : '') + '</a>' +
+          '<a class="brand" href="' + (owners ? 'owners.html' : 'index.html') + '"><img class="logo-pearl" src="assets/viustay-logo-colour.svg" alt="Viustay home"><img class="logo-night" src="assets/viustay-logo-white.svg" alt="Viustay home">' + (owners ? '<span class="tag">for owners</span>' : '') + '</a>' +
+          '<button type="button" class="menu-toggle" aria-expanded="false" aria-controls="menu-panel" aria-label="Open menu"><span></span><span></span><span></span></button>' +
+          '<div class="menu-panel" id="menu-panel">' +
           '<nav class="site-nav" aria-label="Main">' +
           (owners
             ? '<a href="index.html">Find a home</a><a href="owners.html#how">How it works</a><a href="owners.html#caretakers">Caretakers</a>'
-            : '<a href="homes.html">Rent</a><a href="homes.html?stay=short">Short stays</a><a href="how-it-works.html">How it works</a><a href="about.html">About</a><a href="owners.html">List your property</a>') +
+            : '<a href="homes.html">Rent</a><a href="homes.html?stay=short">Short stays</a><a href="how-it-works.html">How it works</a><a href="about.html">About</a><a href="trip.html">My trip</a><a href="owners.html">List your property</a>') +
           '</nav><div class="header-actions">' +
           (owners
             ? '<a class="btn btn-pill btn-light" href="dashboard.html">Manager log in</a>'
             : '<a class="btn btn-pill btn-primary" href="index.html">Help me choose</a>') +
-          '</div></div>';
+          '</div><div class="menu-looks" role="group" aria-label="Colour look"></div></div></div>';
+        var tog = slot.querySelector('.menu-toggle'), panel = slot.querySelector('.menu-panel');
+        tog.addEventListener('click', function () {
+          var open = panel.classList.toggle('open');
+          tog.setAttribute('aria-expanded', String(open));
+          tog.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+        });
       }
     }
     var foot = V.$('#site-footer');
@@ -61,12 +84,12 @@
       foot.className = 'site-footer';
       foot.innerHTML =
         '<div class="container footer-grid">' +
-        '<div class="footer-brand"><img src="assets/viustay-logo-colour.svg" alt="Viustay" style="height:28px;width:auto"><p>Find your place. We handle the rest.</p><p>Mon–Sat, 8:00 AM – 5:00 PM</p></div>' +
-        '<nav aria-label="Renters"><strong>Renters</strong><a href="index.html">Guided search</a><a href="homes.html">All homes</a><a href="areas.html">Area guides</a><a href="how-it-works.html">How it works</a></nav>' +
-        '<nav aria-label="Owners"><strong>Owners</strong><a href="owners.html">For owners</a><a href="list-property.html">List your property</a><a href="dashboard.html">Manager log in</a></nav>' +
+        '<div class="footer-brand brand" style="display:block"><img class="logo-pearl" src="assets/viustay-logo-colour.svg" alt="Viustay" style="height:28px;width:auto"><img class="logo-night" src="assets/viustay-logo-white.svg" alt="Viustay" style="height:28px;width:auto"><p>Find your place. We handle the rest.</p><p>Mon–Sat, 8:00 AM – 5:00 PM</p></div>' +
+        '<nav aria-label="Renters"><strong>Renters</strong><a href="index.html">Guided search</a><a href="homes.html">All homes</a><a href="areas.html">Area guides</a><a href="how-it-works.html">How it works</a><a href="trip.html">My trip</a></nav>' +
+        '<nav aria-label="Owners"><strong>Owners</strong><a href="owners.html">For owners</a><a href="list-property.html">List your property</a><a href="dashboard.html">Manager log in</a><a href="agent.html">Agent log in</a></nav>' +
         '<nav aria-label="Company"><strong>Company</strong><a href="about.html">About</a><a href="investors.html">Investors</a><a href="faq.html">FAQ</a><a href="contact.html">Contact</a></nav>' +
         '<nav aria-label="Legal"><strong>Legal</strong><a href="terms.html">Terms</a><a href="privacy.html">Privacy</a></nav>' +
-        '</div><div class="container footer-base"><span>&copy; ' + new Date().getFullYear() + ' Viustay · Nairobi, Kenya</span><span>Draft website</span></div>';
+        '</div><div class="container footer-base"><span>&copy; ' + new Date().getFullYear() + ' Viustay · Nairobi, Kenya</span><span>Draft website · Version 2</span></div>';
     }
     // Floating WhatsApp button on every page except the dashboard
     if (!body.hasAttribute('data-no-wa') && !V.$('.wa-float')) {
@@ -126,8 +149,15 @@
   V.loadListings = function () {
     if (listingsPromise) return listingsPromise;
     var url = cfg.LISTINGS_CSV_URL || 'data/sample-listings.csv';
-    listingsPromise = fetch(url, { cache: 'no-store' })
+    var KEY = 'vs-listings-v1', cached = null;
+    try { cached = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) {}
+    var fresh = fetch(url, { cache: 'no-store' })
       .then(function (r) { if (!r.ok) throw new Error('Could not load listings'); return r.text(); })
+      .then(function (t) { try { localStorage.setItem(KEY, JSON.stringify({ url: url, t: Date.now(), csv: t })); } catch (e) {} return t; });
+    // Use the copy saved on this phone straight away (if it's from the last 12 hours); the sheet refreshes it quietly.
+    var useCache = cached && cached.url === url && (Date.now() - cached.t) < 12 * 3600 * 1000;
+    if (useCache) fresh.catch(function () {});
+    listingsPromise = (useCache ? Promise.resolve(cached.csv) : fresh)
       .then(function (t) {
         return V.parseCSV(t).filter(function (l) {
           return l.id && (l.status || 'available').toLowerCase() === 'available';
@@ -164,8 +194,10 @@
   V.matches = function (l, s) {
     if (s.area) {
       var hay = ((l.area || '') + ' ' + (l.road || '')).toLowerCase();
-      var words = s.area.toLowerCase().split(/[\s,]+/).filter(function (w) { return w.length > 2 && ['near', 'the', 'road'].indexOf(w) < 0; });
-      if (words.length && !words.some(function (w) { return hay.indexOf(w) >= 0; })) return false;
+      // Every word of the area must appear as a whole word (so "South C" never matches "South B")
+      var words = s.area.toLowerCase().split(/[\s,]+/).filter(function (w) { return w && ['near', 'the', 'road'].indexOf(w) < 0; });
+      var tokens = hay.split(/[^a-z0-9]+/);
+      if (words.length && !words.every(function (w) { return tokens.indexOf(w) >= 0; })) return false;
     }
     if (s.bedrooms !== undefined && s.bedrooms !== null && s.bedrooms !== '') {
       var b = Number(s.bedrooms);
@@ -173,7 +205,10 @@
     }
     if (s.min && l.rent < s.min) return false;
     if (s.max && l.rent > s.max) return false;
-    if (s.must && s.must.length) {
+    // Schools / space for kids are checked by our team, not filtered by the sheet (yet)
+    var hard = (s.must || []).filter(function (m) { return V.SOFT_MUST.indexOf(m) < 0; });
+    if (hard.length) {
+      s = { must: hard };
       var am = l.amenityList.map(function (a) { return a.toLowerCase(); }).join(' | ');
       for (var i = 0; i < s.must.length; i++) {
         var key = s.must[i].toLowerCase().split(/[\s/]+/)[0];
@@ -182,6 +217,8 @@
     }
     return true;
   };
+
+  V.SOFT_MUST = ['Schools nearby', 'Space for kids'];
 
   // Search state shared across the guided flow pages
   V.getSearch = function () {
@@ -194,6 +231,6 @@
   // Insert a row into Supabase (or pretend, in demo mode)
   V.insert = function (table, row) {
     if (V.demo) { console.info('[demo] would save to', table, row); return Promise.resolve({ demo: true }); }
-    return V.db.from(table).insert(row).then(function (res) { if (res.error) throw res.error; return res; });
+    return V.ensureDb().then(function (db) { return db.from(table).insert(row); }).then(function (res) { if (res.error) throw res.error; return res; });
   };
 })();
