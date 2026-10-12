@@ -172,8 +172,9 @@
     } else head.appendChild(el('span'));
     head.appendChild(el('span', 'q-count', T('Question {a} of {b}', { a: i + 1, b: N })));
     c.appendChild(head);
-    var bar = el('div', 'q-bar'); var fill = el('i'); fill.style.width = ((i) / N * 100) + '%'; bar.appendChild(fill); c.appendChild(bar);
-    setTimeout(function () { fill.style.width = ((i + 1) / N * 100) + '%'; }, 30);
+    var segs = el('div', 'q-segs'); segs.setAttribute('aria-hidden', 'true');
+    for (var x = 0; x < N; x++) { var sg = el('i', x < i ? 'on' : x === i ? 'now' : ''); segs.appendChild(sg); }
+    c.appendChild(segs);
     var h = el('h2', 'q-title', question(s)); h.id = 'q-title-' + i; c.appendChild(h);
     c.appendChild(input(s, i));
     return c;

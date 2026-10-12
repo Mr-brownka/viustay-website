@@ -2,6 +2,13 @@
 (function () {
   var V = window.V, T = V.t, cfg = V.cfg;
   var prev = V.getSearch() || {};
+  // The Nairobi scene stays behind the home page (the intro lifts away to reveal it)
+  (function homeBg() {
+    if (document.querySelector('.home-bg')) return;
+    var bg = document.createElement('div'); bg.className = 'home-bg'; bg.setAttribute('aria-hidden', 'true');
+    if (cfg.INTRO_IMAGE) bg.style.backgroundImage = "url('" + cfg.INTRO_IMAGE.replace(/'/g, '%27') + "')";
+    document.body.insertBefore(bg, document.body.firstChild);
+  })();
   var seen = false; try { seen = sessionStorage.getItem('vs-intro'); } catch (e) {}
   if (seen || (prev.chat && prev.fromResults)) return;
   try { sessionStorage.setItem('vs-intro', '1'); } catch (e) {}
