@@ -21,9 +21,11 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Viustay">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&family=Source+Sans+3:wght@400;600&display=swap">
 <link rel="stylesheet" href="css/styles.css">
 <link rel="stylesheet" href="css/glass.css">
+<link rel="stylesheet" href="css/trips.css">
 <script src="js/look.js"></script>
 </head>
 <body data-header="flow" data-steps="3" data-step="3" data-page="book">
@@ -31,51 +33,83 @@
 <main class="container step-page" id="book-form-wrap">
   <form class="step-main" id="book-form" novalidate>
     <div class="stack-sm">
-      <span class="kicker">Step 3 of 3</span>
-      <h1>When can you view?</h1>
-      <p class="lede">An agent meets you and walks you through every home in one trip.</p>
+      <span class="kicker" data-i18n>Step 3 of 3</span>
+      <h1 data-i18n>Book your viewing trip</h1>
+      <p class="lede" data-i18n>An agent picks you up, takes you to every home, and brings you back.</p>
     </div>
     <div class="stack-sm">
-      <strong style="font-size:14px">Pick a day</strong>
-      <div class="chips" id="day-chips"></div>
+      <strong style="font-size:14px" data-i18n>Where should we pick you up?</strong>
+      <div class="t-field-row">
+        <label class="field"><span data-i18n>Your estate</span><select name="pickup" id="pickup"><option value="" data-i18n>Choose your estate</option></select></label>
+        <button type="button" class="t-loc" id="use-loc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span data-i18n>Use my location</span></button>
+      </div>
+      <p class="t-hint" id="loc-hint" aria-live="polite"></p>
+      <label class="field"><span data-i18n>Exact spot (optional)</span><input type="text" name="pickup_note" maxlength="200" placeholder="e.g. Gate B, Valley Arcade, opposite the Shell station" data-i18n-ph></label>
     </div>
     <div class="stack-sm">
-      <strong style="font-size:14px">Pick a time</strong>
-      <div class="chips" id="time-chips"></div>
+      <strong style="font-size:14px" data-i18n>Pick a day</strong>
+      <div class="chips" id="day-chips"><span class="sk sk-chip"></span><span class="sk sk-chip"></span><span class="sk sk-chip"></span><span class="sk sk-chip"></span></div>
+    </div>
+    <div class="stack-sm">
+      <strong style="font-size:14px" data-i18n>Pick a time</strong>
+      <div class="chips" id="time-chips"><span class="sk sk-chip"></span><span class="sk sk-chip"></span><span class="sk sk-chip"></span></div>
     </div>
     <div class="grid-2" style="max-width:560px">
-      <label class="field">Your name<input type="text" name="name" autocomplete="name" placeholder="Full name" required></label>
-      <label class="field">WhatsApp number<input type="tel" name="phone" autocomplete="tel" placeholder="07XX XXX XXX" required></label>
+      <label class="field"><span data-i18n>Your name</span><input type="text" name="name" autocomplete="name" placeholder="Full name" data-i18n-ph required></label>
+      <label class="field"><span data-i18n>M-Pesa / WhatsApp number</span><input type="tel" name="phone" autocomplete="tel" placeholder="07XX XXX XXX" required></label>
     </div>
-    <label class="check"><input type="checkbox" name="consent" required><span>I agree that Viustay can contact me on WhatsApp about these viewings, as set out in the <a href="privacy.html" target="_blank">privacy notice</a>.</span></label>
+    <p class="t-rule" id="rule-text">Free cancellation until 6 pm the evening before. After that, the viewing fee isn't refunded.</p>
+    <label class="check"><input type="checkbox" name="consent" required><span data-i18n-html>I agree to the cancellation rule and that Viustay can contact me on WhatsApp about this trip, as set out in the <a href="privacy.html" target="_blank">privacy notice</a>.</span></label>
     <p class="error hidden" id="book-error" role="alert"></p>
     <div class="actions">
-      <button type="submit" class="btn btn-primary" id="book-submit">Confirm viewing</button>
-      <a href="matches.html">Back</a>
+      <button type="submit" class="btn btn-primary" id="book-submit" disabled data-i18n>Continue to payment</button>
+      <a href="matches.html" data-i18n>Back</a>
     </div>
   </form>
   <aside class="step-side panel">
-    <h2 style="font-size:20px">Your viewing</h2>
-    <div class="stack-sm" id="book-homes"></div>
-    <div class="stack-sm" style="border-top:1px solid #E2DBCD;padding-top:12px;font-size:14px">
-      <div class="row-between"><span>When</span><strong id="book-when">–</strong></div>
-      <div class="row-between"><span>Viewing fee</span><strong data-text="VIEWING_FEE_TEXT">[VIEWING FEE]</strong></div>
+    <h2 style="font-size:20px" data-i18n>Your trip</h2>
+    <div class="stack-sm" id="book-homes"><div class="sk-mini"><span class="sk sk-thumb"></span><span class="sk-body"><span class="sk sk-line w60"></span><span class="sk sk-line w80"></span></span></div><div class="sk-mini"><span class="sk sk-thumb"></span><span class="sk-body"><span class="sk sk-line w60"></span><span class="sk sk-line w80"></span></span></div></div>
+    <div class="t-route" id="t-route"></div>
+    <div class="t-price">
+      <div class="row-between"><span data-i18n>When</span><strong id="book-when">–</strong></div>
+      <div class="row-between"><span data-i18n>Transport (agent and car)</span><strong class="t-num" id="p-fare">–</strong></div>
+      <div class="row-between"><span data-i18n>Viewing fee</span><strong class="t-num" id="p-fee">–</strong></div>
+      <div class="row-between t-total"><span data-i18n>Total</span><strong class="t-num" id="p-total">–</strong></div>
+      <span class="note" id="p-note"></span>
     </div>
   </aside>
 </main>
+
+<main class="t-pay hidden" id="pay-wrap">
+  <span class="kicker"><span data-i18n>Booking</span> <span id="pay-ref"></span></span>
+  <h1 style="font-size:32px" id="pay-h"></h1><span id="pay-total" class="hidden"></span>
+  <ol class="t-steps" id="pay-steps"></ol>
+  <p class="t-timer" id="pay-timer"></p>
+  <form id="pay-form" class="stack-sm" novalidate>
+    <label class="field"><span data-i18n>M-Pesa confirmation code</span><input type="text" name="mpesa" autocomplete="off" autocapitalize="characters" maxlength="14" placeholder="e.g. SJK3ABCD12"></label>
+    <p class="error hidden" id="pay-error" role="alert"></p>
+    <div class="actions"><button type="submit" class="btn btn-primary" id="pay-submit" data-i18n>Confirm payment</button><a href="#" id="pay-help" target="_blank" rel="noopener" data-i18n>Trouble paying? WhatsApp us</a></div>
+  </form>
+</main>
+
 <main class="done hidden" id="book-done">
   <img src="assets/viustay-icon-colour.svg" alt="">
-  <h1>You're booked.</h1>
-  <p id="done-text">We'll send the details and your agent's number to your WhatsApp.</p>
+  <h1 data-i18n>You're booked.</h1>
+  <p id="done-text"></p>
+  <div class="t-code"><span data-i18n>Your trip code</span><b id="done-code"></b><span data-i18n-html>Give this code to your agent at the <strong>end</strong> of your trip, not before. It's how we know your trip happened.</span></div>
+  <p data-i18n>We'll confirm your homes and send your agent's name, photo and car plate the day before.</p>
   <div class="actions" style="justify-content:center">
-    <a class="btn btn-dark" href="index.html">Back to home</a>
-    <a class="btn btn-outline" id="done-wa" href="#">Message us on WhatsApp</a>
+    <a class="btn btn-dark" id="done-trip" href="trip.html" data-i18n>See my booking</a>
+    <a class="btn btn-outline" id="done-wa" href="#" target="_blank" rel="noopener" data-i18n>Message us on WhatsApp</a>
   </div>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="js/lang.js"></script>
+<script src="js/i18n.js"></script>
 <script src="js/config.js"></script>
 <script src="js/common.js"></script>
 <script src="js/install.js"></script>
-<script src="js/flow.js"></script>
+<script src="js/trip-math.js"></script>
+<script src="js/booking.js"></script>
 </body>
 </html>

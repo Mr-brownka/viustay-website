@@ -16,6 +16,7 @@
 <meta name="theme-color" content="#FAFBFA">
 <meta name="description" content="Tell us what you need and we'll shortlist verified homes in Nairobi, then take you to view them. Find your place. We handle the rest.">
 <link rel="icon" href="assets/favicon.png">
+<link rel="preconnect" href="https://docs.google.com" crossorigin>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -23,6 +24,7 @@
 <meta name="apple-mobile-web-app-title" content="Viustay">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&family=Source+Sans+3:wght@400;600&display=swap">
 <link rel="stylesheet" href="css/styles.css">
 <link rel="stylesheet" href="css/glass.css">
@@ -34,41 +36,42 @@
 <main class="c-wrap">
   <section class="c-hero" aria-labelledby="c-h">
     <div class="c-intro">
-      <span class="c-eyebrow"><i></i>Verified homes in Nairobi</span>
-      <h1 id="c-h">Let's find your family's <em>next home</em>.</h1>
-      <p>Seven quick questions, about a minute. We match you with homes we've checked in person.</p>
-      <div class="c-progress" aria-live="polite"><div class="track"><i id="c-prog"></i></div><span id="c-progtxt">Question 1 of 7</span></div>
-      <div class="c-chat c-glass" id="c-chat" aria-live="polite"></div>
+      <span class="c-eyebrow"><i></i><span data-i18n>Verified homes in Nairobi</span></span>
+      <h1 id="c-h" data-i18n-html>Let's find your family's <em>next home</em>.</h1>
+      <p data-i18n>Seven quick questions, about a minute. We match you with homes we've checked in person.</p>
+      <div class="q-stage" id="c-chat" aria-live="polite"></div>
     </div>
     <aside class="c-panel c-glass" aria-label="Homes that match">
-      <h3>Homes that match</h3>
-      <div class="c-count"><b id="c-cnt">–</b><span id="c-cntlbl">verified homes</span></div>
+      <h3 data-i18n>Homes that match</h3>
+      <div class="c-count"><b id="c-cnt">–</b><span id="c-cntlbl"></span></div>
       <ul class="c-facts" id="c-facts"></ul>
       <div class="c-minis" id="c-minis"></div>
     </aside>
   </section>
 
   <section class="c-more" aria-labelledby="how-h">
-    <h2 id="how-h">How it works</h2>
+    <h2 id="how-h" data-i18n>How it works</h2>
     <div class="c-steps">
-      <div class="c-step c-glass"><span class="n">STEP 1</span><h3>Tell us what you need</h3><p>Area, bedrooms, budget and the things you can't live without.</p></div>
-      <div class="c-step c-glass"><span class="n">STEP 2</span><h3>See verified homes</h3><p>Every home is visited by our team. Real photos, real prices.</p></div>
-      <div class="c-step c-glass"><span class="n">STEP 3</span><h3>One viewing trip</h3><p>Pick up to 3 homes and we take you to all of them in one trip.</p></div>
+      <div class="c-step c-glass"><span class="n" data-i18n>STEP 1</span><h3 data-i18n>Tell us what you need</h3><p data-i18n>Area, bedrooms, budget and the things you can't live without.</p></div>
+      <div class="c-step c-glass"><span class="n" data-i18n>STEP 2</span><h3 data-i18n>See verified homes</h3><p data-i18n>Every home is visited by our team. Real photos, real prices.</p></div>
+      <div class="c-step c-glass"><span class="n" data-i18n>STEP 3</span><h3 data-i18n>One viewing trip</h3><p data-i18n>Pick up to 3 homes and we take you to all of them in one trip.</p></div>
     </div>
     <div class="c-trust">
-      <span class="c-glass"><i>✓</i>Verified homes</span>
-      <span class="c-glass"><i>✓</i>One trip, up to 3 homes</span>
-      <span class="c-glass"><i>✓</i>Placement fee only when you move in</span>
-      <span class="c-glass"><i>✓</i>WhatsApp support, Mon–Sat</span>
+      <span class="c-glass"><i>✓</i><span data-i18n>Verified homes</span></span>
+      <span class="c-glass"><i>✓</i><span data-i18n>One trip, up to 3 homes</span></span>
+      <span class="c-glass"><i>✓</i><span data-i18n>Placement fee only when you move in</span></span>
+      <span class="c-glass"><i>✓</i><span data-i18n>WhatsApp support, Mon–Sat</span></span>
     </div>
   </section>
 </main>
-<div class="c-pill c-glass" id="c-pill"><span><b id="c-pillcnt">–</b> homes match</span><button class="btn btn-primary" type="button" id="c-pillbtn">Show</button></div>
+<div class="c-pill c-glass" id="c-pill"><span><b id="c-pillcnt">–</b> <span id="c-pilllbl"></span></span><button class="btn btn-primary" type="button" id="c-pillbtn"></button></div>
 <footer id="site-footer"></footer>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="js/lang.js"></script>
+<script src="js/i18n.js"></script>
 <script src="js/config.js"></script>
 <script src="js/common.js"></script>
 <script src="js/install.js"></script>
 <script src="js/chat.js"></script>
+<script src="js/onboard.js"></script>
 </body>
 </html>

@@ -7,7 +7,7 @@
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#FAFBFA",
+  "background_color": "#0E5E54",
   "theme_color": "#0E5E54",
   "categories": ["lifestyle", "business"],
   "icons": [

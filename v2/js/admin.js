@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (res.error || !res.data) { show('#a-denied'); return; }
         show('#a-dash');
         var last = null; try { last = localStorage.getItem('vs-admin-tab'); } catch (e) {}
-        if (last === 'survey') { var sb = V.$('.dash-nav [data-tab="survey"]'); if (sb) sb.click(); }
+        if (last && !TABS[last]) { var sb = V.$('.dash-nav [data-tab="' + last + '"]'); if (sb) sb.click(); }
         loadAll();
       });
     });
@@ -60,12 +60,13 @@ document.addEventListener('DOMContentLoaded', function () {
   // ---------- Data ----------
   function loadAll() {
     err(V.$('#a-load-error'));
+    if (!data.viewings) V.$('#a-list').innerHTML = V.skel.rows(4);
     var keys = Object.keys(TABS);
     Promise.all(keys.map(function (k) {
       return V.db.from(TABS[k].table).select('*').order('created_at', { ascending: false }).limit(300);
     })).then(function (res) {
       res.forEach(function (r, i) { if (r.error) throw r.error; data[keys[i]] = r.data || []; });
-      renderTabs(); if (current !== 'survey') render();
+      renderTabs(); if (TABS[current]) render();
     }).catch(function (e) { console.error(e); err(V.$('#a-load-error'), 'Could not load leads. Did you run supabase/add-admin.sql?'); });
   }
 
@@ -144,12 +145,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
   V.$$('.dash-nav [data-tab]').forEach(function (t) { t.addEventListener('click', function () {
     current = t.getAttribute('data-tab');
-    var survey = current === 'survey';
-    V.$('#a-main').classList.toggle('hidden', survey);
+    var survey = current === 'survey', trips = ['trips', 'stays', 'agents', 'fares'].indexOf(current) >= 0;
+    V.$('#a-main').classList.toggle('hidden', survey || trips);
     V.$('#s-main').classList.toggle('hidden', !survey);
+    V.$('#t-main').classList.toggle('hidden', !trips);
     try { localStorage.setItem('vs-admin-tab', current); } catch (e) {}
     renderTabs();
-    if (survey) window.VSurvey.open(); else render();
+    if (survey) window.VSurvey.open(); else if (trips) window.VTripsAdmin.open(current); else render();
   }); });
   V.$('#a-open').addEventListener('change', render);
   V.$('#a-refresh').addEventListener('click', loadAll);

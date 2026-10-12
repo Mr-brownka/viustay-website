@@ -15,75 +15,87 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#FAFBFA">
 <link rel="icon" href="assets/favicon.png">
+<link rel="preconnect" href="https://docs.google.com" crossorigin>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Viustay">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&family=Source+Sans+3:wght@400;600&display=swap">
 <link rel="stylesheet" href="css/styles.css">
 <link rel="stylesheet" href="css/glass.css">
+<link rel="stylesheet" href="css/trips.css">
 <script src="js/look.js"></script>
 </head>
 <body data-header="main">
 <header id="site-header"></header>
 <main class="container" style="padding-top:24px;padding-bottom:60px;display:flex;flex-direction:column;gap:20px">
   <div class="actions" style="justify-content:space-between">
-    <a href="homes.html" style="font-size:14px;font-weight:600">Back to all homes</a>
+    <a href="homes.html" id="l-back" style="font-size:14px;font-weight:600" data-i18n>Back to all homes</a>
     <div class="actions" style="gap:10px">
-      <button type="button" class="chip" id="share-btn">Share</button>
+      <button type="button" class="chip" id="share-btn" data-i18n>Share</button>
     </div>
   </div>
+  <div id="l-skel" aria-hidden="true" style="display:flex;flex-direction:column;gap:20px">
+    <span class="sk sk-gallery"></span>
+    <div style="display:flex;flex-wrap:wrap;gap:40px"><div style="flex:999 1 560px">
+      <span class="sk sk-line tall w60" style="height:30px"></span><span class="sk sk-line w40"></span><div style="height:18px"></div>
+      <span class="sk sk-line w90"></span><span class="sk sk-line w80"></span><span class="sk sk-line w60"></span></div>
+      <div style="flex:1 1 320px"><div class="sk-rowcard"><span class="sk sk-line tall w60" style="height:30px"></span><span class="sk sk-line w80"></span><span class="sk sk-line w80"></span><span class="sk" style="height:48px;border-radius:999px;margin-top:14px"></span></div></div></div>
+  </div>
   <div id="not-found" class="panel hidden">
-    <h1 style="font-size:26px">This home is no longer available</h1>
-    <p style="margin:0">It may have been taken. <a href="homes.html">See other homes</a> or <a href="request.html">ask us to find one</a>.</p>
+    <h1 style="font-size:26px" data-i18n>This home is no longer available</h1>
+    <p style="margin:0" data-i18n-html>It may have been taken. <a href="homes.html">See other homes</a> or <a href="request.html">ask us to find one</a>.</p>
   </div>
   <div id="listing" class="hidden" style="display:flex;flex-direction:column;gap:20px">
     <div class="gallery">
-      <div class="main-photo" id="main-photo"><span class="badge" style="left:14px;top:14px;font-size:13px;padding:6px 12px">Verified by Viustay</span><span id="photo-placeholder">Photo coming soon</span><span class="counter" id="photo-counter"></span></div>
+      <div class="main-photo" id="main-photo"><span class="badge" style="left:14px;top:14px;font-size:13px;padding:6px 12px" data-i18n>Verified by Viustay</span><span id="photo-placeholder" data-i18n>Photo coming soon</span><span class="counter" id="photo-counter"></span></div>
       <div class="thumbs" id="thumbs"></div>
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
       <section style="flex:999 1 560px;min-width:0;display:flex;flex-direction:column;gap:26px">
         <div class="stack-sm">
+          <span class="t-badge ok hidden" id="l-kind" style="align-self:flex-start"></span>
           <h1 id="l-title" style="font-size:clamp(28px,4vw,34px)"></h1>
           <span id="l-sub" style="font-size:16px;color:var(--muted)"></span>
         </div>
         <div class="stack-sm">
-          <h2 style="font-size:20px;color:var(--ink)">What's included</h2>
+          <h2 style="font-size:20px;color:var(--ink)" data-i18n>What's included</h2>
           <div class="amenities" id="l-amenities"></div>
         </div>
+        <div class="stack-sm hidden" id="l-terms-wrap">
+          <h2 style="font-size:20px;color:var(--ink)" data-i18n>Stay details</h2>
+          <div class="t-kv" id="l-terms"></div>
+        </div>
+        <div class="stack-sm hidden" id="l-rules-wrap">
+          <h2 style="font-size:20px;color:var(--ink)" data-i18n>House rules</h2>
+          <ul class="t-homes" id="l-rules" style="list-style:disc"></ul>
+        </div>
         <div class="stack-sm" id="l-notes-wrap">
-          <h2 style="font-size:20px;color:var(--ink)">Our agent's notes</h2>
+          <h2 style="font-size:20px;color:var(--ink)" data-i18n>Our agent's notes</h2>
           <p id="l-notes" style="margin:0;font-size:16px;line-height:1.55;color:var(--muted)"></p>
         </div>
         <div class="stack-sm">
-          <h2 style="font-size:20px;color:var(--ink)">How it works</h2>
-          <div class="how-grid">
-            <div style="border:1px solid var(--line)"><strong style="color:var(--emerald)">1 · Book</strong><span style="font-size:14px;color:var(--muted)">Pick a day and time</span></div>
-            <div style="border:1px solid var(--line)"><strong style="color:var(--emerald)">2 · View</strong><span style="font-size:14px;color:var(--muted)">Our agent walks you through</span></div>
-            <div style="border:1px solid var(--line)"><strong style="color:var(--emerald)">3 · Move in</strong><span style="font-size:14px;color:var(--muted)">We handle the landlord and paperwork</span></div>
-          </div>
-          <span class="note">The exact location is shared after you book a viewing.</span>
+          <h2 style="font-size:20px;color:var(--ink)" data-i18n>How it works</h2>
+          <div class="how-grid" id="l-how"></div>
+          <span class="note" id="l-loc-note"></span>
         </div>
       </section>
       <aside class="book-box" style="flex:1 1 320px;min-width:0">
         <span class="price" style="font-size:30px" id="l-price"></span>
-        <div class="stack-sm" style="font-size:14px">
-          <div class="row-between"><span>Deposit</span><strong id="l-deposit">–</strong></div>
-          <div class="row-between"><span>Available</span><strong id="l-available">–</strong></div>
-          <div class="row-between"><span>Viewing fee</span><strong data-text="VIEWING_FEE_TEXT">[VIEWING FEE]</strong></div>
-        </div>
-        <a class="btn btn-primary" id="l-book" href="book.html">Book a viewing</a>
-        <a class="btn btn-outline" id="l-wa" href="#" target="_blank" rel="noopener">Ask on WhatsApp</a>
+        <div class="stack-sm" style="font-size:14px" id="l-facts"></div>
+        <a class="btn btn-primary" id="l-book" href="book.html"></a>
+        <a class="btn btn-outline" id="l-wa" href="#" target="_blank" rel="noopener" data-i18n>Ask on WhatsApp</a>
         <span class="note" id="l-ref"></span>
       </aside>
     </div>
   </div>
 </main>
 <footer id="site-footer"></footer>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="js/lang.js"></script>
+<script src="js/i18n.js"></script>
 <script src="js/config.js"></script>
 <script src="js/common.js"></script>
 <script src="js/install.js"></script>

@@ -70,7 +70,7 @@
     Array.prototype.forEach.call(root.querySelectorAll('[data-v]'), function (b) { b.setAttribute('aria-selected', String(b.getAttribute('data-v') === v)); });
     var box = $('#s-view'); box.innerHTML = '';
     if (v === 'new') return renderForm(box);
-    if (!loaded) { box.appendChild(el('p', 'note', 'Loading interviews…')); return; }
+    if (!loaded) { var sk = el('div'); sk.innerHTML = V.skel.rows(3); box.appendChild(sk); return; }
     if (v === 'dash') renderDash(box); else renderList(box);
   }
   function err(msg) { var e = $('#s-err'); e.textContent = msg || ''; e.classList.toggle('hidden', !msg); }

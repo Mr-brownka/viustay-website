@@ -15,12 +15,14 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#FAFBFA">
 <link rel="icon" href="assets/favicon.png">
+<link rel="preconnect" href="https://docs.google.com" crossorigin>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Viustay">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&family=Source+Sans+3:wght@400;600&display=swap">
 <link rel="stylesheet" href="css/styles.css">
 <link rel="stylesheet" href="css/glass.css">
@@ -30,23 +32,24 @@
 <body data-header="flow" data-steps="3" data-step="2" data-page="matches">
 <header id="site-header"></header>
 <main class="c-wrap r-main">
-  <div class="r-head"><h1 id="r-h">Finding your matches…</h1><a href="index.html">Start over</a></div>
+  <div class="r-head"><h1 id="r-h"><span class="sk sk-line tall w60" style="width:260px;height:34px"></span></h1><a href="index.html" data-i18n>Start over</a></div>
   <button type="button" class="r-bar c-glass nudge" id="r-bar" aria-label="Change your search">
     <span class="ic"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h9M15 5h2M3 10h3M9 10h8M3 15h7M13 15h4" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/><circle cx="13.5" cy="5" r="1.8" fill="none" stroke="#F2A93B" stroke-width="1.6"/><circle cx="7.5" cy="10" r="1.8" fill="none" stroke="#F2A93B" stroke-width="1.6"/><circle cx="11.5" cy="15" r="1.8" fill="none" stroke="#F2A93B" stroke-width="1.6"/></svg></span>
-    <span class="tx"><small>YOUR SEARCH</small><span id="r-bar-txt"></span></span>
-    <span class="ed">Change</span>
+    <span class="tx"><small data-i18n>YOUR SEARCH</small><span id="r-bar-txt"></span></span>
+    <span class="ed" data-i18n>Change</span>
   </button>
   <div class="r-grid" id="r-grid"></div>
-  <div class="r-help c-glass"><span><strong>None of these feel right?</strong> Tell us and we'll find one for you.</span><a class="btn btn-pill btn-outline" href="request.html">Find it for me</a></div>
+  <div class="r-help c-glass"><span data-i18n-html><strong>None of these feel right?</strong> Tell us and we'll find one for you.</span><a class="btn btn-pill btn-outline" href="request.html" data-i18n>Find it for me</a></div>
 </main>
-<div class="r-pick c-glass" id="r-pick"><span id="r-picktxt"></span><span class="dots" id="r-dots"></span><a class="btn btn-primary" id="r-book" href="book.html">Book viewing</a></div>
+<div class="r-pick c-glass" id="r-pick"><span id="r-picktxt"></span><span class="dots" id="r-dots"></span><a class="btn btn-primary" id="r-book" href="book.html" data-i18n>Book viewing</a></div>
 <div class="r-scrim" id="r-scrim"></div>
 <div class="r-sheet" id="r-sheet" role="dialog" aria-modal="true" aria-labelledby="r-sheet-h">
-  <header><h2 id="r-sheet-h">Change your search</h2><button type="button" id="r-reset">Reset</button></header>
+  <header><h2 id="r-sheet-h" data-i18n>Change your search</h2><button type="button" id="r-reset" data-i18n>Reset</button></header>
   <div class="body" id="r-sheet-body"></div>
-  <footer><button type="button" class="btn btn-primary" id="r-done">Show homes</button></footer>
+  <footer><button type="button" class="btn btn-primary" id="r-done" data-i18n>Show homes</button></footer>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="js/lang.js"></script>
+<script src="js/i18n.js"></script>
 <script src="js/config.js"></script>
 <script src="js/common.js"></script>
 <script src="js/install.js"></script>

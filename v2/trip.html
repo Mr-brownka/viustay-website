@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My bookings | Viustay</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Viustay">
+<meta property="og:title" content="My bookings | Viustay">
+<meta property="og:description" content="Tell us what you need and we shortlist verified homes in Nairobi, then take you to view them in one trip.">
+<meta property="og:url" content="https://mr-brownka.github.io/viustay-website/v2/trip.html">
+<meta property="og:image" content="https://mr-brownka.github.io/viustay-website/assets/share.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#FAFBFA">
+<link rel="icon" href="assets/favicon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Viustay">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&family=Source+Sans+3:wght@400;600&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/glass.css">
+<link rel="stylesheet" href="css/trips.css">
+<script src="js/look.js"></script>
+</head>
+<body data-header="main">
+<header id="site-header"></header>
+<main class="container section" style="max-width:720px;display:flex;flex-direction:column;gap:20px">
+  <div class="row-between" style="flex-wrap:wrap;gap:10px;align-items:flex-end">
+    <div class="stack-sm"><span class="kicker" data-i18n>Viewing trips and short stays</span><h1 style="font-size:34px" data-i18n>My bookings</h1></div>
+    <button type="button" class="btn btn-outline" id="find-again" style="font-size:15px;padding:8px 14px;min-height:40px" data-i18n>Find another booking</button>
+  </div>
+  <form class="t-card hidden" id="find-form" novalidate>
+    <p style="margin:0" data-i18n>Enter your booking number and the phone number you booked with.</p>
+    <div class="grid-2">
+      <label class="field"><span data-i18n>Booking number</span><input type="text" name="ref" placeholder="VS-XXXXXX / ST-XXXXXX" autocapitalize="characters"></label>
+      <label class="field"><span data-i18n>Phone number</span><input type="tel" name="phone" placeholder="07XX XXX XXX"></label>
+    </div>
+    <p class="error hidden" id="find-error" role="alert"></p>
+    <div><button type="submit" class="btn btn-primary" data-i18n>Find my booking</button></div>
+  </form>
+  <div id="trip-view" class="stack-sm hidden" style="gap:28px"></div>
+</main>
+<footer id="site-footer"></footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="js/lang.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/config.js"></script>
+<script src="js/common.js"></script>
+<script src="js/install.js"></script>
+<script src="js/trip-math.js"></script>
+<script src="js/trip.js"></script>
+</body>
+</html>

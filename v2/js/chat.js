@@ -17,149 +17,165 @@
     short: [['0-5000', 'Under 5k'], ['5000-8000', '5k–8k'], ['8000-12000', '8k–12k'], ['12000-0', '12k+']]
   };
   var WHEN = ['This month', 'Next month', 'In 2–3 months'];
-  var NAMES = { stay: 'Stay', area: 'Area', beds: 'Bedrooms', budget: 'Budget', must: 'Must-haves', who: 'Moving in', when: 'Move-in' };
+  var WHEN_SHORT = ['This week', 'Next week', 'This month'];
+  var NAMES = { stay: 'Stay', area: 'Area', beds: 'Bedrooms', budget: 'Budget', must: 'Must-haves', who: 'Who', when: 'When' };
 
   function k(n) { return (n / 1000) + 'k'; }
+  var T = V.t;
   function label(A, key) {
     var v = A[key]; if (v === undefined || v === null || v === '') return null;
-    if (key === 'budget') { var p = v.split('-').map(Number); return p[1] ? (p[0] ? k(p[0]) + '–' + k(p[1]) : 'Under ' + k(p[1])) : k(p[0]) + '+'; }
-    if (key === 'must') return v.length ? v.join(', ') : 'No preference';
+    if (key === 'budget') { var p = v.split('-').map(Number); return p[1] ? (p[0] ? k(p[0]) + '–' + k(p[1]) : T('Under {x}', { x: k(p[1]) })) : k(p[0]) + '+'; }
+    if (key === 'must') return v.length ? v.map(function (x) { return T(x); }).join(', ') : T('No preference');
     var s = STEPS.filter(function (x) { return x.k === key; })[0];
-    if (s && s.o) { var o = s.o.filter(function (x) { return x[0] === v; })[0]; return o ? (o[1] || o[0]) : v; }
-    return v;
+    if (s && s.o) { var o = s.o.filter(function (x) { return x[0] === v; })[0]; return o ? T(o[1] || o[0]) : T(v); }
+    return T(v);
   }
+  function name(key) { return T(NAMES[key]); }
   function toSearch(A) {
     var s = { chat: A, stay: A.stay || 'long', area: A.area && A.area !== 'Anywhere' ? A.area : '', bedrooms: A.beds !== undefined ? A.beds : '', must: A.must || [], who: A.who || '', movein: A.when || '', picked: [] };
     if (A.budget) { var p = A.budget.split('-').map(Number); s.min = p[0] || null; s.max = p[1] || null; }
     return s;
   }
   function matchList(all, A) {
-    if (A.stay === 'short') return [];
     var s = toSearch(A);
     return all.filter(function (l) { return V.matches(l, s); });
   }
-  window.VSSearch = { STEPS: STEPS, BUDGETS: BUDGETS, WHEN: WHEN, NAMES: NAMES, label: label, toSearch: toSearch, matchList: matchList };
+  window.VSSearch = { STEPS: STEPS, BUDGETS: BUDGETS, WHEN: WHEN, WHEN_SHORT: WHEN_SHORT, NAMES: NAMES, label: label, name: name, toSearch: toSearch, matchList: matchList };
 
   var chat = document.getElementById('c-chat');
   if (!chat) return;
 
-  // ---------------- chat ----------------
-  var A = {}, cur = 0, furthest = 0, editing = false, HOMES = [], lastCount = null;
+  // ---------------- one question card at a time ----------------
+  var A = {}, cur = 0, furthest = 0, editing = false, HOMES = [], loaded = false, lastCount = null;
+  var N = STEPS.length;
   var prev = V.getSearch();
-  if (prev && prev.chat && prev.fromResults) { A = prev.chat; furthest = STEPS.length; cur = STEPS.length; }
+  if (prev && prev.chat && prev.fromResults) { A = prev.chat; furthest = N; cur = N; }
   function $(id) { return document.getElementById(id); }
   function el(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt !== undefined) e.textContent = txt; return e; }
-  function question(s) { return A.stay === 'short' && s.qShort ? s.qShort : s.q; }
-  var LOGO = '<svg viewBox="0 0 40 46" aria-hidden="true"><path d="M10.5 17 20 9.5l9.5 7.5" fill="none" stroke="#F2A93B" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="m13.5 19.5 6.5 9.5 6.5-9.5" fill="none" stroke="#F4F1EB" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-  function botMsg(text, typing) {
-    var b = el('div', 'c-bot'); var av = el('span', 'c-avatar'); av.innerHTML = LOGO; b.appendChild(av);
-    if (typing) { var t = el('div', 'c-bubble c-typing'); t.innerHTML = '<i></i><i></i><i></i>'; b.appendChild(t); }
-    else b.appendChild(el('div', 'c-bubble', text));
-    return b;
-  }
-  function soft(n) { if (!n) return; var r = n.getBoundingClientRect(); if (r.bottom > innerHeight - 90 || r.top < 90) n.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+  function question(s) { return T(A.stay === 'short' && s.qShort ? s.qShort : s.q); }
+  function short() { return A.stay === 'short'; }
+  function topOfStage() { var r = chat.getBoundingClientRect(); if (r.top < 70 || r.top > innerHeight * 0.5) window.scrollTo({ top: window.scrollY + r.top - 90, behavior: 'smooth' }); }
 
   function updatePanel() {
     var m = matchList(HOMES, A), n = m.length;
     ['c-cnt', 'c-pillcnt'].forEach(function (id) {
-      var e = $(id); e.textContent = HOMES.length ? n : '–';
+      var e = $(id); e.textContent = loaded ? n : '–';
       if (lastCount !== null && lastCount !== n) { e.classList.remove('bump'); void e.offsetWidth; e.classList.add('bump'); }
     });
-    if (HOMES.length) lastCount = n;
-    $('c-cntlbl').textContent = A.stay === 'short' ? 'short stays listed yet' : (n === 1 ? 'verified home' : 'verified homes');
+    if (loaded) lastCount = n;
+    $('c-cntlbl').textContent = short() ? (n === 1 ? T('short stay') : T('short stays')) : (n === 1 ? T('verified home') : T('verified homes'));
+    $('c-pilllbl').textContent = short() ? T('stays match') : T('homes match');
+    $('c-pillbtn').textContent = T('Show');
     var facts = $('c-facts'); facts.innerHTML = '';
-    STEPS.forEach(function (s) { var l = label(A, s.k); if (!l) return; var li = el('li'); li.appendChild(el('span', '', NAMES[s.k])); li.appendChild(el('span', '', l)); facts.appendChild(li); });
-    var minis = $('c-minis'); minis.innerHTML = '';
-    if (A.stay === 'short') { minis.appendChild(el('p', 'c-note', "We're onboarding short stays now. Finish the questions and we'll find one for you, usually within 48 hours.")); return; }
-    if (HOMES.length && !n) { var p = el('p', 'c-note'); p.innerHTML = 'No exact match yet. Remove a must-have, or <a href="request.html">let us find one for you</a>.'; minis.appendChild(p); return; }
+    STEPS.forEach(function (s) { var l = label(A, s.k); if (!l) return; var li = el('li'); li.appendChild(el('span', '', name(s.k))); li.appendChild(el('span', '', l)); facts.appendChild(li); });
+    var minis = $('c-minis');
+    if (!loaded) { minis.innerHTML = V.skel.minis(3); return; }
+    minis.innerHTML = '';
+    if (!n) { var p = el('p', 'c-note'); p.innerHTML = short() ? T('No stays match yet. <a href="request.html">Tell us your dates</a> and we\'ll find one.') : T('No exact match yet. Remove a must-have, or <a href="request.html">let us find one for you</a>.'); minis.appendChild(p); return; }
     m.slice(0, 3).forEach(function (h) {
       var a = el('a', 'c-mini'); a.href = 'home.html?id=' + encodeURIComponent(h.id);
       var th = el('span', 'c-thumb'); if (h.photoList[0]) th.setAttribute('style', V.photoStyle(h.photoList[0])); a.appendChild(th);
-      var t = el('span'); t.appendChild(el('span', 'c-verified', 'VERIFIED')); t.appendChild(el('b', '', 'KES ' + V.money(h.rent) + ' / mo')); t.appendChild(el('small', '', V.typeLabel(h) + ' · ' + h.area + (h.road ? ' · ' + h.road : '')));
+      var t = el('span'); t.appendChild(el('span', 'c-verified', T('VERIFIED'))); t.appendChild(el('b', '', V.priceText(h))); t.appendChild(el('small', '', V.typeLabel(h) + ' · ' + h.area + (h.road ? ' · ' + h.road : '')));
       a.appendChild(t); minis.appendChild(a);
     });
   }
-  function progress() {
-    var done = Math.min(furthest, STEPS.length);
-    $('c-prog').style.width = (done / STEPS.length * 100) + '%';
-    $('c-progtxt').textContent = done >= STEPS.length && !editing ? 'All set' : 'Question ' + (Math.min(cur, STEPS.length - 1) + 1) + ' of ' + STEPS.length;
+
+  function answersRow() {
+    var row = el('div', 'q-chips');
+    STEPS.forEach(function (s, i) {
+      if (i >= furthest || i === cur) return;
+      var l = label(A, s.k); if (!l) return;
+      var b = el('button', 'q-ans'); b.type = 'button'; b.setAttribute('aria-label', T('Change') + ' ' + name(s.k));
+      b.appendChild(el('small', '', name(s.k))); b.appendChild(el('b', '', l));
+      b.addEventListener('click', function () { goTo(i, true); });
+      row.appendChild(b);
+    });
+    return row.children.length ? row : null;
   }
 
-  function render(animate) {
+  function render(dir) {
     chat.innerHTML = '';
-    var upto = Math.min(furthest, STEPS.length), finished = furthest >= STEPS.length;
-    STEPS.forEach(function (s, i) {
-      if (i > upto) return;
-      var turn = el('div', 'c-turn');
-      if (i === cur && !(finished && !editing)) {
-        if (animate) {
-          turn.appendChild(botMsg('', true)); chat.appendChild(turn);
-          setTimeout(function () { turn.innerHTML = ''; turn.appendChild(botMsg(question(s))); turn.appendChild(input(s, i)); soft(turn); }, 650);
-          return;
-        }
-        turn.appendChild(botMsg(question(s))); turn.appendChild(input(s, i)); chat.appendChild(turn); return;
-      }
-      if (i < upto || finished) {
-        turn.appendChild(botMsg(question(s)));
-        var mine = el('div', 'c-mine'); var e = el('button', '', 'Change'); e.type = 'button';
-        e.addEventListener('click', function () { cur = i; editing = true; render(false); soft(chat.children[i]); });
-        mine.appendChild(e); mine.appendChild(el('span', 'ans', label(A, s.k))); turn.appendChild(mine); chat.appendChild(turn);
-      }
-    });
-    if (finished && !editing) chat.appendChild(summary());
-    progress(); updatePanel();
+    var r = answersRow(); if (r) chat.appendChild(r);
+    chat.appendChild(cur >= N ? summary() : card(STEPS[cur], cur, dir));
+    updatePanel();
   }
+  function goTo(i, edit) { cur = i; editing = !!edit; render('back'); topOfStage(); }
   function next(i) {
-    if (editing) { editing = false; cur = Math.min(furthest, STEPS.length); render(false); soft(chat.lastChild); return; }
-    furthest = Math.max(furthest, i + 1); cur = i + 1;
-    if (cur >= STEPS.length) { render(false); soft(chat.lastChild); } else render(true);
+    if (editing) { editing = false; cur = furthest >= N ? N : furthest; }
+    else { furthest = Math.max(furthest, i + 1); cur = i + 1; }
+    render('fwd'); topOfStage();
   }
-  function chip(text, on) { var c = el('button', 'chip c-chip', text); c.type = 'button'; c.setAttribute('aria-pressed', String(!!on)); return c; }
+
+  function card(s, i, dir) {
+    var c = el('div', 'q-card c-glass' + (dir ? ' q-dir-' + dir : ''));
+    var head = el('div', 'q-head');
+    if (i > 0) {
+      var back = el('button', 'q-back'); back.type = 'button';
+      back.innerHTML = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12 4 6 10l6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      back.appendChild(document.createTextNode(T('Back')));
+      back.addEventListener('click', function () { editing = false; cur = i - 1; render('back'); });
+      head.appendChild(back);
+    } else head.appendChild(el('span'));
+    head.appendChild(el('span', 'q-count', T('Question {a} of {b}', { a: i + 1, b: N })));
+    c.appendChild(head);
+    var bar = el('div', 'q-bar'); var fill = el('i'); fill.style.width = ((i) / N * 100) + '%'; bar.appendChild(fill); c.appendChild(bar);
+    setTimeout(function () { fill.style.width = ((i + 1) / N * 100) + '%'; }, 30);
+    var h = el('h2', 'q-title', question(s)); h.id = 'q-title-' + i; c.appendChild(h);
+    c.appendChild(input(s, i));
+    return c;
+  }
+
+  function opt(text, on, sub) {
+    var b = el('button', 'q-opt'); b.type = 'button'; b.setAttribute('aria-pressed', String(!!on));
+    b.appendChild(el('span', 'q-opt-t', text)); if (sub) b.appendChild(el('small', '', sub));
+    return b;
+  }
+  function pickAndGo(b, i, fn) { fn(); b.setAttribute('aria-pressed', 'true'); setTimeout(function () { next(i); }, 160); }
 
   function input(s, i) {
-    var area = el('div', 'c-answer');
+    var area = el('div', 'q-body');
     if (s.type === 'one') {
-      var chips = el('div', 'chips');
+      var grid = el('div', 'q-opts' + (s.o.length <= 2 ? ' two' : ''));
       s.o.forEach(function (o) {
-        var c = chip(o[1] || o[0], A[s.k] === o[0]); if (o[2]) c.appendChild(el('small', '', o[2]));
-        c.addEventListener('click', function () { A[s.k] = o[0]; if (s.k === 'stay') delete A.budget; c.setAttribute('aria-pressed', 'true'); setTimeout(function () { next(i); }, 180); });
-        chips.appendChild(c);
+        var b = opt(T(o[1] || o[0]), A[s.k] === o[0], o[2] ? T(o[2]) : '');
+        b.addEventListener('click', function () { pickAndGo(b, i, function () { if (s.k === 'stay' && A.stay !== o[0]) { delete A.budget; delete A.when; } A[s.k] = o[0]; }); });
+        grid.appendChild(b);
       });
-      area.appendChild(chips);
+      area.appendChild(grid);
     } else if (s.type === 'many') {
       var pick = (A[s.k] || []).slice();
-      area.appendChild(el('span', 'c-hint', s.hint));
-      var wrap = el('div', 'chips');
-      var go = el('button', 'btn btn-primary btn-pill', 'Continue'); go.type = 'button';
-      function sync() { go.textContent = pick.length ? 'Continue with ' + pick.length : 'Continue'; }
+      area.appendChild(el('p', 'q-hint', T(s.hint)));
+      var g2 = el('div', 'q-opts many');
+      var go = el('button', 'btn btn-primary btn-pill', T('Continue')); go.type = 'button';
+      function sync() { go.textContent = pick.length ? T('Continue with {n}', { n: pick.length }) : T('Continue'); }
       s.o.forEach(function (o) {
-        var c = chip('', pick.indexOf(o[0]) >= 0); c.appendChild(el('span', 'tick', '✓')); c.appendChild(document.createTextNode(' ' + o[0]));
-        c.addEventListener('click', function () {
+        var b = opt(T(o[0]), pick.indexOf(o[0]) >= 0); b.insertBefore(el('span', 'tick', '✓'), b.firstChild);
+        b.addEventListener('click', function () {
           var j = pick.indexOf(o[0]);
           if (j >= 0) pick.splice(j, 1);
-          else { if (pick.length >= s.max) { if (c.animate) c.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-4px)' }, { transform: 'translateX(4px)' }, { transform: 'translateX(0)' }], { duration: 220 }); return; } pick.push(o[0]); }
-          c.setAttribute('aria-pressed', String(pick.indexOf(o[0]) >= 0)); A[s.k] = pick.slice(); updatePanel(); sync();
+          else { if (pick.length >= s.max) { if (b.animate) b.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-4px)' }, { transform: 'translateX(4px)' }, { transform: 'translateX(0)' }], { duration: 220 }); return; } pick.push(o[0]); }
+          b.setAttribute('aria-pressed', String(pick.indexOf(o[0]) >= 0)); A[s.k] = pick.slice(); updatePanel(); sync();
         });
-        wrap.appendChild(c);
+        g2.appendChild(b);
       });
-      area.appendChild(wrap);
+      area.appendChild(g2);
       var row = el('div', 'c-row'); sync();
       go.addEventListener('click', function () { A[s.k] = pick.slice(); next(i); });
-      var skip = el('button', 'btn btn-pill c-ghost', 'Skip'); skip.type = 'button'; skip.addEventListener('click', function () { A[s.k] = []; next(i); });
+      var skip = el('button', 'btn btn-pill c-ghost', T('Skip')); skip.type = 'button'; skip.addEventListener('click', function () { A[s.k] = []; next(i); });
       row.appendChild(go); row.appendChild(skip); area.appendChild(row);
     } else if (s.type === 'budget') {
-      var bc = el('div', 'chips');
+      var g3 = el('div', 'q-opts');
       BUDGETS[A.stay || 'long'].forEach(function (o) {
-        var c = chip(o[1], A.budget === o[0]);
-        c.addEventListener('click', function () { A.budget = o[0]; c.setAttribute('aria-pressed', 'true'); setTimeout(function () { next(i); }, 180); });
-        bc.appendChild(c);
+        var b = opt(o[1].replace('Under ', T('Under') + ' '), A.budget === o[0], short() ? T('per night') : T('per month'));
+        b.addEventListener('click', function () { pickAndGo(b, i, function () { A.budget = o[0]; }); });
+        g3.appendChild(b);
       });
-      area.appendChild(bc);
-      area.appendChild(el('span', 'c-hint', 'Or type your own range (KES)'));
+      area.appendChild(g3);
+      area.appendChild(el('p', 'q-hint', T('Or type your own range (KES)')));
       var r2 = el('div', 'c-inputs');
-      var f1 = el('label', 'c-field'); f1.innerHTML = '<span>Min</span><input id="c-bmin" inputmode="numeric" placeholder="50,000">';
-      var f2 = el('label', 'c-field'); f2.innerHTML = '<span>Max</span><input id="c-bmax" inputmode="numeric" placeholder="90,000">';
-      var ok = el('button', 'btn btn-pill c-ghost', 'Use range'); ok.type = 'button';
+      var f1 = el('label', 'c-field'); f1.innerHTML = '<span>' + T('Min') + '</span><input inputmode="numeric" placeholder="' + (short() ? '3,000' : '50,000') + '">';
+      var f2 = el('label', 'c-field'); f2.innerHTML = '<span>' + T('Max') + '</span><input inputmode="numeric" placeholder="' + (short() ? '9,000' : '90,000') + '">';
+      var ok = el('button', 'btn btn-pill c-ghost', T('Use range')); ok.type = 'button';
       ok.addEventListener('click', function () {
         var a = V.num(f1.querySelector('input').value) || 0, b = V.num(f2.querySelector('input').value) || 0;
         if (!a && !b) return; if (a && b && a > b) { var t = a; a = b; b = t; }
@@ -167,46 +183,52 @@
       });
       r2.appendChild(f1); r2.appendChild(f2); r2.appendChild(ok); area.appendChild(r2);
     } else if (s.type === 'when') {
-      var wc = el('div', 'chips');
-      WHEN.forEach(function (w) { var c = chip(w, A.when === w); c.addEventListener('click', function () { A.when = w; c.setAttribute('aria-pressed', 'true'); setTimeout(function () { next(i); }, 180); }); wc.appendChild(c); });
-      area.appendChild(wc);
-      var r3 = el('div', 'c-inputs'); var f = el('label', 'c-field'); f.innerHTML = '<span>Pick a date</span><input type="date" id="c-date" style="width:150px">';
-      f.querySelector('input').addEventListener('change', function (e) { if (!e.target.value) return; A.when = new Date(e.target.value + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }); next(i); });
+      var g4 = el('div', 'q-opts');
+      (short() ? WHEN_SHORT : WHEN).forEach(function (w) {
+        var b = opt(T(w), A.when === w);
+        b.addEventListener('click', function () { pickAndGo(b, i, function () { A.when = w; }); });
+        g4.appendChild(b);
+      });
+      area.appendChild(g4);
+      var r3 = el('div', 'c-inputs'); var f = el('label', 'c-field'); f.innerHTML = '<span>' + T('Pick a date') + '</span><input type="date" style="width:150px">';
+      f.querySelector('input').addEventListener('change', function (e) { if (!e.target.value) return; A.when = V.date(e.target.value, { day: 'numeric', month: 'short' }); next(i); });
       r3.appendChild(f); area.appendChild(r3);
     }
     return area;
   }
 
   function summary() {
-    var turn = el('div', 'c-turn');
     var n = matchList(HOMES, A).length;
-    turn.appendChild(botMsg(A.stay === 'short' ? "Thanks! Here's your search. Short stays are coming soon, and we'll find one for you." : "Here's your search. Ready to see verified homes?"));
-    var area = el('div', 'c-answer');
+    var c = el('div', 'q-card q-sumcard c-glass q-dir-fwd');
+    c.appendChild(el('h2', 'q-title', short() ? T('Here\'s your stay search.') : T('Here\'s your search. Ready to see verified homes?')));
     var card = el('div', 'c-sum');
     STEPS.forEach(function (s, i) {
-      var r = el('div', 'c-sum-row'); r.appendChild(el('span', 'k', NAMES[s.k])); r.appendChild(el('span', 'v', label(A, s.k) || '–'));
-      var b = el('button', '', 'Edit'); b.type = 'button'; b.setAttribute('aria-label', 'Edit ' + NAMES[s.k]);
-      b.addEventListener('click', function () { cur = i; editing = true; render(false); soft(chat.children[i]); });
+      var r = el('div', 'c-sum-row'); r.appendChild(el('span', 'k', name(s.k))); r.appendChild(el('span', 'v', label(A, s.k) || '–'));
+      var b = el('button', '', T('Edit')); b.type = 'button'; b.setAttribute('aria-label', T('Edit') + ' ' + name(s.k));
+      b.addEventListener('click', function () { goTo(i, true); });
       r.appendChild(b); card.appendChild(r);
     });
     var hint = el('div', 'c-sum-hint'); hint.appendChild(el('i'));
-    var ht = el('span'); ht.appendChild(el('b', '', A.stay === 'short' ? '0' : (HOMES.length ? String(n) : '…')));
-    ht.appendChild(document.createTextNode(' ' + (A.stay === 'short' ? 'short stays listed yet' : (n === 1 ? 'verified home matches' : 'verified homes match'))));
+    var ht = el('span'); ht.appendChild(el('b', '', loaded ? String(n) : '…'));
+    ht.appendChild(document.createTextNode(' ' + (short() ? (n === 1 ? T('stay matches') : T('stays match')) : (n === 1 ? T('verified home matches') : T('verified homes match')))));
     hint.appendChild(ht); card.appendChild(hint);
-    var noMatch = A.stay === 'short' || (HOMES.length && !n);
+    var noMatch = loaded && !n;
     var go = el('a', 'btn btn-primary c-find'); go.href = noMatch ? 'request.html' : 'matches.html';
     go.innerHTML = '<span></span><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M3 9h11M10 4l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-    go.querySelector('span').textContent = noMatch ? 'Find it for me' : 'Find my home';
+    go.querySelector('span').textContent = noMatch ? T('Find it for me') : (short() ? T('Find my stay') : T('Find my home'));
     go.addEventListener('click', function () { var s = toSearch(A); V.setSearch(s); });
     card.appendChild(go);
-    var links = el('div', 'c-sum-links'); links.innerHTML = '<a href="request.html">Can\'t find it? We\'ll find it for you</a><a class="quiet" href="owners.html">List your property</a>';
+    var links = el('div', 'c-sum-links'); links.innerHTML = '<a href="request.html">' + T('Can\'t find it? We\'ll find it for you') + '</a><a class="quiet" href="owners.html">' + T('List your property') + '</a>';
     card.appendChild(links);
-    area.appendChild(card); turn.appendChild(area);
-    return turn;
+    c.appendChild(card);
+    return c;
   }
 
-  document.getElementById('c-pillbtn').addEventListener('click', function () { var r = chat.querySelector('.c-sum') || chat.lastChild; if (r) r.scrollIntoView({ behavior: 'smooth', block: 'center' }); });
-  render(!furthest);
-  V.loadListings().then(function (all) { HOMES = all; updatePanel(); if (furthest >= STEPS.length && !editing) render(false); })
-    .catch(function () { $('c-cntlbl').textContent = 'listings could not load'; });
+  // Onboarding can start the chat with a choice already made (e.g. short stay)
+  window.VSChat = { preset: function (p) { Object.keys(p).forEach(function (k2) { A[k2] = p[k2]; }); furthest = Math.max(furthest, 1); cur = 1; editing = false; render('fwd'); } };
+
+  $('c-pillbtn').addEventListener('click', function () { var r = chat.querySelector('.q-sumcard') || chat.querySelector('.q-card'); if (r) r.scrollIntoView({ behavior: 'smooth', block: 'center' }); });
+  render();
+  V.loadListings().then(function (all) { HOMES = all; loaded = true; if (cur >= N) render(); else updatePanel(); })
+    .catch(function () { loaded = true; $('c-cntlbl').textContent = T('listings could not load'); $('c-minis').innerHTML = ''; });
 })();

@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Book your stay | Viustay</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Viustay">
+<meta property="og:title" content="Book your stay | Viustay">
+<meta property="og:description" content="Tell us what you need and we shortlist verified homes in Nairobi, then take you to view them in one trip.">
+<meta property="og:url" content="https://mr-brownka.github.io/viustay-website/v2/stay.html">
+<meta property="og:image" content="https://mr-brownka.github.io/viustay-website/assets/share.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#FAFBFA">
+<link rel="icon" href="assets/favicon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Viustay">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&family=Source+Sans+3:wght@400;600&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/glass.css">
+<link rel="stylesheet" href="css/trips.css">
+<script src="js/look.js"></script>
+</head>
+<body data-header="flow" data-steps="0" data-page="stay">
+<header id="site-header"></header>
+<main class="container step-page" id="stay-form-wrap">
+  <form class="step-main" id="stay-form" novalidate>
+    <div class="stack-sm">
+      <span class="kicker" data-i18n>Short stay</span>
+      <h1 data-i18n>Book your stay</h1>
+      <p class="lede" data-i18n>Pick your dates, pay by M-Pesa and you're confirmed. Check-in details come the day before.</p>
+    </div>
+    <div class="grid-2" style="max-width:560px">
+      <label class="field"><span data-i18n>Check-in</span><input type="date" name="check_in" required></label>
+      <label class="field"><span data-i18n>Check-out</span><input type="date" name="check_out" required></label>
+    </div>
+    <p class="t-hint" id="s-dates-hint" aria-live="polite"></p>
+    <div class="stack-sm">
+      <strong style="font-size:14px" data-i18n>Guests</strong>
+      <div class="t-stepper"><button type="button" id="g-minus" aria-label="Fewer guests">−</button><b id="g-n">2</b><button type="button" id="g-plus" aria-label="More guests">+</button><span class="note" id="g-max"></span></div>
+    </div>
+    <label class="check hidden" id="pickup-wrap"><input type="checkbox" name="pickup"><span id="pickup-text"></span></label>
+    <label class="field hidden" id="pickup-note-wrap"><span data-i18n>Flight or bus, and arrival time</span><input type="text" name="pickup_note" maxlength="200" placeholder="e.g. KQ 101, landing 6:40 PM at JKIA" data-i18n-ph></label>
+    <div class="grid-2" style="max-width:560px">
+      <label class="field"><span data-i18n>Your name</span><input type="text" name="name" autocomplete="name" required></label>
+      <label class="field"><span data-i18n>M-Pesa / WhatsApp number</span><input type="tel" name="phone" autocomplete="tel" placeholder="07XX XXX XXX" required></label>
+    </div>
+    <p class="t-rule" id="s-rules"></p>
+    <label class="check"><input type="checkbox" name="consent" required><span data-i18n-html>I agree to the stay rules and cancellation policy, and that Viustay can contact me on WhatsApp about this booking (see the <a href="privacy.html" target="_blank">privacy notice</a>).</span></label>
+    <p class="error hidden" id="stay-error" role="alert"></p>
+    <div class="actions">
+      <button type="submit" class="btn btn-primary" id="stay-submit" disabled data-i18n>Continue to payment</button>
+      <a href="homes.html?stay=short" id="s-back" data-i18n>Back</a>
+    </div>
+  </form>
+  <aside class="step-side panel">
+    <div id="s-listing"><div class="sk-mini"><span class="sk sk-thumb"></span><span class="sk-body"><span class="sk sk-line w60"></span><span class="sk sk-line w80"></span></span></div></div>
+    <div class="t-price" id="s-price">
+      <div class="row-between"><span id="p-nights">–</span><strong class="t-num" id="p-rooms">–</strong></div>
+      <div class="row-between"><span data-i18n>Cleaning fee</span><strong class="t-num" id="p-clean">–</strong></div>
+      <div class="row-between hidden" id="p-pick-row"><span data-i18n>Airport pickup</span><strong class="t-num" id="p-pick">–</strong></div>
+      <div class="row-between t-total"><span data-i18n>Total</span><strong class="t-num" id="p-total">–</strong></div>
+      <span class="note" data-i18n>One price, no surprises. You pay by M-Pesa on the next step.</span>
+    </div>
+  </aside>
+</main>
+
+<main class="t-pay hidden" id="pay-wrap">
+  <span class="kicker"><span data-i18n>Booking</span> <span id="pay-ref"></span></span>
+  <h1 style="font-size:32px" id="pay-h"></h1>
+  <ol class="t-steps" id="pay-steps"></ol>
+  <p class="t-timer" id="pay-timer"></p>
+  <form id="pay-form" class="stack-sm" novalidate>
+    <label class="field"><span data-i18n>M-Pesa confirmation code</span><input type="text" name="mpesa" autocomplete="off" autocapitalize="characters" maxlength="14" placeholder="e.g. SJK3ABCD12" data-i18n-ph></label>
+    <p class="error hidden" id="pay-error" role="alert"></p>
+    <div class="actions"><button type="submit" class="btn btn-primary" id="pay-submit" data-i18n>Confirm payment</button><a href="#" id="pay-help" target="_blank" rel="noopener" data-i18n>Trouble paying? WhatsApp us</a></div>
+  </form>
+</main>
+
+<main class="t-pay hidden" id="stay-done">
+  <div class="t-voucher" id="voucher"></div>
+  <div class="actions" style="justify-content:center">
+    <a class="btn btn-dark" id="done-trip" href="trip.html" data-i18n>See my booking</a>
+    <button type="button" class="btn btn-outline" id="done-print" data-i18n>Save or print</button>
+    <a class="btn btn-outline" id="done-wa" href="#" target="_blank" rel="noopener" data-i18n>WhatsApp support</a>
+  </div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="js/lang.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/config.js"></script>
+<script src="js/common.js"></script>
+<script src="js/install.js"></script>
+<script src="js/trip-math.js"></script>
+<script src="js/stay.js"></script>
+</body>
+</html>
