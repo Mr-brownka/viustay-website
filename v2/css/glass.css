@@ -180,7 +180,7 @@ body[data-page="matches"] .vs-looks, body[data-page="home2"] .vs-looks { bottom:
 .menu-toggle { display: none; }
 .menu-panel { display: contents; }
 .menu-looks { display: none; }
-@media (max-width: 760px) {
+@media (max-width: 1024px) {
   .site-header > .container { flex-wrap: wrap; gap: 0; }
   .menu-toggle { display: grid; place-content: center; gap: 4px; margin-left: auto; width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--glass-edge); background: var(--white); cursor: pointer; }
   .menu-toggle span { display: block; width: 16px; height: 2px; border-radius: 2px; background: var(--ink); transition: transform .2s, opacity .2s; }
@@ -239,7 +239,7 @@ body[data-page="matches"] .vs-looks, body[data-page="home2"] .vs-looks { bottom:
 .lang-pick select option { color: #13302B; }
 .header-actions { display: flex; gap: 10px; align-items: center; }
 .lang-flow { margin-left: 4px; }
-@media (max-width: 760px) { .menu-panel .lang-pick { width: 100%; justify-content: flex-start; } .menu-panel .lang-pick select { flex: 1; } .header-actions { flex-direction: column-reverse; align-items: stretch; } }
+@media (max-width: 1024px) { .menu-panel .lang-pick { width: 100%; justify-content: flex-start; } .menu-panel .lang-pick select { flex: 1; } .header-actions { flex-direction: column-reverse; align-items: stretch; } }
 
 /* ---------- Skeleton loading ---------- */
 .sk { display: block; border-radius: 8px; background: linear-gradient(90deg, var(--sand-deep) 25%, rgba(255, 255, 255, .55) 37%, var(--sand-deep) 63%); background-size: 400% 100%; animation: sk-shine 1.3s ease-in-out infinite; }
@@ -306,3 +306,28 @@ html.onb-open, html.onb-open body { overflow: hidden; }
 .onb-dots i { width: 7px; height: 7px; border-radius: 50%; background: #D8E3DF; }
 .onb-dots i.on { background: #F2A93B; width: 20px; border-radius: 99px; }
 @media (max-width: 760px) { .vs-looks { display: none !important; } }
+
+/* ---------- Header option A: one slim glass pill on a single line (laptops) ---------- */
+.nav-more { position: relative; }
+.nav-more summary { list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; padding: 6px 4px; font-weight: 600; font-size: 15px; color: var(--ink); opacity: .8; }
+.nav-more summary::-webkit-details-marker { display: none; }
+.nav-more summary::after { content: ""; width: 7px; height: 7px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: translateY(-2px) rotate(45deg); transition: transform .2s; }
+.nav-more[open] summary::after { transform: translateY(1px) rotate(-135deg); }
+.nav-more summary:hover { opacity: 1; }
+@media (min-width: 1025px) {
+  .site-header > .container { flex-wrap: nowrap; gap: 18px; padding: 8px 8px 8px 22px; }
+  .site-header .site-nav { flex: 1 1 auto; flex-wrap: nowrap; justify-content: center; align-items: center; gap: 0 22px; white-space: nowrap; }
+  .site-header .header-actions { flex: none; gap: 8px; }
+  .site-header .header-actions .btn { min-height: 42px; padding: 8px 18px; }
+  .site-header .vs-install { width: 42px; height: 42px; min-height: 42px; padding: 0 !important; justify-content: center; }
+  .site-header .vs-install .vs-install-txt { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .site-header .lang-pick { min-height: 42px; }
+  .nav-more-list { position: absolute; top: calc(100% + 12px); left: 50%; transform: translateX(-50%); min-width: 200px; display: flex; flex-direction: column; padding: 8px; border-radius: 18px; background: var(--white); border: 1px solid var(--glass-edge); box-shadow: 0 18px 40px rgba(4, 32, 28, .18); animation: vs-rise .2s ease-out both; z-index: 5; }
+  .site-header .nav-more .nav-more-list a { color: var(--ink); opacity: .9; padding: 10px 12px; border-radius: 12px; }
+  .site-header .nav-more .nav-more-list a:hover { background: rgba(14, 94, 84, .08); opacity: 1; }
+  body[data-page="home2"] .nav-more summary { color: #fff; opacity: .9; }
+}
+@media (max-width: 1024px) { .nav-more { display: none; } }
+@media (min-width: 1025px) { .site-nav .nav-extra { display: none; } }
+.nav-more-list { background: #FFFFFF; }
+html[data-look="night"] .nav-more-list { background: #0B2E29; }

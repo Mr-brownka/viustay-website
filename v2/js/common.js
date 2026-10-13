@@ -67,13 +67,16 @@
           '<nav class="site-nav" aria-label="Main">' +
           (owners
             ? '<a href="index.html">' + T('Find a home') + '</a><a href="owners.html#how">' + T('How it works') + '</a><a href="owners.html#caretakers">' + T('Caretakers') + '</a>'
-            : '<a href="homes.html">' + T('Rent') + '</a><a href="homes.html?stay=short">' + T('Short stays') + '</a><a href="how-it-works.html">' + T('How it works') + '</a><a href="about.html">' + T('About') + '</a><a href="trip.html">' + T('My bookings') + '</a><a href="owners.html">' + T('List your property') + '</a>') +
+            : '<a href="homes.html">' + T('Rent') + '</a><a href="homes.html?stay=short">' + T('Short stays') + '</a><a href="trip.html">' + T('My bookings') + '</a><a href="owners.html">' + T('For owners') + '</a>' +
+              '<details class="nav-more"><summary>' + T('More') + '</summary><div class="nav-more-list"><a href="how-it-works.html">' + T('How it works') + '</a><a href="about.html">' + T('About') + '</a><a href="list-property.html">' + T('List your property') + '</a><a href="contact.html">' + T('Contact') + '</a></div></details>' +
+              '<a class="nav-extra" href="how-it-works.html">' + T('How it works') + '</a><a class="nav-extra" href="about.html">' + T('About') + '</a><a class="nav-extra" href="contact.html">' + T('Contact') + '</a>') +
           '</nav><div class="header-actions">' +
           (owners
             ? '<a class="btn btn-pill btn-light" href="dashboard.html">' + T('Manager log in') + '</a>'
             : '<a class="btn btn-pill btn-primary" href="index.html">' + T('Help me choose') + '</a>') +
           V.langSelect() +
           '</div><div class="menu-looks" role="group" aria-label="Colour look"></div></div></div>';
+        document.addEventListener('click', function (ev) { var d = slot.querySelector('.nav-more[open]'); if (d && !d.contains(ev.target)) d.removeAttribute('open'); });
         var tog = slot.querySelector('.menu-toggle'), panel = slot.querySelector('.menu-panel');
         tog.addEventListener('click', function () {
           var open = panel.classList.toggle('open');
@@ -111,7 +114,7 @@
     if (!window.VT) return '';
     var cur = VT.lang();
     return '<label class="lang-pick ' + (cls || '') + '"><span class="sr-only">' + T('Language') + '</span><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M2.5 10h15M10 2.5c2.2 2.3 2.2 12.7 0 15M10 2.5c-2.2 2.3-2.2 12.7 0 15" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>' +
-      '<select aria-label="' + T('Language') + '" onchange="VT.set(this.value)">' + Object.keys(VT.LANGS).map(function (k) { return '<option value="' + k + '"' + (k === cur ? ' selected' : '') + '>' + VT.LANGS[k] + '</option>'; }).join('') + '</select></label>';
+      '<select aria-label="' + T('Language') + '" onchange="VT.set(this.value)">' + Object.keys(VT.LANGS).map(function (k) { return '<option value="' + k + '"' + (k === cur ? ' selected' : '') + ' title="' + VT.LANGS[k] + '">' + (cls === 'lang-flow' ? VT.LANGS[k] : k.toUpperCase()) + '</option>'; }).join('') + '</select></label>';
   };
 
   // ---------- Dates in the chosen language ----------
@@ -133,9 +136,10 @@
   // ---------- Launch animation (once each time the app or site is opened) ----------
   (function launch() {
     var b = document.body;
-    if (!b || b.hasAttribute('data-no-launch')) return;
+    var bootEnd = function () { if (window.VSBootEnd) window.VSBootEnd(); };
+    if (!b || b.hasAttribute('data-no-launch')) { bootEnd(); return; }
     var seen = false; try { seen = sessionStorage.getItem('vs-launched'); sessionStorage.setItem('vs-launched', '1'); } catch (e) { seen = true; }
-    if (seen) return;
+    if (seen) { bootEnd(); return; }
     var o = document.createElement('div');
     o.className = 'vs-launch'; o.setAttribute('aria-hidden', 'true');
     o.innerHTML = '<svg viewBox="0 0 40 46"><path class="pin" d="M20 2 C10 2 3 9.5 3 19 C3 31 20 44 20 44 C20 44 37 31 37 19 C37 9.5 30 2 20 2 Z" fill="#0A4740" stroke="rgba(255,255,255,.18)" stroke-width=".6"/>' +
@@ -144,7 +148,7 @@
     b.appendChild(o);
     var done = false;
     window.VS_LAUNCHING = true;
-    function end() { if (done) return; done = true; o.classList.add('out'); window.VS_LAUNCHING = false; try { window.dispatchEvent(new Event('vs-launch-done')); } catch (e) {} setTimeout(function () { if (o.parentNode) o.parentNode.removeChild(o); }, 320); }
+    function end() { if (done) return; done = true; bootEnd(); o.classList.add('out'); window.VS_LAUNCHING = false; try { window.dispatchEvent(new Event('vs-launch-done')); } catch (e) {} setTimeout(function () { if (o.parentNode) o.parentNode.removeChild(o); }, 320); }
     o.addEventListener('click', end);
     setTimeout(end, window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches ? 450 : 1150);
   })();

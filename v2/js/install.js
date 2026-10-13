@@ -49,7 +49,8 @@
     var actions = document.querySelector('.site-header .header-actions');
     if (actions && !actions.querySelector('.vs-install')) {
       var b = document.createElement('button'); b.type = 'button'; b.className = 'btn btn-pill btn-outline vs-install';
-      b.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1v9M4.5 6.5 8 10l3.5-3.5M2 13h12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Install app';
+      b.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1v9M4.5 6.5 8 10l3.5-3.5M2 13h12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="vs-install-txt">Install app</span>';
+      b.title = 'Install app'; b.setAttribute('aria-label', 'Install app');
       actions.insertBefore(b, actions.firstChild);
     }
     var foot = document.querySelector('.footer-brand');

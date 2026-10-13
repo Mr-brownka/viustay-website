@@ -160,3 +160,6 @@ html[data-look="night"] .bk-done p { color: rgba(234,244,241,.8); }
 @media (prefers-reduced-motion: reduce) {
   .bk-body *, .bk-body *::before { animation-duration: .01s !important; animation-delay: 0s !important; }
 }
+
+.bk-screen .field input.invalid { border-color: #C0392B; box-shadow: 0 0 0 3px rgba(192,57,43,.15); }
+#bk-note-err { margin: -4px 0 0; }

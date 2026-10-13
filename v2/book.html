@@ -76,7 +76,8 @@
       <button type="button" class="bk-link" id="bk-usemap" data-i18n>Not there now? Drop a pin on the map</button>
     </div>
     <div class="bk-after hidden" id="bk-after">
-      <label class="field"><span data-i18n>Landmark for your agent (optional)</span><input type="text" id="bk-note" maxlength="200" placeholder="e.g. Blue gate, opposite Naivas" data-i18n-ph></label>
+      <label class="field"><span data-i18n>Building name / Estate name</span><input type="text" id="bk-note" maxlength="200" required autocomplete="street-address" placeholder="e.g. Fedha Towers, South C" data-i18n-ph></label>
+      <p class="error hidden" id="bk-note-err" role="alert"></p>
       <button type="button" class="bk-link left" id="bk-move" data-i18n>Wrong spot? Move the pin</button>
     </div>
     <button type="button" class="bk-btn bk-go" id="go-when" disabled data-i18n>Continue</button>

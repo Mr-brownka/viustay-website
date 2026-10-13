@@ -503,7 +503,11 @@ window.VS_DICT = {
   "Trip done · paid": "Safari imekamilika · imelipwa",
   "Please set your pickup spot again.": "Tafadhali weka mahali pa kuchukuliwa tena.",
   "Please enter a valid phone number.": "Tafadhali weka nambari sahihi ya simu.",
-  "We could not work out the trip. Please set your pickup spot again.": "Hatukuweza kupanga safari. Tafadhali weka mahali pa kuchukuliwa tena."
+  "We could not work out the trip. Please set your pickup spot again.": "Hatukuweza kupanga safari. Tafadhali weka mahali pa kuchukuliwa tena.",
+  "More": "Zaidi",
+  "Building name / Estate name": "Jina la jengo / Jina la mtaa",
+  "e.g. Fedha Towers, South C": "mf. Fedha Towers, South C",
+  "Add your building or estate name so your agent can find you.": "Weka jina la jengo au mtaa wako ili wakala wako akupate."
  },
  "so": {
   "Find a home": "Raadi guri",
@@ -1008,6 +1012,10 @@ window.VS_DICT = {
   "Trip done · paid": "Safarku waa dhammaaday · waa la bixiyay",
   "Please set your pickup spot again.": "Fadlan mar kale dhig meesha lagaa qaadayo.",
   "Please enter a valid phone number.": "Fadlan geli lambar taleefan oo sax ah.",
-  "We could not work out the trip. Please set your pickup spot again.": "Ma xisaabin karin safarka. Fadlan mar kale dhig meesha lagaa qaadayo."
+  "We could not work out the trip. Please set your pickup spot again.": "Ma xisaabin karin safarka. Fadlan mar kale dhig meesha lagaa qaadayo.",
+  "More": "Wax kale",
+  "Building name / Estate name": "Magaca dhismaha / Magaca xaafadda",
+  "e.g. Fedha Towers, South C": "tusaale: Fedha Towers, South C",
+  "Add your building or estate name so your agent can find you.": "Ku dar magaca dhismahaaga ama xaafaddaada si wakiilkaagu kuu helo."
  }
 };

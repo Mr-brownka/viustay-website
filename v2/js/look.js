@@ -4,6 +4,23 @@
   try { look = localStorage.getItem('vs-look') === 'night' ? 'night' : 'pearl'; } catch (e) {}
   document.documentElement.setAttribute('data-look', look);
 
+  // First open of the app/site this session: paint emerald straight away (no white flash) until the launch animation is up.
+  var boot = false;
+  try { boot = !sessionStorage.getItem('vs-launched'); } catch (e) {}
+  if (boot) {
+    var de = document.documentElement;
+    de.classList.add('vs-boot');
+    var st = document.createElement('style');
+    st.textContent = 'html.vs-boot,html.vs-boot body{background:#0E5E54!important}html.vs-boot body>*:not(.vs-launch){visibility:hidden}';
+    document.head.appendChild(st);
+    var tc = document.querySelector('meta[name="theme-color"]'); if (tc) tc.setAttribute('content', '#0E5E54');
+    window.VSBootEnd = function () {
+      de.classList.remove('vs-boot');
+      var m = document.querySelector('meta[name="theme-color"]'); if (m) m.setAttribute('content', look === 'night' ? '#04201C' : '#FAFBFA');
+    };
+    setTimeout(window.VSBootEnd, 4000); // safety net
+  } else { window.VSBootEnd = function () {}; }
+
   function set(l) {
     document.documentElement.setAttribute('data-look', l);
     try { localStorage.setItem('vs-look', l); } catch (e) {}

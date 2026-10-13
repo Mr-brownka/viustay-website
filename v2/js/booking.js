@@ -132,7 +132,16 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   $('#bk-usemap').addEventListener('click', useMap);
   $('#bk-move').addEventListener('click', useMap);
-  $('#go-when').addEventListener('click', function () { if (pick.lat !== null) go('when'); });
+  $('#go-when').addEventListener('click', function () {
+    if (pick.lat === null) return;
+    var note = $('#bk-note'), err = $('#bk-note-err');
+    if (note.value.trim().length < 2) {
+      showErr(err, t_('Add your building or estate name so your agent can find you.'));
+      note.classList.add('invalid'); note.focus(); return;
+    }
+    showErr(err); note.classList.remove('invalid'); go('when');
+  });
+  $('#bk-note').addEventListener('input', function () { if (this.value.trim().length >= 2) { showErr($('#bk-note-err')); this.classList.remove('invalid'); } });
 
   // ---------- 3. day & time ----------
   function localCal() {
