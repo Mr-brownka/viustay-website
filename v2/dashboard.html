@@ -35,7 +35,7 @@
 <!-- Log in / sign up -->
 <main class="auth-box hidden" id="auth">
   <h1 id="auth-title" style="font-size:32px">Manager log in</h1>
-  <p class="lede" style="font-size:16px" id="auth-lede">See your vacant units, booked viewings and the agents bringing them.</p>
+  <p class="lede" style="font-size:16px" id="auth-lede">Register your buildings, add vacancies and see every viewing.</p>
   <form id="auth-form" class="stack-sm" novalidate>
     <label class="field">Email<input type="email" name="email" autocomplete="email" required></label>
     <label class="field" id="pw-field">Password<input type="password" name="password" autocomplete="current-password" minlength="8" required></label>
@@ -54,12 +54,10 @@
 <div class="md hidden" id="dash">
   <aside class="md-side" aria-label="Dashboard">
     <a class="md-logo" href="owners.html"><img src="assets/viustay-logo-white.svg" alt="Viustay"><span>owners</span></a>
-    <div class="md-bsel" id="bsel-side"></div>
     <nav class="md-nav">
-      <button type="button" data-tab="home"><svg viewBox="0 0 24 24"><path d="M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg><span data-i18n>Home</span></button>
-      <button type="button" data-tab="units"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M10 21v-4h4v4"/></svg><span data-i18n>Units</span></button>
-      <button type="button" data-tab="viewings"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span data-i18n>Viewings</span></button>
-      <button type="button" data-tab="profile"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span data-i18n>Profile &amp; settings</span></button>
+      <button type="button" data-go="buildings"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M10 21v-4h4v4"/></svg><span data-i18n>My buildings</span></button>
+      <div class="md-sub" id="side-sub"></div>
+      <button type="button" data-go="profile"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span data-i18n>Profile &amp; settings</span></button>
     </nav>
     <div class="md-soon">
       <small data-i18n>Coming soon</small><b>Viustay Manage</b>
@@ -68,20 +66,15 @@
     <div class="md-me"><span class="md-av" id="me-av-side">··</span><span><b id="me-name-side"></b><button type="button" class="md-out" data-logout data-i18n>Log out</button></span></div>
   </aside>
   <header class="md-top">
-    <a class="md-logo" href="owners.html"><img src="assets/viustay-logo-colour.svg" alt="Viustay"></a>
+    <span id="md-top-left"></span>
     <button type="button" class="md-av" id="me-av-top" data-go="profile" aria-label="Profile and settings">··</button>
   </header>
-  <main class="md-main" id="md-main">
-    <section data-panel="home"></section>
-    <section data-panel="units" class="hidden"></section>
-    <section data-panel="viewings" class="hidden"></section>
-    <section data-panel="profile" class="hidden"></section>
-  </main>
-  <nav class="md-tabs" aria-label="Dashboard">
-    <button type="button" data-tab="home"><i><svg viewBox="0 0 24 24"><path d="M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg></i><span data-i18n>Home</span></button>
-    <button type="button" data-tab="units"><i><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M10 21v-4h4v4"/></svg></i><span data-i18n>Units</span></button>
-    <button type="button" data-tab="viewings"><i><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></i><span data-i18n>Viewings</span></button>
-    <button type="button" data-tab="profile"><i><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></i><span data-i18n>Profile</span></button>
+  <main class="md-main" id="md-view"></main>
+  <nav class="md-tabs" aria-label="Building">
+    <button type="button" data-btab="home"><i><svg viewBox="0 0 24 24"><path d="M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg></i><span data-i18n>Home</span></button>
+    <button type="button" data-btab="units"><i><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M10 21v-4h4v4"/></svg></i><span data-i18n>Units</span></button>
+    <button type="button" data-btab="viewings"><i><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></i><span data-i18n>Viewings</span></button>
+    <button type="button" data-btab="details"><i><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg></i><span data-i18n>Details</span></button>
   </nav>
 </div>
 <div class="md-sheet hidden" id="sheet" role="dialog" aria-modal="true"><div class="md-sheet-card" id="sheet-card"></div></div>
