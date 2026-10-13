@@ -41,43 +41,98 @@ document.addEventListener('DOMContentLoaded', function () {
   // ---------- viewing trip ----------
   var TRIP = { booked: ['ok', 'Booked · we\'re confirming your homes'], awaiting_payment: ['warn', 'Waiting for payment'], expired: ['bad', 'Not paid in time'], paid: ['ok', 'Paid · we\'re confirming your homes'],
     confirmed: ['ok', 'Confirmed'], completed: ['ok', 'Trip done'], no_show: ['bad', 'Missed trip'], cancelled: ['bad', 'Cancelled'] };
+  var LISTINGS = null;
+  function listings() { if (!LISTINGS) LISTINGS = V.loadListings().catch(function () { return []; }); return LISTINGS; }
+  function countdown(date, base) {
+    var d = Math.round((new Date(date + 'T00:00:00') - new Date(base + 'T00:00:00')) / 864e5);
+    return d === 0 ? T('Today') : d === 1 ? T('Tomorrow') : d > 1 ? T('In {n} days', { n: d }) : '';
+  }
+  function bigDate(date, base) {
+    var d = Math.round((new Date(date + 'T00:00:00') - new Date(base + 'T00:00:00')) / 864e5);
+    return d === 0 ? T('Today') : d === 1 ? T('Tomorrow') : V.date(date, { weekday: 'short', day: 'numeric', month: 'short' });
+  }
+  function helpSheet(t) {
+    var when = V.date(t.date, { weekday: 'short', day: 'numeric', month: 'short' }) + ', ' + t.slot;
+    var num = (V.cfg && V.cfg.WHATSAPP_NUMBER) || '';
+    var w = document.createElement('div'); w.className = 'mb-sheet-wrap';
+    w.innerHTML = '<div class="mb-scrim" data-close></div><div class="mb-sheet" role="dialog" aria-modal="true" aria-label="' + T('Need help?') + '"><span class="mb-grab"></span>' +
+      '<h2>' + T('Need help?') + '</h2><p>' + T('Booking {ref} · {when}', { ref: V.esc(t.ref), when: V.esc(when) }) + '</p>' +
+      '<a class="mb-opt" target="_blank" rel="noopener" href="' + V.wa('Hi Viustay, I would like to change my viewing trip ' + t.ref + ' (' + when + ').') + '"><b>' + T('Change my trip') + '</b><span>' + T('Day, time, pickup or homes') + '</span></a>' +
+      '<a class="mb-opt" target="_blank" rel="noopener" href="' + V.wa('Hi Viustay, I would like to cancel my viewing trip ' + t.ref + ' (' + when + ').') + '"><b>' + T('Cancel my trip') + '</b><span>' + T('Free until 6 pm the day before') + '</span></a>' +
+      '<div class="mb-two"><a class="btn btn-dark" target="_blank" rel="noopener" href="' + V.wa('Hi Viustay, I have a question about my viewing trip ' + t.ref + '.') + '">WhatsApp</a>' + (num ? '<a class="btn btn-outline" href="tel:+' + num + '">' + T('Call us') + '</a>' : '') + '</div>' +
+      '<button type="button" class="mb-close" data-close>' + T('Close') + '</button></div>';
+    document.body.appendChild(w);
+    V.$$('[data-close]', w).forEach(function (x) { x.addEventListener('click', function () { w.remove(); }); });
+  }
   function drawTrip(box, t, phone) {
-    var st = t.status === 'confirmed' && t.agent ? ['ok', 'Your agent is ready'] : TRIP[t.status] || ['', t.status];
-    var after = !!t.pay_after;
-    var n = after ? (t.status === 'completed' ? 3 : t.status === 'confirmed' ? (t.agent ? 2 : 1) : 0)
-      : t.status === 'completed' ? 4 : t.status === 'confirmed' ? (t.agent ? 3 : 2) : t.status === 'paid' ? 1 : 0;
-    if (after && t.status === 'completed') st = ['ok', 'Trip done · paid'];
-    var h = '<div class="t-card"><div class="row-between" style="flex-wrap:wrap;gap:8px"><span><span class="kicker">' + T('Viewing trip') + '</span><br><strong style="font-size:18px">' + V.esc(t.ref) + '</strong></span><span class="t-badge ' + st[0] + '">' + V.esc(T(st[1])) + '</span></div>';
-    if (['cancelled', 'expired', 'no_show'].indexOf(t.status) < 0) h += progress(after ? ['Booked', 'Confirmed', 'Agent ready', 'Done'] : ['Booked', 'Paid', 'Confirmed', 'Agent ready', 'Done'], n);
-    h += '<div class="t-kv"><span>' + T('When') + '</span><strong>' + V.esc(long(t.date)) + ', ' + V.esc(t.slot) + '</strong>' +
-      '<span>' + T('Pickup') + '</span><span>' + V.esc(t.pickup_area) + (t.pickup_note ? ' · ' + V.esc(t.pickup_note) : '') + '</span>' +
-      '<span>' + T(after && !t.mpesa_code ? 'To pay' : 'Paid') + '</span><span>' + (t.mpesa_code ? kes(t.total) + ' · M-Pesa ' + V.esc(t.mpesa_code) : kes(t.total) + ' (' + T(after ? 'after the trip' : 'not paid yet') + ')') + '</span></div>' +
-      '<strong style="font-size:15px">' + T('Homes, in visiting order') + '</strong><ol class="t-homes">' + (t.homes || []).map(function (x) { return '<li><a href="home.html?id=' + encodeURIComponent(x.id) + '">' + V.esc(x.title || x.id) + '</a>' + (x.area ? ' · ' + V.esc(x.area) : '') + '</li>'; }).join('') + '</ol></div>';
+    var after = !!t.pay_after, base = t.today || today();
+    var dead = ['cancelled', 'expired', 'no_show'].indexOf(t.status) >= 0;
+    var done = t.status === 'completed';
+    var agentReady = t.status === 'confirmed' && !!t.agent;
+    var n = done ? 3 : agentReady ? 2 : (t.status === 'confirmed' || t.status === 'paid') ? 1 : 0;
+    var isToday = t.date === base;
+    var pill = dead ? '<span class="mb-pill bad">' + T(t.status === 'cancelled' ? 'Cancelled' : t.status === 'no_show' ? 'Missed trip' : 'Not paid in time') + '</span>'
+      : done ? '<span class="mb-pill ok">' + T('Trip done') + '</span>'
+      : isToday && agentReady ? '<span class="mb-pill live"><i></i>' + T('Your agent is ready') + '</span>'
+      : '<span class="mb-pill">' + V.esc(countdown(t.date, base) || '') + '</span>';
+    var note = (t.pickup_note || '').trim();
+    var h = '<div class="mb-ticket' + (dead ? ' dead' : '') + '">' +
+      '<div class="mb-tk-top"><span>' + T('Viewing trip') + (isToday ? ' · ' + V.esc(t.ref) : '') + '</span>' + pill + '</div>' +
+      '<div class="mb-tk-when"><b>' + V.esc(bigDate(t.date, base)) + '</b><span>' + V.esc(t.slot) + '</span></div>' +
+      '<div class="mb-tk-cut"></div>' +
+      '<div class="mb-tk-foot"><span><small>' + T('Pickup') + '</small><b>' + V.esc(T('Near {x}', { x: t.pickup_area })) + '</b>' + (note ? '<em>' + V.esc(note) + '</em>' : '') + '</span>' +
+      '<span class="r"><small>' + T('Booking') + '</small><b>' + V.esc(t.ref) + '</b><em>' + V.esc(T((t.homes || []).length === 1 ? '{n} home' : '{n} homes', { n: (t.homes || []).length })) + '</em></span></div></div>';
+    if (!dead) {
+      var labels = ['Booked', 'Confirmed', 'Agent ready', 'Done'];
+      var msg = done ? (t.mpesa_code ? T('Paid {x}. Thank you for viewing with Viustay!', { x: kes(t.total) }) : T('Your trip is done.'))
+        : agentReady ? T('{name} accepted your trip. Check the plate before you get in.', { name: V.esc(t.agent.name.split(' ')[0]) })
+        : n === 1 ? T('Your homes are confirmed. We\'ll show your agent here the day before.')
+        : T('We\'re checking the homes are still free. You\'ll hear from us soon.');
+      h += '<div class="mb-steps"><div class="mb-track">' + labels.map(function (l, i) {
+        return '<i class="' + (i <= n ? 'on' : '') + (i === n && !done ? ' now' : '') + '"></i>' + (i < labels.length - 1 ? '<s class="' + (i < n ? 'on' : '') + '"></s>' : '');
+      }).join('') + '</div><div class="mb-labels">' + labels.map(function (l, i) { return '<span class="' + (i === n ? 'cur' : '') + '">' + T(l) + '</span>'; }).join('') + '</div><p>' + msg + '</p></div>';
+    }
+    if (t.agent) {
+      var a = t.agent;
+      h += '<div class="mb-agent"><div class="mb-agent-row"><span class="mb-face" style="' + (a.photo_url ? V.photoStyle(a.photo_url) : '') + '">' + (a.photo_url ? '' : V.esc((a.name || '?').charAt(0))) + '</span>' +
+        '<div><b>' + V.esc(a.name) + '</b><span>' + V.esc(a.car || '') + '</span>' + (a.plate ? '<span class="t-plate">' + V.esc(a.plate) + '</span>' : '') + '</div></div>' +
+        (t.status === 'confirmed' ? '<div class="mb-two"><a class="btn btn-dark" href="tel:+' + intl(a.phone) + '">' + T('Call {name}', { name: V.esc(a.name.split(' ')[0]) }) + '</a><a class="btn btn-outline" target="_blank" rel="noopener" href="https://wa.me/' + intl(a.phone) + '">WhatsApp</a></div>' : '') + '</div>';
+    } else if (!dead && !done) {
+      h += '<div class="mb-agent empty"><span class="mb-face">?</span><span>' + T('Your agent\'s name, photo and car plate show here <b>the day before</b>.') + '</span></div>';
+    }
+    h += '<div class="mb-homes"><div class="mb-sub"><span>' + T('Homes, in visiting order') + '</span></div><div class="mb-home-row">' + (t.homes || []).map(function (x, i) {
+      return '<a class="mb-home" href="home.html?id=' + encodeURIComponent(x.id) + '" data-hid="' + V.esc(x.id) + '"><span class="ph"><i>' + (i + 1) + '</i></span><span class="tx"><b>' + V.esc(x.title || x.id) + '</b><small>' + V.esc(x.area || '') + (x.rent ? ' · KES ' + V.money(x.rent) : '') + '</small></span></a>';
+    }).join('') + '</div></div>';
+    var payNow = after && t.status === 'confirmed' && !t.mpesa_code && t.date <= base;
+    if (after && !dead && !payNow) {
+      h += '<div class="mb-pay' + (t.mpesa_code ? ' paid' : '') + '"><div><b>' + T(t.mpesa_code ? 'Paid' : 'Pay after your viewing') + '</b><span>' +
+        (t.mpesa_code ? 'M-Pesa ' + V.esc(t.mpesa_code) : T('Transport {a} + viewing fee {b}', { a: V.money(t.fare), b: V.money(t.viewing_fee) })) + '</span></div><strong>' + kes(t.total) + '</strong></div>';
+    } else if (!after && !dead) {
+      h += '<div class="mb-pay' + (t.mpesa_code ? ' paid' : '') + '"><div><b>' + T(t.mpesa_code ? 'Paid' : 'Not paid yet') + '</b><span>' + (t.mpesa_code ? 'M-Pesa ' + V.esc(t.mpesa_code) : '') + '</span></div><strong>' + kes(t.total) + '</strong></div>';
+    }
     if (t.status === 'awaiting_payment') {
       try { localStorage.setItem('vs-trip', JSON.stringify({ ref: t.ref, phone: phone, total: t.total, expires_at: t.expires_at, date: t.date, slot: t.slot, pickup: t.pickup_area })); } catch (e) {}
       h += '<div class="t-card"><p style="margin:0">' + T('Your slot is held until you pay. Pay by M-Pesa and enter the confirmation code.') + '</p><div><a class="btn btn-primary" href="book.html?pay=1">' + T('Finish paying') + '</a></div></div>';
     }
-    var day = t.today || today();
-    if (after && t.status === 'confirmed' && !t.mpesa_code && t.date <= day) {
+    if (after && t.status === 'confirmed' && !t.mpesa_code && t.date <= base) {
       h += '<form class="t-card pay-after-form"><strong style="font-size:17px">' + T('Pay after your viewing') + '</strong>' +
         (t.till ? '<ol class="t-steps"><li><span>' + T('Open <strong>M-Pesa</strong> and go to <b>Lipa na M-Pesa → Buy Goods and Services</b>.') + '</span></li><li><span>' + T('Till number:') + ' <strong>' + V.esc(t.till) + '</strong> ' + (t.pay_name ? '<span class="note">(' + V.esc(t.pay_name) + ')</span>' : '') + '</span></li><li><span>' + T('Amount:') + ' <strong>' + kes(t.total) + '</strong></span></li></ol>'
           : '<span>' + T('Your agent will show you how to pay {x} by M-Pesa.', { x: kes(t.total) }) + '</span>') +
         '<label class="field">' + T('M-Pesa confirmation code') + '<input name="mpesa" autocomplete="off" autocapitalize="characters" maxlength="14" placeholder="e.g. SJK3ABCD12"></label><p class="t-msg"></p><div><button class="btn btn-primary" type="submit">' + T('I\'ve paid') + '</button></div></form>';
     }
     if (t.code) h += '<div class="t-code"><span>' + T('Your trip code') + '</span><b>' + V.esc(t.code) + '</b><span>' + T('Give this code to your agent at the <strong>end</strong> of your trip, not before.') + '</span></div>';
-    if (t.agent) {
-      var a = t.agent;
-      h += '<div class="t-card"><strong style="font-size:15px">' + T('Your agent') + '</strong><div class="t-agent"><span class="t-face" style="' + (a.photo_url ? V.photoStyle(a.photo_url) : '') + '">' + (a.photo_url ? '' : V.esc((a.name || '?').charAt(0))) + '</span>' +
-        '<div class="stack-sm" style="gap:4px"><strong style="font-size:18px">' + V.esc(a.name) + '</strong><span>' + V.esc(a.car || '') + '</span>' + (a.plate ? '<span><span class="t-plate">' + V.esc(a.plate) + '</span></span>' : '') + '</div></div>' +
-        (t.status === 'confirmed' ? '<div class="t-actions"><a class="btn btn-dark" href="tel:+' + intl(a.phone) + '">' + T('Call {name}', { name: V.esc(a.name.split(' ')[0]) }) + '</a><a class="btn btn-outline" target="_blank" rel="noopener" href="https://wa.me/' + intl(a.phone) + '">WhatsApp</a></div>' : '') +
-        '<span class="note">' + T('Check the plate before you get in. Your agent never asks for cash: everything is paid to Viustay.') + '</span></div>';
-    } else if (t.status === 'paid' || t.status === 'confirmed' || t.status === 'booked') {
-      h += '<div class="t-card"><strong style="font-size:15px">' + T('Your agent') + '</strong><span>' + T('We\'ll show your agent\'s name, photo and car plate here the day before your trip.') + '</span></div>';
-    }
-    if (t.status === 'completed' && !t.rating) h += rateForm('How was your agent?');
+    if (done && !t.rating) h += rateForm('How was your agent?');
     else if (t.rating) h += '<div class="t-card"><span>' + T('Thanks for your rating') + ' ' + '★★★★★'.slice(0, t.rating) + '</span></div>';
-    h += '<div class="t-actions"><a class="btn btn-outline" target="_blank" rel="noopener" href="' + V.wa('Hi Viustay, about my viewing trip ' + t.ref + ': ') + '">' + T('Change or cancel on WhatsApp') + '</a></div>';
-    box.innerHTML = h; rating(box, 'trip', t, phone);
+    h += '<div class="mb-actions">' + (!dead && !done ? '<button type="button" class="btn btn-dark mb-change">' + T('Change booking') + '</button>' : '') + '<button type="button" class="btn btn-outline mb-help">' + T('Need help?') + '</button></div>';
+    box.innerHTML = h; box.classList.add('mb-view'); rating(box, 'trip', t, phone);
+    V.$$('.mb-change, .mb-help', box).forEach(function (x) { x.addEventListener('click', function () { helpSheet(t); }); });
+    // home photos from the listings sheet
+    listings().then(function (all) {
+      V.$$('.mb-home', box).forEach(function (el) {
+        var l = all.filter(function (x) { return x.id === el.getAttribute('data-hid'); })[0];
+        if (l && l.photoList && l.photoList[0]) { var ph = el.querySelector('.ph'); ph.setAttribute('style', V.photoStyle(l.photoList[0])); ph.classList.add('has'); }
+      });
+    });
     var pf = box.querySelector('.pay-after-form');
     if (pf) pf.addEventListener('submit', function (e) {
       e.preventDefault();
@@ -124,7 +179,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function demoData(ref) {
     if (isStay(ref)) return { ref: ref, kind: 'stay', status: 'confirmed', listing_id: 'VS-102', title: '1 bedroom, Off Waiyaki Way', area: 'Westlands', guests: 2, nights: 3,
       check_in: today(), check_out: today(), check_in_time: '2:00 PM', check_out_time: '11:00 AM', total: 25000, mpesa_code: 'QWE123RTY9', checkin_info: 'Sarit View Apartments, Block B, 6th floor.\nCaretaker: John, 0712 000 000.' };
-    return { ref: ref, status: 'confirmed', date: today(), slot: '9:00 AM', pickup_area: 'South B', pickup_note: 'Gate B', homes: [{ id: 'VS-001', title: '1 bedroom, Argwings Kodhek Rd', area: 'Kilimani' }],
+    return { ref: ref, status: 'confirmed', date: today(), slot: '9:00 AM', pickup_area: 'South B', pickup_note: 'Gate B', homes: [{ id: 'VS-001', title: '1 bedroom, Argwings Kodhek Rd', area: 'Kilimani', rent: 38000 }], fare: 1600, viewing_fee: 950,
       total: 2550, pay_after: true, till: '123456', pay_name: 'Viustay', agent: { name: 'Hassan Ali', phone: '0712345678', car: 'Toyota Axio, silver', plate: 'KDA 123A' } };
   }
   function load(ref, phone) {

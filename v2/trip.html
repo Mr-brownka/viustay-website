@@ -28,12 +28,12 @@
 <link rel="stylesheet" href="css/trips.css">
 <script src="js/look.js"></script>
 </head>
-<body data-header="main">
+<body data-header="main" data-no-wa>
 <header id="site-header"></header>
-<main class="container section" style="max-width:720px;display:flex;flex-direction:column;gap:20px">
-  <div class="row-between" style="flex-wrap:wrap;gap:10px;align-items:flex-end">
-    <div class="stack-sm"><span class="kicker" data-i18n>Viewing trips and short stays</span><h1 style="font-size:34px" data-i18n>My bookings</h1></div>
-    <button type="button" class="btn btn-outline" id="find-again" style="font-size:15px;padding:8px 14px;min-height:40px" data-i18n>Find another booking</button>
+<main class="container section mb-page">
+  <div class="mb-head">
+    <h1 data-i18n>My bookings</h1>
+    <button type="button" class="mb-link" id="find-again" data-i18n>Find a booking</button>
   </div>
   <form class="t-card hidden" id="find-form" novalidate>
     <p style="margin:0" data-i18n>Enter your booking number and the phone number you booked with.</p>
