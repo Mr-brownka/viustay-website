@@ -68,6 +68,7 @@
       '<div class="t-kv"><span>Trip</span><strong>' + dayFmt(t.trip_date) + ', ' + V.esc(t.slot) + ' · ' + V.esc(t.booking_ref) + '</strong>' +
       '<span>Pickup</span><span>' + V.esc(t.pickup_area) + (t.pickup_note ? ' · ' + V.esc(t.pickup_note) : '') + (t.pickup_lat ? ' · <a target="_blank" rel="noopener" href="https://www.google.com/maps?q=' + t.pickup_lat + ',' + t.pickup_lng + '">exact pin</a>' : '') + '</span>' +
       '<span>Money</span><span>' + kes(t.total) + ' = ' + kes(t.fare) + ' agent + ' + kes(t.viewing_fee) + ' fee' + (t.mpesa_code ? ' · M-Pesa <strong>' + V.esc(t.mpesa_code) + '</strong> ' + when(t.paid_at) : t.pay_after ? ' · <em>client pays after the trip</em>' : '') + '</span>' +
+      (t.changed_at ? '<span>Changed</span><span><span class="t-badge warn">by the client ' + when(t.changed_at) + '</span></span>' : '') +
       '<span>Route</span><span>' + t.distance_km + ' km · ' + V.Trip.mins(t.drive_min) + ' driving + ' + V.Trip.mins(t.wait_min) + ' viewing</span>' +
       (t.pay_after ? '' : '<span>Code</span><span>' + V.esc(t.trip_code) + '</span>') +
       (t.rating ? '<span>Rating</span><span>' + '★★★★★'.slice(0, t.rating) + (t.rating_note ? ' · ' + V.esc(t.rating_note) : '') + '</span>' : '') +
@@ -297,7 +298,7 @@
   var FIELDS = [
     ['base', 'Base fare (KES)'], ['per_km', 'Per km (KES)'], ['per_min', 'Per minute driving (KES)'], ['wait_per_hour', 'Waiting per hour (KES)'],
     ['view_min', 'Minutes per viewing'], ['min_fare', 'Minimum fare (KES)'], ['round_to', 'Round fare up to (KES)'], ['viewing_fee', 'Viewing fee (KES)'],
-    ['road_factor', 'Road factor (× straight line)'], ['speed_kmh', 'Average speed (km/h)'], ['trips_per_agent_day', 'Trips per agent per day'], ['calendar_days', 'How many days ahead clients can book'],
+    ['road_factor', 'Road factor (× straight line)'], ['speed_kmh', 'Average speed (km/h)'], ['trips_per_agent_day', 'Trips per agent per day'], ['calendar_days', 'How many days ahead clients can book'], ['change_lock_hours', 'Clients can change/cancel up to (hours before)'],
     ['pay_window_min', 'Minutes to pay before slot is freed'], ['callout_fee', 'No-show call-out to agent (KES)'], ['placement_bonus_pct', 'Agent placement bonus (% of fee)'],
     ['airport_pickup_fee', 'Short stays: airport pickup (KES, 0 = off)']
   ];

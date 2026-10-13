@@ -51,18 +51,54 @@ document.addEventListener('DOMContentLoaded', function () {
     var d = Math.round((new Date(date + 'T00:00:00') - new Date(base + 'T00:00:00')) / 864e5);
     return d === 0 ? T('Today') : d === 1 ? T('Tomorrow') : V.date(date, { weekday: 'short', day: 'numeric', month: 'short' });
   }
-  function helpSheet(t) {
-    var when = V.date(t.date, { weekday: 'short', day: 'numeric', month: 'short' }) + ', ' + t.slot;
-    var num = (V.cfg && V.cfg.WHATSAPP_NUMBER) || '';
+  function sheet(inner) {
     var w = document.createElement('div'); w.className = 'mb-sheet-wrap';
-    w.innerHTML = '<div class="mb-scrim" data-close></div><div class="mb-sheet" role="dialog" aria-modal="true" aria-label="' + T('Need help?') + '"><span class="mb-grab"></span>' +
-      '<h2>' + T('Need help?') + '</h2><p>' + T('Booking {ref} · {when}', { ref: V.esc(t.ref), when: V.esc(when) }) + '</p>' +
-      '<a class="mb-opt" target="_blank" rel="noopener" href="' + V.wa('Hi Viustay, I would like to change my viewing trip ' + t.ref + ' (' + when + ').') + '"><b>' + T('Change my trip') + '</b><span>' + T('Day, time, pickup or homes') + '</span></a>' +
-      '<a class="mb-opt" target="_blank" rel="noopener" href="' + V.wa('Hi Viustay, I would like to cancel my viewing trip ' + t.ref + ' (' + when + ').') + '"><b>' + T('Cancel my trip') + '</b><span>' + T('Free until 6 pm the day before') + '</span></a>' +
-      '<div class="mb-two"><a class="btn btn-dark" target="_blank" rel="noopener" href="' + V.wa('Hi Viustay, I have a question about my viewing trip ' + t.ref + '.') + '">WhatsApp</a>' + (num ? '<a class="btn btn-outline" href="tel:+' + num + '">' + T('Call us') + '</a>' : '') + '</div>' +
-      '<button type="button" class="mb-close" data-close>' + T('Close') + '</button></div>';
+    w.innerHTML = '<div class="mb-scrim" data-close></div><div class="mb-sheet" role="dialog" aria-modal="true"><span class="mb-grab"></span>' + inner + '<button type="button" class="mb-close" data-close>' + T('Close') + '</button></div>';
     document.body.appendChild(w);
     V.$$('[data-close]', w).forEach(function (x) { x.addEventListener('click', function () { w.remove(); }); });
+    return w;
+  }
+  function whenText(t) { return V.date(t.date, { weekday: 'short', day: 'numeric', month: 'short' }) + ', ' + t.slot; }
+  function callBtns(t, msg) {
+    var num = (V.cfg && V.cfg.WHATSAPP_NUMBER) || '';
+    return '<div class="mb-two"><a class="btn btn-dark" target="_blank" rel="noopener" href="' + V.wa(msg) + '">WhatsApp</a>' + (num ? '<a class="btn btn-outline" href="tel:+' + num + '">' + T('Call us') + '</a>' : '') + '</div>';
+  }
+  function helpSheet(t) {
+    sheet('<h2>' + T('Need help?') + '</h2><p>' + T('Booking {ref} · {when}', { ref: V.esc(t.ref), when: V.esc(whenText(t)) }) + '</p>' +
+      callBtns(t, 'Hi Viustay, I have a question about my viewing trip ' + t.ref + ' (' + whenText(t) + ').'));
+  }
+  function changeSheet(t, phone, box) {
+    var hrs = t.lock_hours || 36;
+    if (!t.can_change) {
+      sheet('<h2>' + T('Change or cancel') + '</h2><p>' + T('Your trip is less than {h} hours away and your agent has been told, so changes are made with us directly.', { h: hrs }) + '</p>' +
+        callBtns(t, 'Hi Viustay, I need to change my viewing trip ' + t.ref + ' (' + whenText(t) + ').'));
+      return;
+    }
+    var w = sheet('<h2>' + T('Change or cancel') + '</h2><p>' + T('You can do this here until {when}.', { when: V.esc(V.date(t.change_until, { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })) }) + '</p>' +
+      '<a class="mb-opt" href="book.html?edit=' + encodeURIComponent(t.ref) + '"><b>' + T('Change my trip') + '</b><span>' + T('Day, time, pickup or your details') + '</span></a>' +
+      '<button type="button" class="mb-opt mb-cancel"><b>' + T('Cancel my trip') + '</b><span>' + T('No fee: you haven\'t paid anything') + '</span></button>');
+    w.querySelector('.mb-cancel').addEventListener('click', function () {
+      var sh = w.querySelector('.mb-sheet');
+      sh.innerHTML = '<span class="mb-grab"></span><h2>' + T('Cancel this trip?') + '</h2><p>' + T('{when} · pickup near {x}. You can book again any time.', { when: V.esc(whenText(t)), x: V.esc(t.pickup_area) }) + '</p><p class="t-msg"></p>' +
+        '<div class="mb-two"><button type="button" class="btn btn-outline mb-yes" style="color:#B3261E;border-color:rgba(179,38,30,.4)">' + T('Yes, cancel trip') + '</button><button type="button" class="btn btn-dark" data-close>' + T('Keep my trip') + '</button></div>';
+      V.$$('[data-close]', sh).forEach(function (x) { x.addEventListener('click', function () { w.remove(); }); });
+      sh.querySelector('.mb-yes').addEventListener('click', function () {
+        var btn = this; btn.disabled = true;
+        (V.demo ? Promise.resolve(true) : rpc('cancel_trip', { p_ref: t.ref, p_phone: phone })).then(function () {
+          w.remove(); t.status = 'cancelled'; t.can_change = false;
+          madeOverlay(T('Trip cancelled'), function () { draw(box, t, phone); });
+        }).catch(function (e) {
+          btn.disabled = false; var m = sh.querySelector('.t-msg'); m.className = 't-msg bad';
+          m.textContent = /locked/.test(e.message || '') ? T('It\'s now less than {h} hours to your trip. Please WhatsApp or call us.', { h: hrs }) : T('Could not cancel. Please try again.');
+        });
+      });
+    });
+  }
+  function madeOverlay(title, after) {
+    var o = document.createElement('div'); o.className = 'mb-made';
+    o.innerHTML = '<div class="mb-made-check"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#FFC46B" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5 10 17l9-10"/></svg></div><h1>' + V.esc(title) + '</h1>';
+    document.body.appendChild(o);
+    setTimeout(function () { o.classList.add('out'); if (after) after(); setTimeout(function () { o.remove(); }, 400); }, 1800);
   }
   function drawTrip(box, t, phone) {
     var after = !!t.pay_after, base = t.today || today();
@@ -124,8 +160,10 @@ document.addEventListener('DOMContentLoaded', function () {
     if (done && !t.rating) h += rateForm('How was your agent?');
     else if (t.rating) h += '<div class="t-card"><span>' + T('Thanks for your rating') + ' ' + '★★★★★'.slice(0, t.rating) + '</span></div>';
     h += '<div class="mb-actions">' + (!dead && !done ? '<button type="button" class="btn btn-dark mb-change">' + T('Change booking') + '</button>' : '') + '<button type="button" class="btn btn-outline mb-help">' + T('Need help?') + '</button></div>';
+    if (!dead && !done && t.can_change !== undefined) h += '<p class="mb-lock">' + (t.can_change ? T('Change or cancel in the app up to {h} hours before your trip.', { h: t.lock_hours || 36 }) : T('Less than {h} hours to go: changes are made with us on WhatsApp or by phone.', { h: t.lock_hours || 36 })) + '</p>';
     box.innerHTML = h; box.classList.add('mb-view'); rating(box, 'trip', t, phone);
-    V.$$('.mb-change, .mb-help', box).forEach(function (x) { x.addEventListener('click', function () { helpSheet(t); }); });
+    var ch = box.querySelector('.mb-change'); if (ch) ch.addEventListener('click', function () { changeSheet(t, phone, box); });
+    box.querySelector('.mb-help').addEventListener('click', function () { helpSheet(t); });
     // home photos from the listings sheet
     listings().then(function (all) {
       V.$$('.mb-home', box).forEach(function (el) {

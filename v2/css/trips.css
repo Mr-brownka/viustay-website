@@ -189,3 +189,13 @@ html[data-look="night"] .mb-tk-cut::before, html[data-look="night"] .mb-tk-cut::
 .mb-opt span { font-size: 13px; color: rgba(19, 48, 43, .65); }
 .mb-opt:hover { background: rgba(14, 94, 84, .05); }
 .mb-close { border: 0; background: none; font: inherit; font-weight: 600; color: #0E5E54; padding: 8px; cursor: pointer; }
+
+.mb-lock { margin: -6px 0 0; font-size: 13px; color: var(--muted); text-align: center; }
+button.mb-opt { font: inherit; text-align: left; background: #fff; cursor: pointer; }
+.mb-made { position: fixed; inset: 0; z-index: 80; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; color: #fff; background: linear-gradient(170deg, #14806F 0%, #0E5E54 45%, #04201C 100%); animation: vs-fade .3s ease both; transition: opacity .4s ease; }
+.mb-made.out { opacity: 0; }
+.mb-made h1 { margin: 0; font-size: 32px; color: #fff; animation: vs-rise .5s .2s ease-out both; }
+.mb-made-check { width: 92px; height: 92px; border-radius: 50%; background: rgba(255,255,255,.12); box-shadow: 0 0 0 12px rgba(255,255,255,.06); display: flex; align-items: center; justify-content: center; animation: mbPop .6s cubic-bezier(.2,1.3,.4,1) both; }
+.mb-made-check path { stroke-dasharray: 30; stroke-dashoffset: 30; animation: mbTick .5s .35s ease-out forwards; }
+@keyframes mbTick { to { stroke-dashoffset: 0; } }
+@keyframes mbPop { 0% { transform: scale(.4); opacity: 0; } 70% { transform: scale(1.1); opacity: 1; } 100% { transform: none; } }

@@ -163,3 +163,13 @@ html[data-look="night"] .bk-done p { color: rgba(234,244,241,.8); }
 
 .bk-screen .field input.invalid { border-color: #C0392B; box-shadow: 0 0 0 3px rgba(192,57,43,.15); }
 #bk-note-err { margin: -4px 0 0; }
+
+/* "Changes made" overlay (edit mode) */
+.bk-made { position: fixed; inset: 0; z-index: 80; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 24px; text-align: center; color: #fff; background: linear-gradient(170deg, #14806F 0%, #0E5E54 45%, #04201C 100%); animation: bkFade .35s ease both; }
+.bk-made .bk-check { background: rgba(255,255,255,.12); box-shadow: 0 0 0 12px rgba(255,255,255,.06); }
+.bk-made .bk-tick { stroke-dasharray: 30; stroke-dashoffset: 30; animation: bkTick .5s .35s ease-out forwards; }
+@keyframes bkTick { to { stroke-dashoffset: 0; } }
+.bk-made h1 { margin: 4px 0 0; font-family: var(--heading); font-size: 34px; color: #fff; animation: bkUp .5s .25s cubic-bezier(.2,.8,.2,1) both; }
+.bk-made p { margin: 0; color: rgba(255,255,255,.8); font-size: 16px; animation: bkUp .5s .4s cubic-bezier(.2,.8,.2,1) both; }
+.bk-made-bar { width: 160px; height: 4px; border-radius: 9px; background: rgba(255,255,255,.2); overflow: hidden; margin-top: 10px; }
+.bk-made-bar i { display: block; height: 100%; background: #F2A93B; animation: bkLoad 2.5s linear both; }

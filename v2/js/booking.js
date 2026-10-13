@@ -10,6 +10,10 @@ document.addEventListener('DOMContentLoaded', function () {
   var NAIROBI = [-1.2864, 36.8172];
   var map = null, mapMode = false, step = null, introDone = false, dataReady = false;
   var PEOPLE = 'vs-people';
+  // Edit mode: book.html?edit=VS-XXXXXX (from My bookings)
+  var editRef = (params.get('edit') || '').toUpperCase(), editTrip = null;
+  var editPhone = params.get('phone') || ((function () { try { var x = JSON.parse(localStorage.getItem('vs-trip') || 'null'); return x && x.ref === editRef ? x.phone : ''; } catch (e) { return ''; } })());
+  if (editRef) document.body.classList.add('bk-editing');
 
   function kes(n) { return 'KES ' + V.money(n); }
   function showErr(el, t) { el.textContent = t || ''; el.classList.toggle('hidden', !t); }
@@ -26,7 +30,8 @@ document.addEventListener('DOMContentLoaded', function () {
     slot_full: 'Sorry, that time was just taken. Please pick another time.',
     bad_date: 'That day is no longer open. Please pick another day.',
     bad_slot: 'Please pick a time.', bad_pickup: 'Please set your pickup spot again.', bad_phone: 'Please enter a valid phone number.',
-    bad_name: 'Please enter your name.', bad_homes: 'Pick 1 to 3 homes first.', bad_distance: 'We could not work out the trip. Please set your pickup spot again.'
+    bad_name: 'Please enter your name.', bad_homes: 'Pick 1 to 3 homes first.', bad_distance: 'We could not work out the trip. Please set your pickup spot again.',
+    locked: 'Your trip is less than 36 hours away, so it can\'t be changed in the app. Please WhatsApp or call us.'
   };
   function errText(e) { var m = (e && e.message) || ''; var k = Object.keys(ERR).filter(function (x) { return m.indexOf(x) >= 0; })[0]; return t_(k ? ERR[k] : 'Something went wrong. Please try again or WhatsApp us.'); }
 
@@ -42,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var n = ORDER.indexOf(name) + 1;
     $('#bk-head').classList.toggle('hidden', !n);
     if (n) {
-      $('#bk-steptext').textContent = t_('Step {n} of 3', { n: n });
+      $('#bk-steptext').textContent = (editRef ? t_('Change your trip') + ' · ' : '') + t_('Step {n} of 3', { n: n });
       V.$$('.bk-segs i').forEach(function (s, i) { s.classList.toggle('on', i < n); });
     }
     window.scrollTo(0, 0);
@@ -56,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (s && ORDER.indexOf(s) >= 0) show(s, 'back');
   });
   $('#bk-back').addEventListener('click', function () {
-    if (step === 'pickup') { if (document.referrer && history.length > 2) history.go(-1); else location.href = 'matches.html'; return; }
+    if (step === 'pickup') { if (editRef) { location.href = 'trip.html?ref=' + encodeURIComponent(editRef); return; } if (document.referrer && history.length > 2) history.go(-1); else location.href = 'matches.html'; return; }
     history.back();
   });
 
@@ -70,7 +75,8 @@ document.addEventListener('DOMContentLoaded', function () {
     try { history.replaceState({ bk: 'pickup' }, ''); } catch (e) {}
     show('pickup');
   }
-  setTimeout(function () { introDone = true; start(); }, 3300);
+  if (editRef) { introDone = true; $('#bk-intro').classList.add('hidden'); }
+  else setTimeout(function () { introDone = true; start(); }, 3300);
 
   // ---------- 2. pickup ----------
   function initMap() {
@@ -160,6 +166,13 @@ document.addEventListener('DOMContentLoaded', function () {
     return rpc('trip_calendar').catch(function () { return rpc('trip_slots'); }).catch(function (e) { console.warn('slots', e); return localCal(); });
   }
   function isOpen(d) { return d && d.slots.some(function (x) { return x.open; }); }
+  // In edit mode the trip's own day and time count as open (it is holding that slot itself)
+  function keepOwnSlot() {
+    if (!editTrip || !cal) return;
+    var d = dayData(editTrip.date);
+    if (!d) { d = { day: editTrip.date, slots: S.slots.map(function (s) { return { slot: s, open: false }; }) }; cal.days.push(d); cal.days.sort(function (a, b) { return a.day < b.day ? -1 : 1; }); }
+    d.slots.forEach(function (x) { if (x.slot === editTrip.slot) x.open = true; });
+  }
   function dayData(s) { return cal && cal.days.filter(function (d) { return d.day === s; })[0]; }
   function strip() { return cal.days.filter(isOpen).slice(0, 7); }
 
@@ -275,12 +288,19 @@ document.addEventListener('DOMContentLoaded', function () {
     if (problem) { (name ? $('#bk-phone') : $('#bk-name')).focus(); return; }
     quote = T.quote({ lat: pick.lat, lng: pick.lng }, homes, S);
     $('#fee-fare').textContent = kes(quote.fare); $('#fee-fee').textContent = kes(quote.viewing_fee); $('#fee-total').textContent = kes(quote.total);
+    if (editTrip) {
+      $('#fee-title').textContent = t_('Save these changes?');
+      var moved = pick.day !== editTrip.date || pick.slot !== editTrip.slot;
+      $('.bk-feesub').textContent = moved ? t_('New day or time: we\'ll re-confirm your homes and agent.') : t_('You still pay after your viewing.');
+      $('#fee-confirm').textContent = t_('Save changes');
+    }
     showErr($('#fee-error'));
     openSheet('#fee-wrap');
   });
 
   // ---------- 5. confirm ----------
   $('#fee-confirm').addEventListener('click', function () {
+    if (editTrip) { saveChanges(); return; }
     var btn = $('#fee-confirm'), name = $('#bk-name').value.trim(), phone = $('#bk-phone').value.trim();
     btn.disabled = true; btn.textContent = t_('Booking…');
     var payload = {
@@ -305,6 +325,34 @@ document.addEventListener('DOMContentLoaded', function () {
     }).then(function () { btn.disabled = false; btn.textContent = t_('Confirm booking'); });
   });
 
+  // ---------- edit: save + "Changes made" ----------
+  function saveChanges() {
+    var btn = $('#fee-confirm'), name = $('#bk-name').value.trim(), phone = $('#bk-phone').value.trim();
+    btn.disabled = true; btn.textContent = t_('Saving…');
+    var payload = { name: name, phone: phone, date: pick.day, slot: pick.slot, pickup_area: pick.area, pickup_lat: pick.lat, pickup_lng: pick.lng,
+      pickup_note: $('#bk-note').value.trim(), distance_km: quote.km };
+    var p = V.demo ? Promise.resolve({ ref: editRef, phone: phone }) : rpc('update_trip', { p_ref: editRef, p_phone: editPhone, p: payload });
+    p.then(function (r) {
+      remember(name, phone);
+      setLS('vs-trip', { ref: editRef, phone: r.phone || phone });
+      closeSheets(); changesMade(t_('Changes made'), 'trip.html?ref=' + encodeURIComponent(editRef));
+    }).catch(function (e) {
+      console.error(e);
+      var m = (e && e.message) || '';
+      if (/slot_full|bad_date/.test(m)) {
+        closeSheets(); loadCal().then(function (d) { cal = d; keepOwnSlot(); pickDay(pick.day); });
+        show('when', 'back'); $('#bk-fullnote').textContent = errText(e);
+      } else showErr($('#fee-error'), errText(e));
+      btn.disabled = false; btn.textContent = t_('Save changes');
+    });
+  }
+  function changesMade(title, href) {
+    var o = document.createElement('div'); o.className = 'bk-made';
+    o.innerHTML = '<div class="bk-check"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#FFC46B" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="bk-tick" d="M5 12.5 10 17l9-10"/></svg></div><h1>' + V.esc(title) + '</h1><p>' + t_('Taking you back to your booking…') + '</p><span class="bk-made-bar"><i></i></span>';
+    document.body.appendChild(o);
+    setTimeout(function () { location.href = href; }, 2600);
+  }
+
   // ---------- 6. done ----------
   function done(r, name) {
     try { history.replaceState({ bk: 'done' }, ''); } catch (e) {}
@@ -323,17 +371,34 @@ document.addEventListener('DOMContentLoaded', function () {
   // ---------- load ----------
   function feeRule() {
     var h = +String(S.cutoff || '18:00').split(':')[0];
-    $('#fee-rule').innerHTML = t_('Free to cancel until {t} the day before.', { t: (h % 12 || 12) + (h < 12 ? ' am' : ' pm') }) + ' ' +
+    $('#fee-rule').innerHTML = t_('Change or cancel in the app up to {h} hours before your trip.', { h: S.change_lock_hours || 36 }) + ' ' +
       t_('By booking you agree to our <a href="terms.html" target="_blank">terms</a> and <a href="privacy.html" target="_blank">privacy notice</a>.');
   }
   initMap();
+  function loadEdit(all) {
+    if (!editRef) return Promise.resolve();
+    if (!editPhone) { location.href = 'trip.html?ref=' + encodeURIComponent(editRef); return new Promise(function () {}); }
+    var p = V.demo ? Promise.resolve({ ref: editRef, can_change: true, date: iso(new Date(Date.now() + 4 * 864e5)), slot: S.slots[1], name: 'Demo Client', phone: editPhone, pickup_area: 'Kilimani', pickup_note: 'Demo Towers', pickup_lat: -1.29, pickup_lng: 36.784, homes: [{ id: 'VS-001', area: 'Kilimani' }] }) : rpc('lookup_trip', { p_ref: editRef, p_phone: editPhone });
+    return p.then(function (t) {
+      if (!t.can_change) { location.href = 'trip.html?ref=' + encodeURIComponent(editRef); return new Promise(function () {}); }
+      editTrip = t;
+      homes = (t.homes || []).map(function (h) { return all.filter(function (l) { return l.id === h.id; })[0] || h; });
+      $('#bk-name').value = t.name || ''; $('#bk-phone').value = t.phone || editPhone;
+      $('#bk-note').value = t.pickup_note || '';
+      var est = S.pickups.filter(function (x) { return x.name === t.pickup_area; })[0];
+      var lat = t.pickup_lat != null ? +t.pickup_lat : est && est.lat, lng = t.pickup_lng != null ? +t.pickup_lng : est && est.lng;
+      if (lat != null) { if (map) map.setView([lat, lng], 16); setPin(lat, lng, null, 'map'); setTimeout(function () { mapMode = true; }, 600); $('#bk-loc-hint').textContent = t_('Drag the map to move your pickup pin.'); }
+      pick.day = t.date; pick.slot = t.slot;
+    });
+  }
   Promise.all([V.loadListings(), T.loadSettings()]).then(function (res) {
     S = res[1];
     homes = res[0].filter(function (l) { return ids.indexOf(l.id) >= 0; }).slice(0, 3);
     feeRule();
-    return loadCal();
+    return loadEdit(res[0]).then(loadCal);
   }).then(function (d) {
     cal = d;
+    if (editTrip) { keepOwnSlot(); pickDay(editTrip.date); dataReady = true; try { history.replaceState({ bk: 'pickup' }, ''); } catch (e) {} show('pickup'); return; }
     var first = cal && cal.days.filter(isOpen)[0];
     if (first) pickDay(first.day); else renderWhen();
   }).catch(function (e) {
