@@ -1,10 +1,10 @@
 // Viustay v2 service worker: makes the site installable and keeps it usable on a weak connection.
 // Pages: network first (always fresh), cached copy if offline. Styles, scripts, images: cache first.
 // Supabase, Google Sheets and other sites are never cached.
-var CACHE = 'viustay-v2-16';
+var CACHE = 'viustay-v2-17';
 var CORE = ['./', './index.html', './homes.html', './matches.html', './book.html', './owners.html',
   './css/styles.css', './css/glass.css', './css/chat.css', './css/trips.css', './css/book.css', './trip.html',
-  './js/look.js', './js/common.js', './js/config.js', './js/chat.js', './js/results.js', './js/flow.js', './js/install.js', './js/lang.js', './js/i18n.js', './js/onboard.js', './js/intro.js', './js/stay.js', './stay.html', './js/trip-math.js', './js/booking.js', './js/trip.js',
+  './js/look.js', './js/common.js', './js/config.js', './js/chat.js', './js/results.js', './js/flow.js', './js/install.js', './js/lang.js', './js/i18n.js', './js/onboard.js', './js/intro.js', './js/stay.js', './stay.html', './js/trip-math.js', './js/booking.js', './js/trip.js', './js/doors.js', './js/ticket.js', './js/qrcode.js',
   './assets/viustay-logo-colour.svg', './assets/viustay-logo-white.svg', './assets/app-icon-192.png', './assets/favicon.png'];
 
 self.addEventListener('install', function (e) {

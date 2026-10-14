@@ -41,14 +41,25 @@ document.addEventListener('DOMContentLoaded', function () {
     $('#p-pick-row').classList.toggle('hidden', !pick); $('#p-pick').textContent = kes(S.airport_pickup_fee || 0);
     flash($('#p-total'), quote ? kes(quote.total) : '–');
     $('#stay-submit').disabled = !quote;
-    $('#stay-submit').textContent = quote ? T('Continue to payment') + ' · ' + kes(quote.total) : T('Continue to payment');
+    // The review card (dates + guests carried over from the search)
+    var dd = function (v) { return v ? V.date(v, { weekday: 'short', day: 'numeric', month: 'short' }) : '–'; };
+    $('#sv-in').textContent = dd(a); $('#sv-out').textContent = dd(b);
+    $('#sv-in-t').textContent = T('from {t}', { t: L.check_in }); $('#sv-out-t').textContent = T('by {t}', { t: L.check_out });
+    $('#sv-sum').textContent = (n >= 1 ? T(n === 1 ? '{n} night' : '{n} nights', { n: n }) + ' · ' : '') + T(guests === 1 ? '{n} guest' : '{n} guests', { n: guests });
+    flash($('#sv-total'), quote ? kes(quote.total) : '–');
+    $('#sv-break').textContent = quote ? [T(n === 1 ? '{n} night' : '{n} nights', { n: n })].concat(quote.clean ? [T('cleaning')] : [], quote.pick ? [T('pickup')] : []).join(' + ') : T('Pick your dates');
+    if (bad) openDates(true);
   }
+  function openDates(on) { $('#sv-edit').classList.toggle('hidden', !on); $('#sv-change').classList.toggle('hidden', !!on); }
+  $('#sv-change').addEventListener('click', function () { openDates(true); });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-open-dates]'), function (b) { b.addEventListener('click', function () { openDates(true); }); });
+  $('#sv-done').addEventListener('click', function () { if (quote) openDates(false); else { update(); $('#s-dates-hint').textContent = $('#s-dates-hint').textContent || T('Please pick your dates.'); } });
   ['check_in', 'check_out'].forEach(function (k) { f[k].addEventListener('change', function () {
     if (k === 'check_in' && f.check_in.value) { var minOut = addDays(f.check_in.value, L.min_nights); f.check_out.min = addDays(f.check_in.value, 1); if (!f.check_out.value || f.check_out.value <= f.check_in.value) f.check_out.value = minOut; }
     update();
   }); });
   f.pickup.addEventListener('change', update);
-  function setGuests(n) { guests = Math.max(1, Math.min(L.max_guests, n)); $('#g-n').textContent = guests; $('#g-minus').disabled = guests <= 1; $('#g-plus').disabled = guests >= L.max_guests; }
+  function setGuests(n) { guests = Math.max(1, Math.min(L.max_guests, n)); $('#g-n').textContent = guests; $('#g-minus').disabled = guests <= 1; $('#g-plus').disabled = guests >= L.max_guests; if (quote !== undefined && L) update(); }
   $('#g-minus').addEventListener('click', function () { setGuests(guests - 1); });
   $('#g-plus').addEventListener('click', function () { setGuests(guests + 1); });
 
@@ -118,23 +129,14 @@ document.addEventListener('DOMContentLoaded', function () {
     document.body.appendChild(o);
     setTimeout(function () {
       $('#pay-wrap').classList.add('hidden'); $('#stay-done').classList.remove('hidden');
-      voucher(t, code || t.mpesa_code_seen || '—');
+      t.status = 'paid'; t.mpesa_code = code || t.mpesa_code || '';
+      $('#voucher').innerHTML = V.Ticket.html(t, { live: true });
+      V.Ticket.start($('#voucher'));
       $('#done-trip').href = 'trip.html?ref=' + encodeURIComponent(t.ref);
       $('#done-wa').href = V.wa('Hi Viustay, I just paid for my stay ' + t.ref + '.');
       window.scrollTo(0, 0);
       o.style.transition = 'opacity .4s'; o.style.opacity = '0'; setTimeout(function () { o.remove(); }, 450);
     }, 2600);
-  }
-  function voucher(t, code) {
-    $('#voucher').innerHTML = '<div class="v-top"><b>viustay</b><span>' + T('Booking voucher') + '</span></div><div class="v-body">' +
-      '<span class="v-ok">✓ ' + T('Paid · we\'re confirming with the host') + '</span>' +
-      '<h2>' + V.esc(t.title) + '</h2><span class="note">' + V.esc(t.area || '') + ', Nairobi</span>' +
-      '<div class="v-grid"><div><small>' + T('Check-in') + '</small><strong>' + V.esc(V.date(t.check_in)) + '</strong><span class="note">' + V.esc(T('from {t}', { t: t.check_in_time })) + '</span></div>' +
-      '<div><small>' + T('Check-out') + '</small><strong>' + V.esc(V.date(t.check_out)) + '</strong><span class="note">' + V.esc(T('by {t}', { t: t.check_out_time })) + '</span></div>' +
-      '<div><small>' + T('Guests') + '</small><strong>' + t.guests + '</strong></div><div><small>' + T('Nights') + '</small><strong>' + t.nights + '</strong></div>' +
-      '<div><small>' + T('Paid') + '</small><strong>' + kes(t.total) + '</strong>' + (code && code !== '—' ? '<span class="note">M-Pesa ' + V.esc(code) + '</span>' : '') + '</div><div><small>' + T('Booking') + '</small><strong>' + V.esc(t.ref) + '</strong></div></div>' +
-      (t.pickup ? '<span>✈ ' + T('Airport pickup booked. We\'ll confirm your driver before you land.') + '</span>' : '') +
-      '<div class="v-cut"></div><span>' + T('We\'ll send your check-in details (address, directions, caretaker and keys) on WhatsApp the day before you arrive.') + '</span></div>';
   }
   $('#pay-form').addEventListener('submit', function (e) {
     e.preventDefault();
@@ -148,7 +150,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }).catch(function (e2) { console.error(e2); showErr(err, errText(e2)); })
       .then(function () { btn.disabled = false; btn.textContent = T('Confirm payment'); });
   });
-  $('#done-print').addEventListener('click', function () { window.print(); });
+  $('#done-mail').addEventListener('click', function () { $('#mail-note').classList.remove('hidden'); });
 
   // ---------- booking ----------
   f.addEventListener('submit', function (e) {
@@ -164,7 +166,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var p = V.demo ? Promise.resolve({ ref: 'ST-DEMO' + Math.floor(Math.random() * 90 + 10), total: quote.total, nights: quote.nights, expires_at: new Date(Date.now() + S.pay_window_min * 60000).toISOString() }) : rpc('create_stay', { p: payload });
     p.then(function (r) {
       var t = { ref: r.ref, phone: phone, total: r.total, nights: r.nights, expires_at: r.expires_at, title: L.title, area: L.area, guests: guests,
-        check_in: payload.check_in, check_out: payload.check_out, check_in_time: L.check_in, check_out_time: L.check_out, pickup: payload.pickup };
+        check_in: payload.check_in, check_out: payload.check_out, check_in_time: L.check_in, check_out_time: L.check_out, pickup: payload.pickup, name: name, listing_id: L.id, kind: 'stay' };
       store(t); showPay(t);
     }).catch(function (e2) {
       console.error(e2); showErr(err, errText(e2));
@@ -185,6 +187,10 @@ document.addEventListener('DOMContentLoaded', function () {
     L = res[0]; S = res[1];
     if (!L || L.stay !== 'short') { $('#s-listing').innerHTML = '<p>' + T('This stay is no longer available.') + ' <a href="homes.html?stay=short">' + T('See other stays') + '</a></p>'; return; }
     $('#s-back').href = 'home.html?id=' + encodeURIComponent(L.id);
+    var link = 'home.html?id=' + encodeURIComponent(L.id);
+    $('#sv-photo').href = link; $('#sv-photo').setAttribute('style', V.photoStyle(L.photoList[0]));
+    $('#sv-title').textContent = L.title; $('#sv-sub').textContent = L.area + ' · ' + V.priceText(L);
+    if (L.min_nights > 1) { $('#sv-min').textContent = T('Minimum stay: {n} nights', { n: L.min_nights }); $('#sv-min').classList.remove('hidden'); }
     $('#s-listing').innerHTML = '<a class="mini" href="home.html?id=' + encodeURIComponent(L.id) + '"><span class="thumb" style="' + V.photoStyle(L.photoList[0]) + '"></span><span><span style="font-weight:600">' + V.esc(L.title) + '</span><small>' + V.esc(L.area) + ' · ' + V.esc(V.priceText(L)) + '</small></span></a>';
     $('#g-max').textContent = T('Up to {n} guests', { n: L.max_guests });
     setGuests(Math.min(2, L.max_guests));
@@ -199,5 +205,6 @@ document.addEventListener('DOMContentLoaded', function () {
     var t = stored();
     if (new URLSearchParams(location.search).get('pay') && t && !t.paid) { showPay(t); return; }
     update();
+    if (!quote) openDates(true);
   }).catch(function (e) { console.error(e); showErr($('#stay-error'), T('The booking page could not load. Please refresh.')); });
 });

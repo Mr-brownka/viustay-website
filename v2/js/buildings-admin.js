@@ -277,9 +277,14 @@
   }
 
   window.VBuildingsAdmin = {
+    shrink: shrink,
     open: function () {
       if (!document.getElementById('ba-css')) { var st = document.createElement('style'); st.id = 'ba-css'; st.textContent = css; document.head.appendChild(st); }
       S.open = null; load();
+    },
+    openBuilding: function (id) {
+      if (!document.getElementById('ba-css')) { var st = document.createElement('style'); st.id = 'ba-css'; st.textContent = css; document.head.appendChild(st); }
+      S.open = id; S.form = {}; load();
     }
   };
 })();

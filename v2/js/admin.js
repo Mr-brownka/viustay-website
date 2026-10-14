@@ -2,12 +2,13 @@
 document.addEventListener('DOMContentLoaded', function () {
   var V = window.V;
   var TABS = {
-    viewings:   { title: 'Viewings',      table: 'viewings',             statuses: ['new', 'confirmed', 'done', 'cancelled'], closed: ['done', 'cancelled'] },
+    hosts:      { title: 'Short-stay hosts', table: 'short_stay_submissions', statuses: ['new', 'visit booked', 'listed', 'declined'], closed: ['listed', 'declined'] },
     requests:   { title: 'Home requests', table: 'home_requests',        statuses: ['new', 'contacted', 'placed', 'closed'],  closed: ['placed', 'closed'] },
-    properties: { title: 'Properties',    table: 'property_submissions', statuses: ['new', 'visit booked', 'listed', 'declined'], closed: ['listed', 'declined'] },
+    properties: { title: 'Older property forms',    table: 'property_submissions', statuses: ['new', 'visit booked', 'listed', 'declined'], closed: ['listed', 'declined'] },
     messages:   { title: 'Messages',      table: 'contact_messages',     statuses: ['new', 'replied', 'closed'],             closed: ['replied', 'closed'] }
   };
-  var current = 'viewings', data = {};
+  var current = 'requests', data = {};
+  window.VAdmin = { data: data, tabs: TABS, reload: function () { return loadAll(); }, render: function () { render(); }, onLoad: [] };
 
   function show(id) { ['#a-auth', '#a-denied', '#a-dash'].forEach(function (s) { V.$(s).classList.toggle('hidden', s !== id); }); }
   function err(el, t) { el.textContent = t || ''; el.classList.toggle('hidden', !t); }
@@ -42,6 +43,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
   function logout() { V.db.auth.signOut().then(function () { location.reload(); }); }
   V.$('#a-out').addEventListener('click', logout);
+  V.$('#ad-email').textContent = '';
   V.$('#a-out2').addEventListener('click', logout);
 
   function start() {
@@ -50,9 +52,10 @@ document.addEventListener('DOMContentLoaded', function () {
       V.db.rpc('is_admin').then(function (res) {
         if (res.error || !res.data) { show('#a-denied'); return; }
         show('#a-dash');
-        var last = null; try { last = localStorage.getItem('vs-admin-tab'); } catch (e) {}
-        if (last && !TABS[last]) { var sb = V.$('.dash-nav [data-tab="' + last + '"]'); if (sb) sb.click(); }
+        var em = (r.data.session.user && r.data.session.user.email) || '';
+        V.$('#ad-email').textContent = em; V.$('#ad-av').textContent = em.slice(0, 2).toUpperCase();
         loadAll();
+        if (window.VAdminShell) window.VAdminShell.start();
       });
     });
   }
@@ -60,23 +63,26 @@ document.addEventListener('DOMContentLoaded', function () {
   // ---------- Data ----------
   function loadAll() {
     err(V.$('#a-load-error'));
-    if (!data.viewings) V.$('#a-list').innerHTML = V.skel.rows(4);
+    if (!data.requests) V.$('#a-list').innerHTML = V.skel.rows(4);
     var keys = Object.keys(TABS);
-    Promise.all(keys.map(function (k) {
+    return Promise.all(keys.map(function (k) {
       return V.db.from(TABS[k].table).select('*').order('created_at', { ascending: false }).limit(300);
     })).then(function (res) {
-      res.forEach(function (r, i) { if (r.error) throw r.error; data[keys[i]] = r.data || []; });
+      var missing = [];
+      res.forEach(function (r, i) { if (r.error) { missing.push(keys[i]); data[keys[i]] = null; } else data[keys[i]] = r.data || []; });
+      if (missing.indexOf('requests') >= 0) throw new Error('requests');
       renderTabs(); if (TABS[current]) render();
+      window.VAdmin.onLoad.forEach(function (fn) { try { fn(); } catch (e) { console.error(e); } });
     }).catch(function (e) { console.error(e); err(V.$('#a-load-error'), 'Could not load leads. Did you run supabase/add-admin.sql?'); });
   }
 
   function renderTabs() {
-    V.$$('.dash-nav [data-tab]').forEach(function (t) {
+    V.$$('#ad-sub [data-tab]').forEach(function (t) {
       var k = t.getAttribute('data-tab');
       t.setAttribute('aria-pressed', k === current ? 'true' : 'false');
       if (!TABS[k]) return;
       var fresh = (data[k] || []).filter(function (x) { return x.status === 'new'; });
-      var n = k === 'viewings' ? fresh.map(function (x) { return x.booking_ref; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).length : fresh.length;
+      var n = fresh.length;
       t.textContent = TABS[k].title + (n ? ' (' + n + ' new)' : '');
       t.setAttribute('aria-pressed', k === current ? 'true' : 'false');
     });
@@ -94,6 +100,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function render() {
     if (!TABS[current]) return;
     var k = current, rows = data[k] || [], hide = V.$('#a-open').checked, html = '';
+    if (data[k] === null) { V.$('#a-title').textContent = TABS[k].title; V.$('#a-list').innerHTML = '<p class="t-warn">Run <strong>supabase/add-short-stay-hosts.sql</strong> in Supabase to turn this on, then tap Refresh.</p>'; return; }
     V.$('#a-title').textContent = TABS[k].title;
     var keep = function (s) { return !hide || TABS[k].closed.indexOf(s) < 0; };
 
@@ -120,6 +127,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (k === 'properties') body = '<span><strong>' + V.esc(r.building_name) + '</strong> · ' + V.esc(r.location) + ' · ' + V.esc(r.role) + '</span>' +
           '<span style="color:var(--muted)">' + (r.units || []).map(function (u) { return u.count + ' × ' + V.esc(u.type) + (u.rent ? ' @ KES ' + V.money(u.rent) : ''); }).join(' · ') + '</span>' +
           '<span class="note">Visit: ' + day(r.visit_date) + (r.contact_email ? ' · ' + V.esc(r.contact_email) : '') + '</span>';
+        if (k === 'hosts') body = window.VHostsAdmin ? window.VHostsAdmin.body(r) : '';
         if (k === 'messages') body = '<span class="note">' + V.esc(r.kind || '') + '</span><span>' + V.esc(r.message) + '</span>';
         html += card(
           '<div class="row-between" style="flex-wrap:wrap"><strong style="font-size:18px">' + V.esc(name) + ' · ' + V.esc(phone) + '</strong>' + statusSelect(k, [r.id], r.status) + '</div>' +
@@ -129,6 +137,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     V.$('#a-list').innerHTML = html || '<div class="box"><p class="note" style="margin:0">Nothing here' + (hide ? ' (finished items hidden)' : '') + '.</p></div>';
 
+    if (k === 'hosts' && window.VHostsAdmin) window.VHostsAdmin.bind(V.$('#a-list'), rows);
     V.$$('.a-status').forEach(function (sel) {
       sel.addEventListener('change', function () {
         var ids = sel.getAttribute('data-ids').split(',').map(Number), val = sel.value;
@@ -143,9 +152,10 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  V.$$('.dash-nav [data-tab]').forEach(function (t) { t.addEventListener('click', function () {
+  V.$$('#ad-sub [data-tab]').forEach(function (t) { t.addEventListener('click', function () {
     current = t.getAttribute('data-tab');
     var survey = current === 'survey', trips = ['trips', 'stays', 'agents', 'fares'].indexOf(current) >= 0, blds = current === 'buildings';
+    if (window.VAdminShell) window.VAdminShell.sub(current);
     V.$('#a-main').classList.toggle('hidden', survey || trips || blds);
     V.$('#b-main').classList.toggle('hidden', !blds);
     V.$('#s-main').classList.toggle('hidden', !survey);

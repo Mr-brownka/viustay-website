@@ -2,7 +2,8 @@
 (function () {
   var V = window.V, $ = V.$;
   var A = {}; window.VTripsAdmin = A;
-  var data = { trips: [], agents: [], vouchers: [], stays: [] }, S = null, section = 'trips', filter = 'action', loaded = false;
+  var data = { trips: [], agents: [], vouchers: [], stays: [] }, S = null, section = 'trips', filter = 'action', loaded = false, view = 'board', loading = null, listeners = [];
+  try { view = localStorage.getItem('vs-admin-view') || 'board'; } catch (e) {}
   var main = function () { return $('#t-main'); };
 
   function kes(n) { return 'KES ' + V.money(n); }
@@ -18,8 +19,8 @@
   function fail(e) { console.error(e); alert('Could not save: ' + (e.message || e)); }
 
   function loadAll() {
-    main().innerHTML = V.skel.rows(4);
-    return Promise.all([
+    if (main() && !main().classList.contains('hidden')) main().innerHTML = V.skel.rows(4);
+    loading = Promise.all([
       db().from('trips').select('*').order('trip_date', { ascending: false }).order('created_at', { ascending: false }).limit(400),
       db().from('agents').select('*').order('created_at'),
       db().from('vouchers').select('*').order('created_at', { ascending: false }).limit(1000),
@@ -36,17 +37,36 @@
       console.error(e);
       main().innerHTML = '<p class="error">Could not load trips. Did you run <strong>supabase/add-agents.sql</strong> in Supabase?</p>';
     });
+    return loading;
   }
 
   A.open = function (sec) { section = sec || section; if (!loaded) loadAll(); else render(); };
+  // Used by the Today page and the drawer
+  A.ready = function () { return loaded ? Promise.resolve(data) : (loading || loadAll()).then(function () { return data; }); };
+  A.reload = function () { return loadAll().then(function () { return data; }); };
+  A.settings = function () { return S || V.Trip.DEFAULTS; };
+  A.needsAction = function (t) { return needsAction(t); };
+  A.stayAction = function (s) { return stayAction(s); };
+  A.agent = function (id) { return agent(id); };
+  A.card = function (kind, id) {
+    if (kind === 'trip') { var t = data.trips.filter(function (x) { return x.id === id; })[0]; return t ? tripCard(t) : ''; }
+    var st = (data.stays || []).filter(function (x) { return x.id === id; })[0]; return st ? stayCard(st) : '';
+  };
+  A.onChange = function (fn) { listeners.push(fn); };
+  function changed() { listeners.forEach(function (fn) { try { fn(); } catch (e) { console.error(e); } }); }
 
   // ---------- shared header ----------
+  function viewToggle() {
+    return '<div class="ad-seg" role="group" aria-label="View">' + [['board', 'Board'], ['list', 'List']].map(function (v) { return '<button type="button" data-view="' + v[0] + '" aria-pressed="' + (view === v[0]) + '">' + v[1] + '</button>'; }).join('') + '</div>';
+  }
   function head(title, extra) {
     return '<div class="actions" style="justify-content:space-between"><h1 style="font-size:30px">' + title + '</h1><div class="actions" style="gap:10px">' + (extra || '') +
       '<button type="button" class="btn btn-outline" data-t="refresh" style="font-size:15px;padding:10px 16px">Refresh</button></div></div>';
   }
 
   function render() {
+    changed();
+    if (main().classList.contains('hidden')) return;
     if (section === 'trips') renderTrips();
     if (section === 'stays') renderStays();
     if (section === 'agents') renderAgents();
@@ -107,7 +127,82 @@
     return h + act + '</article>';
   }
 
+  // ---------- board (item 23): cards move left to right through the steps ----------
+  function tripCol(t) {
+    if (['cancelled', 'expired', 'no_show'].indexOf(t.status) >= 0) return -1;
+    if (t.status === 'completed') return 3;
+    if (t.status === 'confirmed') return t.agent_id && t.agent_response === 'accepted' ? 2 : 1;
+    return 0;
+  }
+  function mini(kind, x, title, line, pill, btn) {
+    return '<article class="ad-kc" data-open="' + kind + ':' + x.id + '" tabindex="0"><b>' + title + '</b><span>' + line + '</span>' + (pill ? '<em class="t-badge warn">' + pill + '</em>' : '') + (btn || '') + '</article>';
+  }
+  function tripMini(t) {
+    var a = agent(t.agent_id), first = V.esc(t.client_name.split(' ')[0]), btn = '', pill = '';
+    var line = dayFmt(t.trip_date) + ', ' + V.esc(t.slot) + ' · ' + V.esc(t.pickup_area) + ' · ' + (t.homes || []).length + ' home' + ((t.homes || []).length === 1 ? '' : 's');
+    if (t.status === 'booked') btn = '<button class="ad-kb" data-t="confirm">Homes free? → Confirm</button>';
+    else if (t.status === 'paid') { pill = 'Paid: check M-Pesa'; btn = '<button class="ad-kb" data-t="confirm">Payment checked → Confirm</button>'; }
+    else if (t.status === 'awaiting_payment') pill = 'Waiting for payment';
+    else if (t.status === 'confirmed' && !t.agent_id) { pill = 'Needs an agent'; btn = '<button class="ad-kb" data-open-btn>Choose agent</button>'; }
+    else if (t.status === 'confirmed' && t.agent_response === 'declined') { pill = (a ? V.esc(a.name.split(' ')[0]) : 'Agent') + ' declined'; btn = '<button class="ad-kb" data-open-btn>Pick another agent</button>'; }
+    else if (t.status === 'confirmed' && t.agent_response !== 'accepted') { pill = 'Waiting for ' + V.esc(a ? a.name.split(' ')[0] : 'agent'); if (a) btn = '<a class="ad-kb" target="_blank" rel="noopener" href="' + wa(a.phone, 'Hi ' + a.name.split(' ')[0] + ', please accept trip ' + t.booking_ref + ' (' + dayFmt(t.trip_date) + ', ' + t.slot + ') on your agent page: ' + siteUrl() + 'agent.html') + '">Remind ' + V.esc(a.name.split(' ')[0]) + '</a>'; }
+    else if (t.status === 'confirmed') { if (t.issue) pill = 'Agent reported a problem'; btn = '<a class="ad-kb" href="tel:' + V.esc(t.client_phone) + '">Call ' + first + '</a>'; if (a) line += ' · Agent: ' + V.esc(a.name.split(' ')[0]); }
+    else if (t.status === 'completed') { if (t.pay_after && !t.mpesa_code) { pill = 'Not paid yet'; btn = '<a class="ad-kb" target="_blank" rel="noopener" href="' + wa(t.client_phone, 'Hi ' + t.client_name.split(' ')[0] + ', thank you for viewing with Viustay! A reminder to pay ' + kes(t.total) + ' by M-Pesa' + (S.till ? ' to Till ' + S.till : '') + '. Booking ' + t.booking_ref + '.') + '">Send pay reminder</a>'; } else line = 'Paid' + (t.mpesa_code ? ' · M-Pesa ' + V.esc(t.mpesa_code) : '') + ' · ' + dayFmt(t.trip_date); }
+    return mini('trip', t, V.esc(t.client_name) + ' · ' + dayFmt(t.trip_date), line, pill, btn);
+  }
+  function stayCol(s) {
+    return { awaiting_payment: 0, paid: 1, confirmed: 2, checked_in: 3, completed: 4 }[s.status];
+  }
+  function stayMini(s) {
+    var btn = '', pill = '', first = V.esc(s.guest_name.split(' ')[0]);
+    var line = V.esc(s.listing_title || s.listing_id) + ' · ' + dayFmt(s.check_in) + ' → ' + dayFmt(s.check_out) + ' · ' + kes(s.total);
+    if (s.status === 'awaiting_payment' && s.mpesa_phone) { pill = 'Asked for M-Pesa request'; btn = '<button class="ad-kb" data-s="received">Payment received</button>'; }
+    else if (s.status === 'awaiting_payment') pill = 'Not paid yet';
+    else if (s.status === 'paid') btn = '<button class="ad-kb" data-s="confirm">Payment checked → Confirm</button>';
+    else if (s.status === 'confirmed' && !s.checkin_info) { pill = 'Add check-in details'; btn = '<button class="ad-kb" data-open-btn>Add check-in details</button>'; }
+    else if (s.status === 'confirmed') btn = '<button class="ad-kb" data-s="checkin">Guest checked in</button>';
+    else if (s.status === 'checked_in') btn = '<button class="ad-kb" data-s="complete">Stay complete</button>';
+    return mini('stay', s, first + ' · ' + V.esc(s.booking_ref), line, pill, btn);
+  }
+  function board(cols) {
+    return '<div class="ad-board">' + cols.map(function (c) {
+      return '<section class="ad-col"><header><i style="background:' + c.tone + '"></i><b>' + c.title + '</b><span>' + c.sub + ' · ' + c.items.length + '</span></header>' + (c.items.join('') || '<p class="ad-none">Nothing here</p>') + '</section>';
+    }).join('') + '</div>';
+  }
+  function renderTripsBoard() {
+    var recent = new Date(Date.now() - 14 * 864e5).toISOString().slice(0, 10);
+    var cols = [{ title: 'New', sub: 'check homes', tone: '#F2A93B', items: [] }, { title: 'Confirmed', sub: 'needs agent', tone: '#3E8C7B', items: [] },
+      { title: 'Agent ready', sub: 'trip day', tone: '#0E5E54', items: [] }, { title: 'Done', sub: 'last 2 weeks', tone: '#5F5E5A', items: [] }];
+    data.trips.slice().sort(function (a, b) { return a.trip_date < b.trip_date ? -1 : 1; }).forEach(function (t) {
+      var c = tripCol(t); if (c < 0) return; if (c === 3 && t.trip_date < recent && !(t.pay_after && !t.mpesa_code)) return;
+      cols[c].items.push(tripMini(t));
+    });
+    var active = data.agents.filter(function (a) { return a.active; }).length;
+    main().innerHTML = head('Bookings', viewToggle()) + seg('trips') +
+      (active ? '' : '<p class="t-warn">No active agents, so clients can\'t book trips. Add one under <strong>People → Agents &amp; pay</strong>.</p>') +
+      '<p class="note" style="margin:0">Each card moves left to right. Tap its button to move it, or tap the card for everything.</p>' + board(cols);
+  }
+  function renderStaysBoard() {
+    if (data.stays === null) { main().innerHTML = head('Bookings', viewToggle()) + seg('stays') + '<p class="t-warn">Run <strong>supabase/add-stays.sql</strong> in Supabase to turn on short-stay bookings, then tap Refresh.</p>'; return; }
+    var recent = new Date(Date.now() - 14 * 864e5).toISOString().slice(0, 10);
+    var cols = [{ title: 'Waiting', sub: 'for payment', tone: '#F2A93B', items: [] }, { title: 'Paid', sub: 'check M-Pesa', tone: '#C98A3E', items: [] },
+      { title: 'Confirmed', sub: 'before arrival', tone: '#22607A', items: [] }, { title: 'Checked in', sub: 'in the house', tone: '#0E5E54', items: [] }, { title: 'Done', sub: 'last 2 weeks', tone: '#5F5E5A', items: [] }];
+    var holdMin = (S.pay_window_min || 30) * 60000;
+    data.stays.slice().sort(function (a, b) { return a.check_in < b.check_in ? -1 : 1; }).forEach(function (s) {
+      var c = stayCol(s); if (c === undefined) return;
+      if (c === 0 && !s.mpesa_phone && (Date.now() - new Date(s.created_at)) > holdMin) return;
+      if (c === 4 && s.check_out < recent) return;
+      cols[c].items.push(stayMini(s));
+    });
+    main().innerHTML = head('Bookings', viewToggle()) + seg('stays') + '<p class="note" style="margin:0">Tap a card\'s button to move it on, or tap the card for everything.</p>' + board(cols);
+  }
+  function seg(cur) {
+    var nT = data.trips.filter(function (t) { return tripCol(t) >= 0 && tripCol(t) < 3; }).length, nS = (data.stays || []).filter(function (s) { var c = stayCol(s); return c !== undefined && c < 4; }).length;
+    return '<div class="ad-seg big" role="group" aria-label="Kind"><button type="button" data-kind="trips" aria-pressed="' + (cur === 'trips') + '">Viewing trips · ' + nT + '</button><button type="button" data-kind="stays" aria-pressed="' + (cur === 'stays') + '">Short stays · ' + nS + '</button></div>';
+  }
+
   function renderTrips() {
+    if (view === 'board') { renderTripsBoard(); return; }
     var active = data.agents.filter(function (a) { return a.active; }).length;
     var lists = {
       action: data.trips.filter(needsAction),
@@ -116,8 +211,8 @@
       all: data.trips
     };
     var names = { action: 'Needs action', upcoming: 'Upcoming', unpaid: 'Not paid', all: 'All' };
-    var html = head('Viewing trips') +
-      (active ? '' : '<p class="t-warn">No active agents, so clients can\'t book trips. Add one under <strong>Agents &amp; pay</strong>.</p>') +
+    var html = head('Bookings', viewToggle()) + seg('trips') +
+      (active ? '' : '<p class="t-warn">No active agents, so clients can\'t book trips. Add one under <strong>People → Agents &amp; pay</strong>.</p>') +
       '<div class="t-tabs">' + Object.keys(names).map(function (k) { return '<button type="button" class="chip" data-f="' + k + '" aria-pressed="' + (k === filter) + '">' + names[k] + ' (' + lists[k].length + ')</button>'; }).join('') + '</div>' +
       '<div class="stack-sm" style="gap:14px">' + (lists[filter].map(tripCard).join('') || '<div class="box"><p class="note" style="margin:0">Nothing here.</p></div>') + '</div>';
     main().innerHTML = html;
@@ -196,6 +291,7 @@
     return h + '</article>';
   }
   function renderStays() {
+    if (view === 'board') { renderStaysBoard(); return; }
     if (data.stays === null) { main().innerHTML = head('Short stays') + '<p class="t-warn">Run <strong>supabase/add-stays.sql</strong> in Supabase to turn on short-stay bookings, then tap Refresh.</p>'; return; }
     var lists = {
       action: data.stays.filter(stayAction),
@@ -204,7 +300,7 @@
       all: data.stays
     };
     var names = { action: 'Needs action', upcoming: 'Upcoming & in-house', unpaid: 'Not paid', all: 'All' };
-    main().innerHTML = head('Short stays') +
+    main().innerHTML = head('Bookings', viewToggle()) + seg('stays') +
       '<div class="t-tabs">' + Object.keys(names).map(function (k) { return '<button type="button" class="chip" data-sf="' + k + '" aria-pressed="' + (k === stayFilter) + '">' + names[k] + ' (' + lists[k].length + ')</button>'; }).join('') + '</div>' +
       '<div class="stack-sm" style="gap:14px">' + (lists[stayFilter].map(stayCard).join('') || '<div class="box"><p class="note" style="margin:0">Nothing here.</p></div>') + '</div>';
   }
@@ -375,16 +471,23 @@
 
   // ---------- events ----------
   document.addEventListener('click', function (e) {
-    var m = main(); if (!m || !m.contains(e.target)) return;
+    var m = main(), dr = $('#ad-drawer'), td = e.target.closest && e.target.closest('.ad-detail');
+    if (!m || !(m.contains(e.target) || td || (dr && dr.contains(e.target)))) return;
+    var kc = e.target.closest('.ad-kc');
+    if (kc && (!e.target.closest('button, a') || e.target.closest('[data-open-btn]'))) { var o = kc.getAttribute('data-open').split(':'); if (window.VAdminShell) window.VAdminShell.drawer(o[0], +o[1]); return; }
     var b = e.target.closest('button'); if (!b) return;
+    if (b.hasAttribute('data-view')) { view = b.getAttribute('data-view'); try { localStorage.setItem('vs-admin-view', view); } catch (x) {} render(); return; }
+    if (b.hasAttribute('data-kind')) { section = b.getAttribute('data-kind'); if (window.VAdminShell) window.VAdminShell.sub(section, true); render(); return; }
     if (b.getAttribute('data-t') === 'refresh') { loadAll(); return; }
     if (b.hasAttribute('data-f')) { filter = b.getAttribute('data-f'); renderTrips(); return; }
     if (b.hasAttribute('data-sf')) { stayFilter = b.getAttribute('data-sf'); renderStays(); return; }
-    var sc = b.closest('[data-stay]');
-    if (sc && b.hasAttribute('data-s')) { var st = data.stays.filter(function (x) { return x.id === +sc.getAttribute('data-stay'); })[0]; stayDo(st, b.getAttribute('data-s'), sc); return; }
-    var card = b.closest('[data-trip]');
+    var kk = b.closest('.ad-kc'), ko = kk ? kk.getAttribute('data-open').split(':') : null;
+    var sc = b.closest('[data-stay]') || (ko && ko[0] === 'stay' ? kk : null);
+    if (sc && b.hasAttribute('data-s')) { var sid = sc.hasAttribute('data-stay') ? +sc.getAttribute('data-stay') : +ko[1]; var st = data.stays.filter(function (x) { return x.id === sid; })[0]; stayDo(st, b.getAttribute('data-s'), sc); return; }
+    var card = b.closest('[data-trip]') || (ko && ko[0] === 'trip' ? kk : null);
     if (card && b.hasAttribute('data-t')) {
-      var t = data.trips.filter(function (x) { return x.id === +card.getAttribute('data-trip'); })[0];
+      var tid = card.hasAttribute('data-trip') ? +card.getAttribute('data-trip') : +ko[1];
+      var t = data.trips.filter(function (x) { return x.id === tid; })[0];
       b.disabled = true; tripAction(t, b.getAttribute('data-t'), card); setTimeout(function () { b.disabled = false; }, 1500); return;
     }
     if (b.hasAttribute('data-a')) { agentAction(b); return; }

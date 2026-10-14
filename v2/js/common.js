@@ -73,7 +73,7 @@
           '</nav><div class="header-actions">' +
           (owners
             ? '<a class="btn btn-pill btn-light" href="dashboard.html">' + T('Manager log in') + '</a>'
-            : '<a class="btn btn-pill btn-primary" href="index.html">' + T('Help me choose') + '</a>') +
+            : '<a class="btn btn-pill btn-primary" href="index.html#ask">' + T('Help me choose') + '</a>') +
           V.langSelect() +
           '</div><div class="menu-looks" role="group" aria-label="Colour look"></div></div></div>';
         document.addEventListener('click', function (ev) { var d = slot.querySelector('.nav-more[open]'); if (d && !d.contains(ev.target)) d.removeAttribute('open'); });
@@ -84,6 +84,21 @@
           tog.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
         });
       }
+    }
+    // Bottom tab bar on phones (item 24): Home, Homes, Short stays, My bookings, Help
+    if (kind === 'main' && !body.hasAttribute('data-no-tabs')) {
+      var here = (location.pathname.split('/').pop() || 'index.html'), q = location.search;
+      var cur = here === 'trip.html' ? 'b' : here === 'homes.html' && /stay=short/.test(q) ? 's' : here === 'homes.html' || here === 'home.html' || here === 'matches.html' ? 'h' : here === 'index.html' ? 'i' : '';
+      var TAB = [['i', 'index.html', 'Home', '<path d="M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>'],
+        ['h', 'homes.html', 'Homes', '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>'],
+        ['s', 'homes.html?stay=short', 'Short stays', '<path d="M20 14A8 8 0 0 1 10 4a8 8 0 1 0 10 10z"/>'],
+        ['b', 'trip.html', 'My bookings', '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>'],
+        ['w', V.wa('Hi Viustay, I have a question'), 'Help', '<path d="M4 5h16v11H9l-5 4z"/><path d="M8 10h8"/>']];
+      var tb = document.createElement('nav'); tb.className = 'tabbar'; tb.setAttribute('aria-label', T('App'));
+      tb.innerHTML = TAB.map(function (t) {
+        return '<a href="' + t[1] + '"' + (t[0] === 'w' ? ' target="_blank" rel="noopener"' : '') + (t[0] === cur ? ' class="on" aria-current="page"' : '') + '><i><svg viewBox="0 0 24 24">' + t[3] + '</svg></i>' + T(t[2]) + '</a>';
+      }).join('');
+      body.appendChild(tb); body.classList.add('has-tabs');
     }
     var foot = V.$('#site-footer');
     if (foot) {
@@ -336,4 +351,40 @@
     if (V.demo) { console.info('[demo] would save to', table, row); return Promise.resolve({ demo: true }); }
     return V.ensureDb().then(function (db) { return db.from(table).insert(row); }).then(function (res) { if (res.error) throw res.error; return res; });
   };
+
+  // ---------- Pull down to refresh (item 22) ----------
+  // The installed app has no browser refresh, so: pull down at the top of a page -> spinner -> fresh data.
+  // A page can handle 'vs-refresh' itself (call e.preventDefault()) to reload just its data; otherwise the page reloads.
+  (function () {
+    var standalone = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true || /[?&]ptr=1/.test(location.search);
+    if (!standalone || !('ontouchstart' in window)) return;
+    var y0 = null, dy = 0, el = null, busy = false, MAX = 90, GO = 64;
+    function blocked(t) { return document.body.hasAttribute('data-no-ptr') || (t.closest && t.closest('.leaflet-container, .tk-screen, .mb-sheet-wrap, .md-sheet, [data-no-ptr], input, textarea, select')); }
+    function ui() {
+      if (el) return el;
+      el = document.createElement('div'); el.className = 'ptr'; el.setAttribute('aria-hidden', 'true');
+      el.innerHTML = '<span class="ptr-ball"><svg viewBox="0 0 28 34"><path d="M14 33S2 21 2 13a12 12 0 0 1 24 0c0 8-12 20-12 20Z" fill="#F2A93B"/><circle cx="14" cy="13" r="5" fill="#0E5E54"/></svg></span>';
+      document.body.appendChild(el); return el;
+    }
+    function set(d, anim) { var e = ui(); e.style.transition = anim ? 'transform .25s, opacity .25s' : 'none'; e.style.transform = 'translate(-50%,' + (d - 50) + 'px)'; e.style.opacity = Math.min(1, d / GO); e.querySelector('svg').style.transform = 'rotate(' + d * 4 + 'deg)'; }
+    document.addEventListener('touchstart', function (e) {
+      if (busy || window.scrollY > 0 || document.scrollingElement.scrollTop > 0 || e.touches.length !== 1 || blocked(e.target)) { y0 = null; return; }
+      y0 = e.touches[0].clientY; dy = 0;
+    }, { passive: true });
+    document.addEventListener('touchmove', function (e) {
+      if (y0 === null) return;
+      dy = Math.max(0, Math.min(MAX, (e.touches[0].clientY - y0) * .5));
+      if (window.scrollY > 0) { y0 = null; set(0, true); return; }
+      if (dy > 4) set(dy);
+    }, { passive: true });
+    document.addEventListener('touchend', function () {
+      if (y0 === null) return; y0 = null;
+      if (dy < GO) { set(0, true); return; }
+      busy = true; set(GO, true); ui().classList.add('spin');
+      var ev; try { ev = new CustomEvent('vs-refresh', { cancelable: true }); } catch (x) { ev = document.createEvent('CustomEvent'); ev.initCustomEvent('vs-refresh', false, true, null); }
+      var handled = !window.dispatchEvent(ev);
+      if (!handled) { setTimeout(function () { location.reload(); }, 250); return; }
+      setTimeout(function () { busy = false; ui().classList.remove('spin'); set(0, true); }, 900);
+    });
+  })();
 })();

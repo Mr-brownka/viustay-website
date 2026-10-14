@@ -27,16 +27,39 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&family=Source+Sans+3:wght@400;600&display=swap">
-<link rel="stylesheet" href="css/styles.css?v=14">
-<link rel="stylesheet" href="css/glass.css?v=14">
-<link rel="stylesheet" href="css/chat.css?v=14">
+<link rel="stylesheet" href="css/styles.css?v=15">
+<link rel="stylesheet" href="css/glass.css?v=15">
+<link rel="stylesheet" href="css/chat.css?v=15">
 <script src="js/look.js"></script>
 </head>
 <body data-header="main" data-page="home2">
 <header id="site-header"></header>
 <main class="c-wrap">
+  <section class="doors" id="home-doors" aria-labelledby="d-h">
+    <div class="doors-copy">
+      <h1 id="d-h" data-i18n-html>Find your place<br>in Nairobi.</h1>
+      <p data-i18n>We drive you to the homes. You choose.</p>
+    </div>
+    <div class="doors-pick">
+      <span class="doors-k" data-i18n>What are you looking for?</span>
+      <div class="doors-two">
+        <a class="door door-rent" href="homes.html">
+          <span class="door-ic"><svg viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l3 3"/></svg></span>
+          <span class="door-tx"><b data-i18n>Rent a home</b><span data-i18n>Monthly rent · we drive you to view</span><small id="d-long"></small></span>
+          <svg class="door-go" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </a>
+        <a class="door door-stay" href="homes.html?stay=short">
+          <span class="door-ic"><svg viewBox="0 0 24 24"><path d="M20 14A8 8 0 0 1 10 4a8 8 0 1 0 10 10z"/></svg></span>
+          <span class="door-tx"><b data-i18n>Short stay</b><span data-i18n>Per night · pay with M-Pesa</span><small id="d-short"></small></span>
+          <svg class="door-go" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+      <button type="button" class="doors-help" id="d-help"><span><b data-i18n>Not sure?</b> <span data-i18n>Answer 7 quick questions</span></span><i data-i18n>Help me choose</i></button>
+    </div>
+  </section>
   <section class="c-hero" aria-labelledby="c-h">
     <div class="c-intro">
+      <button type="button" class="doors-back" id="d-back" data-i18n>‹ Back to start</button>
       <h1 id="c-h" class="sr-only" data-i18n>Find your home in Nairobi</h1>
       <div class="q-stage" id="c-chat" aria-live="polite"></div>
       <nav class="home-shortcuts" aria-label="Shortcuts">
@@ -57,13 +80,14 @@
 </main>
 <div class="c-pill c-glass" id="c-pill"><span><b id="c-pillcnt">–</b> <span id="c-pilllbl"></span></span><button class="btn btn-primary" type="button" id="c-pillbtn"></button></div>
 <footer id="site-footer"></footer>
-<script src="js/lang.js?v=14"></script>
+<script src="js/lang.js?v=15"></script>
 <script src="js/i18n.js"></script>
 <script src="js/config.js"></script>
-<script src="js/common.js?v=14"></script>
+<script src="js/common.js?v=15"></script>
 <script src="js/install.js"></script>
-<script src="js/chat.js?v=14"></script>
-<script src="js/intro.js?v=14"></script>
+<script src="js/doors.js?v=15"></script>
+<script src="js/chat.js?v=15"></script>
+<script src="js/intro.js?v=15"></script>
 <script src="js/onboard.js"></script>
 </body>
 </html>

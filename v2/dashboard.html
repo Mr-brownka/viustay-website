@@ -24,30 +24,63 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&family=Source+Sans+3:wght@400;600&display=swap">
-<link rel="stylesheet" href="css/styles.css?v=14">
-<link rel="stylesheet" href="css/glass.css?v=14">
-<link rel="stylesheet" href="css/manager.css?v=14">
+<link rel="stylesheet" href="css/styles.css?v=15">
+<link rel="stylesheet" href="css/glass.css?v=15">
+<link rel="stylesheet" href="css/manager.css?v=15">
 <script src="js/look.js"></script>
 </head>
 <body data-no-launch data-no-lang data-header="flow" data-steps="0" data-home="owners.html" data-no-wa data-no-looks>
 <header id="site-header"></header>
 
-<!-- Log in / sign up -->
-<main class="auth-box hidden" id="auth">
-  <h1 id="auth-title" style="font-size:32px">Manager log in</h1>
-  <p class="lede" style="font-size:16px" id="auth-lede">Register your buildings, add vacancies and see every viewing.</p>
-  <form id="auth-form" class="stack-sm" novalidate>
-    <label class="field">Email<input type="email" name="email" autocomplete="email" required></label>
-    <label class="field" id="pw-field">Password<input type="password" name="password" autocomplete="current-password" minlength="8" required></label>
-    <p class="error hidden" id="auth-error" role="alert"></p>
-    <p class="note hidden" id="auth-info" role="status" style="font-size:15px;color:var(--emerald);font-weight:600"></p>
-    <button type="submit" class="btn btn-dark" id="auth-submit">Log in</button>
-  </form>
-  <div class="actions" style="font-size:15px;gap:6px 16px">
-    <button type="button" class="btn-link" id="toggle-mode">New here? Create a login</button>
-    <button type="button" class="btn-link" id="forgot">Forgot password?</button>
+<!-- Log in / sign up (item 25: sign-up asks what they have, in 3 steps) -->
+<main class="auth-split hidden" id="auth">
+  <aside class="auth-brand" aria-hidden="true">
+    <img src="assets/viustay-logo-white.svg" alt="">
+    <h2 data-i18n-html>Vacant units?<br><em>We fill them.</em></h2>
+    <p data-i18n>Monthly tenants and short-stay guests, brought to your door. One dashboard for every building.</p>
+    <span class="auth-foot" data-i18n>Monthly tenants · Short-stay guests · Viewings and bookings in one place</span>
+  </aside>
+  <div class="auth-box">
+    <!-- Sign-up step 1 -->
+    <section id="su-1" class="su hidden" aria-labelledby="su1-h">
+      <div class="su-top"><span class="k" data-i18n>Join Viustay · 1 of 3</span><span class="su-bars"><i class="on"></i><i></i><i></i></span></div>
+      <h1 id="su1-h"><span class="su-tag" data-i18n>Vacant units? We fill them.</span> <span data-i18n>What do you have?</span></h1>
+      <p class="lede" style="font-size:16px;margin:0" data-i18n>Tick one or both. You can add the other later.</p>
+      <div class="su-kinds">
+        <button type="button" class="su-kind" data-kind="monthly" aria-pressed="false"><span class="su-ic"><svg viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l3 3"/></svg></span><span class="su-tx"><b data-i18n>Monthly rentals</b><span data-i18n>Unfurnished or furnished homes for tenants who stay months</span></span><i class="su-box"></i></button>
+        <button type="button" class="su-kind short" data-kind="short" aria-pressed="false"><span class="su-ic"><svg viewBox="0 0 24 24"><path d="M20 14A8 8 0 0 1 10 4a8 8 0 1 0 10 10z"/></svg></span><span class="su-tx"><b data-i18n>Furnished short stays</b><span data-i18n>Airbnb-style, paid per night</span></span><i class="su-box"></i></button>
+      </div>
+      <div class="su-f"><b data-i18n>You are the…</b><div class="su-chips" data-su="role"><button type="button" data-v="Owner" data-i18n>Owner</button><button type="button" data-v="Property manager" data-i18n>Property manager</button><button type="button" data-v="Caretaker" data-i18n>Caretaker</button><button type="button" data-v="Agent" data-i18n>Agent</button></div></div>
+      <div class="su-f"><b data-i18n>How many units, roughly?</b><div class="su-chips" data-su="unit_count"><button type="button" data-v="1">1</button><button type="button" data-v="2–10">2–10</button><button type="button" data-v="11–50">11–50</button><button type="button" data-v="50+">50+</button></div></div>
+      <p class="error hidden" id="su-error" role="alert"></p>
+      <button type="button" class="btn btn-primary su-go" id="su-next" data-i18n>Continue</button>
+      <button type="button" class="btn-link" data-to-login data-i18n>Already have a login? Log in</button>
+    </section>
+    <!-- Log in, or sign-up step 2 -->
+    <section id="auth-main" class="su">
+      <div class="su-top hidden" id="su-2top"><span class="k" data-i18n>Join Viustay · 2 of 3</span><span class="su-bars"><i class="on"></i><i class="on"></i><i></i></span></div>
+      <h1 id="auth-title" style="font-size:32px">Manager log in</h1>
+      <p class="lede" style="font-size:16px" id="auth-lede">Register your buildings, add vacancies and see every viewing.</p>
+      <div class="su-sum hidden" id="su-sum"></div>
+      <form id="auth-form" class="stack-sm" novalidate>
+        <div class="stack-sm hidden" id="su-extra">
+          <label class="field"><span data-i18n>Full name</span><input type="text" name="name" autocomplete="name" maxlength="120"></label>
+          <label class="field"><span data-i18n>WhatsApp number</span><input type="tel" name="phone" autocomplete="tel" inputmode="tel" maxlength="20" placeholder="07XX XXX XXX"></label>
+          <label class="field"><span><span data-i18n>Company name</span> <small class="note" data-i18n>optional</small></span><input type="text" name="company" autocomplete="organization" maxlength="120" placeholder="e.g. Hassan Properties"></label>
+        </div>
+        <label class="field">Email<input type="email" name="email" autocomplete="email" required></label>
+        <label class="field" id="pw-field">Password<input type="password" name="password" autocomplete="current-password" minlength="8" required></label>
+        <p class="error hidden" id="auth-error" role="alert"></p>
+        <p class="note hidden" id="auth-info" role="status" style="font-size:15px;color:var(--emerald);font-weight:600"></p>
+        <button type="submit" class="btn btn-dark" id="auth-submit">Log in</button>
+      </form>
+      <div class="actions" style="font-size:15px;gap:6px 16px">
+        <button type="button" class="btn-link" id="toggle-mode">New here? Create a login</button>
+        <button type="button" class="btn-link" id="forgot">Forgot password?</button>
+      </div>
+      <p class="note" id="auth-note">Use the same email you gave us when listing your building, so your units show up automatically.</p>
+    </section>
   </div>
-  <p class="note">Use the same email you gave us when listing your building, so your units show up automatically.</p>
 </main>
 
 <!-- Dashboard -->
@@ -81,11 +114,11 @@
 <div class="md-toast hidden" id="toast" role="status"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="js/lang.js?v=14"></script>
+<script src="js/lang.js?v=15"></script>
 <script src="js/i18n.js"></script>
 <script src="js/config.js"></script>
-<script src="js/common.js?v=14"></script>
+<script src="js/common.js?v=15"></script>
 <script src="js/install.js"></script>
-<script src="js/dashboard.js?v=14"></script>
+<script src="js/dashboard.js?v=15"></script>
 </body>
 </html>

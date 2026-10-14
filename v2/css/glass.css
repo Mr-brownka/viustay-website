@@ -331,3 +331,28 @@ html.onb-open, html.onb-open body { overflow: hidden; }
 @media (min-width: 1025px) { .site-nav .nav-extra { display: none; } }
 .nav-more-list { background: #FFFFFF; }
 html[data-look="night"] .nav-more-list { background: #0B2E29; }
+
+/* Pull down to refresh (installed app) */
+.ptr { position: fixed; top: calc(10px + env(safe-area-inset-top)); left: 50%; z-index: 120; transform: translate(-50%, -50px); opacity: 0; pointer-events: none; }
+.ptr-ball { width: 44px; height: 44px; border-radius: 50%; background: #fff; box-shadow: 0 6px 18px rgba(4, 32, 28, .22); display: flex; align-items: center; justify-content: center; }
+.ptr-ball svg { width: 20px; height: 24px; }
+.ptr.spin .ptr-ball svg { animation: ptrSpin .8s linear infinite; }
+@keyframes ptrSpin { to { transform: rotate(360deg); } }
+
+/* Bottom tab bar on phones (item 24) */
+.tabbar { display: none; }
+@media (max-width: 760px) {
+  .tabbar { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; padding: 7px 4px calc(8px + env(safe-area-inset-bottom)); background: rgba(255, 255, 255, .96); border-top: 1px solid rgba(14, 94, 84, .1); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+  html[data-look="night"] .tabbar { background: rgba(8, 38, 34, .96); border-top-color: rgba(255, 255, 255, .1); }
+  .tabbar a { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; color: rgba(19, 48, 43, .58); text-decoration: none; min-width: 0; white-space: nowrap; }
+  html[data-look="night"] .tabbar a { color: rgba(255, 255, 255, .6); }
+  .tabbar i { display: flex; padding: 4px 14px; border-radius: 99px; transition: background .2s; }
+  .tabbar svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .tabbar a.on { color: #0E5E54; }
+  .tabbar a.on i { background: #E3F3EC; }
+  html[data-look="night"] .tabbar a.on { color: #F2A93B; } html[data-look="night"] .tabbar a.on i { background: rgba(242, 169, 59, .16); }
+  body.has-tabs { padding-bottom: calc(66px + env(safe-area-inset-bottom)); }
+  body.has-tabs .wa-float { display: none; }
+  body.has-tabs .vs-looks { bottom: calc(76px + env(safe-area-inset-bottom)) !important; }
+}
+html.intro-wait .doors * { animation-play-state: paused; }

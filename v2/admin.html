@@ -14,9 +14,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&family=Source+Sans+3:wght@400;600&display=swap">
-<link rel="stylesheet" href="css/styles.css?v=14">
-<link rel="stylesheet" href="css/glass.css?v=14">
-<link rel="stylesheet" href="css/trips.css?v=14">
+<link rel="stylesheet" href="css/styles.css?v=15">
+<link rel="stylesheet" href="css/glass.css?v=15">
+<link rel="stylesheet" href="css/admin.css?v=15">
+<link rel="stylesheet" href="css/trips.css?v=15">
 <script src="js/look.js"></script>
 </head>
 <body data-no-launch data-no-lang data-no-looks data-header="flow" data-steps="0" data-no-wa>
@@ -41,24 +42,33 @@
 </main>
 
 <div class="dash hidden" id="a-dash">
-  <nav class="dash-nav" aria-label="Admin">
-    <button type="button" class="tab" data-tab="trips" aria-pressed="false">Trips</button>
-    <button type="button" class="tab" data-tab="stays" aria-pressed="false">Short stays</button>
-    <button type="button" class="tab" data-tab="agents" aria-pressed="false">Agents &amp; pay</button>
-    <button type="button" class="tab" data-tab="fares" aria-pressed="false">Fare settings</button>
-    <button type="button" class="tab" data-tab="viewings" aria-pressed="true">Viewings</button>
-    <button type="button" class="tab" data-tab="buildings" aria-pressed="false">Buildings</button>
-    <button type="button" class="tab" data-tab="requests" aria-pressed="false">Home requests</button>
-    <button type="button" class="tab" data-tab="properties" aria-pressed="false">Properties</button>
-    <button type="button" class="tab" data-tab="messages" aria-pressed="false">Messages</button>
-    <button type="button" class="tab" data-tab="survey" aria-pressed="false">Field survey</button>
-    <span style="flex:1 1 auto"></span>
-    <a class="tab" href="https://docs.google.com/spreadsheets/d/1c4joIC5a7GxXDRFJIeCwpbrcdThPxiAteGNDO0ah3vo/edit" target="_blank" rel="noopener" style="text-decoration:none">Edit listings sheet</a>
-    <button type="button" class="tab" id="a-out">Log out</button>
+  <nav class="dash-nav ad-side" aria-label="Admin">
+    <a class="ad-logo" href="index.html"><img src="assets/viustay-logo-white.svg" alt="Viustay"><span>Admin</span></a>
+    <button type="button" class="ad-sec" data-sec="today"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Today</span><i class="ad-badge hidden" id="ad-n-today"></i></button>
+    <button type="button" class="ad-sec" data-sec="bookings"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>Bookings</span></button>
+    <button type="button" class="ad-sec" data-sec="homes"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M10 21v-4h4v4"/></svg><span>Homes</span></button>
+    <button type="button" class="ad-sec" data-sec="people"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2 20a7 7 0 0 1 14 0M16 4.5a3.5 3.5 0 0 1 0 7M18 20a7 7 0 0 0-2.5-5.3"/></svg><span>People</span></button>
+    <button type="button" class="ad-sec" data-sec="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg><span>Settings</span></button>
+    <div class="ad-me"><span class="ad-av" id="ad-av">··</span><span><b id="ad-email"></b><button type="button" class="ad-out" id="a-out">Log out</button></span></div>
   </nav>
-  <main class="dash-main" id="a-main">
+  <div class="ad-body">
+  <div class="ad-sub" id="ad-sub" role="group" aria-label="Section">
+    <button type="button" class="tab" data-sec-of="bookings" data-tab="trips" aria-pressed="false">Viewing trips</button>
+    <button type="button" class="tab" data-sec-of="bookings" data-tab="stays" aria-pressed="false">Short stays</button>
+    <button type="button" class="tab" data-sec-of="homes" data-tab="buildings" aria-pressed="false">Buildings</button>
+    <button type="button" class="tab" data-sec-of="homes" data-tab="hosts" aria-pressed="false">Short-stay hosts</button>
+    <button type="button" class="tab" data-sec-of="homes" data-tab="properties" aria-pressed="false">Older property forms</button>
+    <a class="tab" data-sec-of="homes" href="https://docs.google.com/spreadsheets/d/1c4joIC5a7GxXDRFJIeCwpbrcdThPxiAteGNDO0ah3vo/edit" target="_blank" rel="noopener">Listings sheet ↗</a>
+    <button type="button" class="tab" data-sec-of="people" data-tab="agents" aria-pressed="false">Agents &amp; pay</button>
+    <button type="button" class="tab" data-sec-of="people" data-tab="requests" aria-pressed="false">Home requests</button>
+    <button type="button" class="tab" data-sec-of="people" data-tab="messages" aria-pressed="false">Messages</button>
+    <button type="button" class="tab" data-sec-of="settings" data-tab="fares" aria-pressed="false">Fares &amp; fees</button>
+    <button type="button" class="tab" data-sec-of="settings" data-tab="survey" aria-pressed="false">Field survey</button>
+  </div>
+  <main class="dash-main hidden" id="today-main"></main>
+  <main class="dash-main hidden" id="a-main">
     <div class="actions" style="justify-content:space-between">
-      <h1 id="a-title" style="font-size:30px">Viewings</h1>
+      <h1 id="a-title" style="font-size:30px">Home requests</h1>
       <div class="actions" style="gap:10px">
         <label class="check" style="align-items:center"><input type="checkbox" id="a-open" checked> Hide finished</label>
         <button type="button" class="btn btn-outline" id="a-refresh" style="font-size:15px;padding:10px 16px">Refresh</button>
@@ -70,19 +80,23 @@
   <main class="dash-main hidden" id="s-main"></main>
   <main class="dash-main hidden" id="t-main"></main>
   <main class="dash-main hidden" id="b-main"></main>
+  </div>
+  <div class="ad-drawer hidden" id="ad-drawer" role="dialog" aria-modal="true" aria-label="Details"><div class="ad-scrim" data-dclose></div><div class="ad-panel"><button type="button" class="ad-x" data-dclose aria-label="Close">✕</button><div id="ad-dbody"></div></div></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="js/lang.js?v=14"></script>
+<script src="js/lang.js?v=15"></script>
 <script src="js/i18n.js"></script>
 <script src="js/config.js"></script>
-<script src="js/common.js?v=14"></script>
+<script src="js/common.js?v=15"></script>
 <script src="js/install.js"></script>
 <script src="js/survey-config.js"></script>
 <script src="js/survey.js"></script>
 <script src="js/trip-math.js"></script>
-<script src="js/trips-admin.js?v=14"></script>
-<script src="js/buildings-admin.js?v=14"></script>
-<script src="js/admin.js?v=14"></script>
+<script src="js/trips-admin.js?v=15"></script>
+<script src="js/buildings-admin.js?v=15"></script>
+<script src="js/hosts-admin.js?v=15"></script>
+<script src="js/admin.js?v=15"></script>
+<script src="js/admin-shell.js?v=15"></script>
 </body>
 </html>

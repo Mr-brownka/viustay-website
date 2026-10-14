@@ -12,20 +12,49 @@ document.addEventListener('DOMContentLoaded', function () {
   if (params.get('email')) authForm.email.value = params.get('email');
 
   function msg(el, text) { el.textContent = text || ''; el.classList.toggle('hidden', !text); }
+  // Sign-up in 3 steps (item 25): 1 what do you have, 2 your details, 3 Karibu (the first dashboard screen)
+  var SU = { kinds: [], role: '', unit_count: '' }, suStep = 1;
+  try { var su0 = JSON.parse(localStorage.getItem('vs-md-pending') || 'null'); if (su0 && su0.kinds) SU = { kinds: su0.kinds, role: su0.role || '', unit_count: su0.unit_count || '' }; } catch (e) {}
+  function suDraw() {
+    V.$$('.su-kind').forEach(function (b) { b.setAttribute('aria-pressed', String(SU.kinds.indexOf(b.getAttribute('data-kind')) >= 0)); });
+    V.$$('[data-su]').forEach(function (g) { var k = g.getAttribute('data-su'); V.$$('button', g).forEach(function (b) { b.setAttribute('aria-pressed', String(SU[k] === b.getAttribute('data-v'))); }); });
+    var lab = { monthly: T('Monthly rentals'), short: T('Short stays') };
+    V.$('#su-sum').innerHTML = SU.kinds.map(function (k) { return '<span class="su-pill ' + k + '">' + esc(lab[k]) + '</span>'; }).join('') +
+      ([SU.role && T(SU.role), SU.unit_count].filter(Boolean).length ? '<span class="su-pill">' + esc([SU.role && T(SU.role), SU.unit_count].filter(Boolean).join(' · ')) + '</span>' : '') +
+      '<button type="button" class="btn-link" data-su-back>' + esc(T('Change')) + '</button>';
+    var bk = V.$('[data-su-back]'); if (bk) bk.onclick = function () { suStep = 1; setMode('signup'); };
+  }
+  V.$$('.su-kind').forEach(function (b) { b.addEventListener('click', function () {
+    var k = b.getAttribute('data-kind'), i = SU.kinds.indexOf(k); if (i >= 0) SU.kinds.splice(i, 1); else SU.kinds.push(k); msg(V.$('#su-error')); suDraw();
+  }); });
+  V.$$('[data-su] button').forEach(function (b) { b.addEventListener('click', function () { var k = b.parentNode.getAttribute('data-su'), v = b.getAttribute('data-v'); SU[k] = SU[k] === v ? '' : v; suDraw(); }); });
+  V.$('#su-next').addEventListener('click', function () {
+    if (!SU.kinds.length) { msg(V.$('#su-error'), T('Tick monthly rentals, short stays, or both.')); return; }
+    suStep = 2; setMode('signup'); window.scrollTo(0, 0);
+  });
+  V.$$('[data-to-login]').forEach(function (b) { b.addEventListener('click', function () { setMode('login'); }); });
   function setMode(m) {
     mode = m;
-    V.$('#auth-title').textContent = m === 'signup' ? T('Create your login') : T('Manager log in');
-    V.$('#auth-submit').textContent = m === 'signup' ? T('Create login') : T('Log in');
-    V.$('#toggle-mode').textContent = m === 'signup' ? T('Already have a login? Log in') : T('New here? Create a login');
-    authForm.password.setAttribute('autocomplete', m === 'signup' ? 'new-password' : 'current-password');
+    var su = m === 'signup';
+    V.$('#su-1').classList.toggle('hidden', !(su && suStep === 1));
+    V.$('#auth-main').classList.toggle('hidden', su && suStep === 1);
+    ['#su-2top', '#su-sum', '#su-extra'].forEach(function (id) { V.$(id).classList.toggle('hidden', !su); });
+    V.$('#auth-lede').classList.toggle('hidden', su); V.$('#auth-note').classList.toggle('hidden', su && !V.$('#auth-note').textContent);
+    V.$('#auth-title').textContent = su ? T('Your details') : T('Manager log in');
+    if (su) suDraw();
+    V.$('#auth-submit').textContent = su ? T('Create my account') : T('Log in');
+    V.$('#toggle-mode').textContent = su ? T('Already have a login? Log in') : T('New here? Create a login');
+    V.$('#forgot').classList.toggle('hidden', su);
+    authForm.password.setAttribute('autocomplete', su ? 'new-password' : 'current-password');
     msg(err); msg(info);
   }
   setMode(mode);
-  V.$('#toggle-mode').addEventListener('click', function () { setMode(mode === 'signup' ? 'login' : 'signup'); });
+  V.$('#toggle-mode').addEventListener('click', function () { if (mode !== 'signup') suStep = 1; setMode(mode === 'signup' ? 'login' : 'signup'); });
 
   // ---------- State ----------
   var S = { buildings: [], units: [], views: [], profile: {}, b: null, filter: 'all', week: 0, day: null, route: { page: 'buildings' } };
   var W = null; // register wizard
+  var Q = null; // "List a short stay" form (item 17)
 
   var AREAS = ['Kilimani', 'Kileleshwa', 'Lavington', 'Westlands', 'Parklands', 'South C', 'South B', 'Upper Hill', 'Ngong Rd'];
   var HTYPES = ['Bedsitter / studio', 'One bedroom', 'Two bedroom', 'Three bedroom', 'Four bedroom +'];
@@ -51,6 +80,8 @@ document.addEventListener('DOMContentLoaded', function () {
     chev: '<svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>',
     pin: '<svg viewBox="0 0 24 24" style="width:14px;height:14px;vertical-align:-2px"><path d="M12 21s-7-7-7-12a7 7 0 0 1 14 0c0 5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>',
     check: '<svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg>',
+    moon: '<svg viewBox="0 0 24 24"><path d="M20 14A8 8 0 0 1 10 4a8 8 0 1 0 10 10z"/></svg>',
+    bld: '<svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M10 21v-4h4v4"/></svg>',
     info: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>'
   };
   function esc(s) { return V.esc(s == null ? '' : String(s)); }
@@ -117,6 +148,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var h = (location.hash || '').replace(/^#/, ''), m;
     if (h === 'register') return { page: 'register' };
     if (h === 'profile') return { page: 'profile' };
+    if ((m = /^short(?:-(\d+))?$/.exec(h))) return { page: 'short', bid: m[1] ? +m[1] : null };
     if ((m = /^edit-(\d+)-(\d)$/.exec(h))) return { page: 'register', edit: +m[1], step: +m[2] };
     if ((m = /^b-(\d+)-(home|units|viewings|details)$/.exec(h))) return { page: 'building', id: +m[1], tab: m[2] };
     return { page: 'buildings' };
@@ -138,6 +170,7 @@ document.addEventListener('DOMContentLoaded', function () {
       S.b = S.buildings.filter(function (b) { return b.id === r.id; })[0];
       if (!S.b) { nav('buildings'); return; }
     } else if (r.page !== 'register') S.b = null;
+    if (r.page === 'short') { if (!Q || (r.bid && Q.data.building_id !== r.bid && Q.step === 1)) Q = { step: 1, data: newShort(r.bid) }; } else if (Q && Q.sent) Q = null;
     if (r.page === 'register') {
       if (r.edit) {
         var eb = S.buildings.filter(function (b) { return b.id === r.edit; })[0];
@@ -158,7 +191,7 @@ document.addEventListener('DOMContentLoaded', function () {
     V.$('#me-av-side').textContent = who; V.$('#me-av-top').textContent = who;
     V.$('#me-name-side').textContent = S.profile.name || S.profile.email || '';
     V.$$('.md-nav > [data-go]').forEach(function (b) {
-      var on = (b.getAttribute('data-go') === 'buildings' && (r.page === 'buildings' || r.page === 'building' || r.page === 'register')) || (b.getAttribute('data-go') === 'profile' && r.page === 'profile');
+      var on = (b.getAttribute('data-go') === 'buildings' && (r.page === 'buildings' || r.page === 'building' || r.page === 'register' || r.page === 'short')) || (b.getAttribute('data-go') === 'profile' && r.page === 'profile');
       if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
     });
     var sub = V.$('#side-sub');
@@ -183,6 +216,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var el = V.$('#md-view'), r = S.route;
     if (r.page === 'buildings') drawBuildings(el);
     else if (r.page === 'register') drawWizard(el);
+    else if (r.page === 'short') drawShort(el);
     else if (r.page === 'profile') drawProfile(el);
     else if (r.tab === 'units') drawUnits(el);
     else if (r.tab === 'viewings') drawViewings(el);
@@ -209,10 +243,182 @@ document.addEventListener('DOMContentLoaded', function () {
     return '<div class="bphoto h' + (b.id % 3) + '"' + (url ? ' style="background-image:url(\'' + esc(url) + '\')"' : '') + '>' + (url ? '' : sil()) + (inner || '') + '</div>';
   }
 
+  // ================= List a short stay (item 17): 4 steps =================
+  var STYPES = [['Studio', 0], ['1 bedroom', 1], ['2 bedrooms', 2], ['3 bedrooms', 3], ['Whole house', null]];
+  var SINC = ['Wi-Fi', 'Hot shower', 'Kitchen', 'Fridge', 'TV / Netflix', 'Parking', 'Washing machine', 'Workspace', 'Towels & sheets', 'Backup power', 'Pool', 'Gym'];
+  var SRULES = [['smoking', 'Smoking inside'], ['parties', 'Parties'], ['pets', 'Pets'], ['visitors', 'Visitors after 10 PM']];
+  var SMIN = [['1', 'No minimum'], ['2', '2 nights'], ['3', '3 nights'], ['7', '1 week'], ['other', 'Other…']];
+  var STIMES = ['11:00 AM', '12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM'], SOUT = ['9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM'];
+  function shortOk() { return (S.profile.kinds || []).indexOf('short') >= 0 || S.buildings.some(function (b) { return ((D(b).rules || {}).short_stays) === 'Allowed'; }); }
+  function newShort(bid) {
+    var allowed = S.buildings.filter(function (b) { return ((D(b).rules || {}).short_stays) === 'Allowed'; });
+    var b = bid ? S.buildings.filter(function (x) { return x.id === bid; })[0] : (allowed[0] || S.buildings[0]);
+    return { building_id: b ? b.id : null, building_name: '', area: '', unit_label: '', floor: '', type: '', max_guests: 2, beds: 1, bathrooms: 1, title: '',
+      night_rate: '', cleaning_fee: '', min: '1', min_other: '', check_in: '2:00 PM', check_out: '11:00 AM', discounts: 'None',
+      included: ['Wi-Fi', 'Hot shower', 'Towels & sheets'], rules: { smoking: false, parties: false, pets: false, visitors: false },
+      checkin_name: (b && (D(b).contacts || {}).caretaker) || '', checkin_phone: (b && (D(b).contacts || {}).caretaker_phone) || '', keys: 'Meets guest', notes: '' };
+  }
+  function shortBuilding(x) { return S.buildings.filter(function (b) { return b.id === x.building_id; })[0]; }
+  function shortTitle(x) { var b = shortBuilding(x); return x.title || ((x.type ? T(x.type) : T('Furnished unit')) + ', ' + (b ? (b.road || b.name) : (x.building_name || x.area || ''))); }
+  function shortMin(x) { return x.min === 'other' ? parseInt(x.min_other, 10) || 1 : parseInt(x.min, 10) || 1; }
+  function stepBtn(key, val, label, max) {
+    return '<div class="md-stepper"><span>' + esc(label) + '</span><span class="st"><button type="button" data-sd="' + key + '" data-d="-1" aria-label="' + esc(T('Fewer')) + '"' + (val <= 1 ? ' disabled' : '') + '>−</button><b>' + val + '</b><button type="button" data-sd="' + key + '" data-d="1" aria-label="' + esc(T('More')) + '"' + (val >= max ? ' disabled' : '') + '>+</button></span></div>';
+  }
+  function nextList(now) {
+    return '<ol class="md-steps">' + [T('You send it'), T('We call to book a photo visit'), T('Photos added, it goes live'), T('We let you know when guests book')].map(function (t, i) {
+      return '<li class="' + (i < now ? 'on' : i === now ? 'now' : '') + '"><i></i>' + esc(t) + '</li>';
+    }).join('') + '</ol>';
+  }
+  function drawShort(el) {
+    var x = Q.data, n = Q.step, body = '';
+    if (Q.sent) {
+      el.innerHTML = '<section class="md-wiz md-short"><div class="md-done-tick pop">' + ICON.check + '</div><h1 style="font-size:26px">' + esc(T('Sent! We\'ll call you to book a photo visit.')) + '</h1>' +
+        '<div class="md-card md-whatnext"><b>' + esc(T('What happens next')) + '</b>' + nextList(1) + '</div>' +
+        '<div class="md-two-btn"><button type="button" class="md-btn" data-to2>' + esc(T('My buildings')) + '</button><button type="button" class="md-btn sun" data-again>' + esc(T('List another short stay')) + '</button></div></section>';
+      V.$('[data-to2]', el).onclick = function () { Q = null; nav('buildings'); };
+      V.$('[data-again]', el).onclick = function () { Q = { step: 1, data: newShort(x.building_id) }; render(); window.scrollTo(0, 0); };
+      return;
+    }
+    var title = [T('Which unit is it?'), T('Price and stay rules'), T('What\'s included'), T('This is what guests will see')][n - 1];
+    var sub = [T('The furnished unit guests will stay in.'), T('Guests see the total before they pay.'), T('Tap everything guests get.'), T('Check it, then send it to Viustay.')][n - 1];
+    if (n === 1) {
+      var opts = S.buildings.map(function (b) { return '<option value="' + b.id + '"' + (x.building_id === b.id ? ' selected' : '') + '>' + esc(b.name) + (b.location ? ' · ' + esc(b.location) : '') + '</option>'; }).join('');
+      var blank = shortTitle(Object.assign({}, x, { title: '' }));
+      body = '<label class="md-f" data-fk="building">' + esc(T('Building')) + '<select data-sk="building_id">' + opts + '<option value=""' + (!x.building_id ? ' selected' : '') + '>' + esc(T('Not in a registered building')) + '</option></select></label>' +
+        (!x.building_id ? '<div class="md-two-f">' + inp('building_name', T('Building or house name'), x.building_name, { ph: T('e.g. Sarit View Apartments') }) +
+          '<label class="md-f" data-fk="area">' + esc(T('Area')) + '<select data-sk="area"><option value="">' + esc(T('Choose')) + '</option>' + AREAS.concat(['Other']).map(function (a) { return '<option' + (x.area === a ? ' selected' : '') + '>' + esc(a) + '</option>'; }).join('') + '</select></label></div>' : '') +
+        '<div class="md-two-f">' + inp('unit_label', T('Unit / door no.'), x.unit_label, { ph: 'e.g. B4', maxlength: 30, hint: T('optional') }) + floorField(x) + '</div>' +
+        '<div class="md-f" data-fk="type">' + esc(T('Type')) + cs('type', STYPES.map(function (t) { return t[0]; }), x.type) + '</div>' +
+        '<div class="md-card md-steppers">' + stepBtn('max_guests', x.max_guests, T('Guests (max)'), 20) + stepBtn('beds', x.beds, T('Beds'), 10) + stepBtn('bathrooms', x.bathrooms, T('Bathrooms'), 6) + '</div>' +
+        inp('title', T('Name guests will see'), x.title, { ph: blank, hint: T('optional'), maxlength: 120 }) +
+        '<p class="dim" style="margin:-8px 0 0;font-size:13px">' + esc(T('Leave it blank and we use: {t}', { t: blank })) + '</p>';
+    } else if (n === 2) {
+      var ex = (parseInt(x.night_rate, 10) || 0) * Math.max(2, shortMin(x)) + (parseInt(x.cleaning_fee, 10) || 0);
+      body = '<div class="md-two-f">' + inp('night_rate', T('Price per night (KES)'), x.night_rate, { type: 'number', inputmode: 'numeric', min: 500, max: 500000 }) + inp('cleaning_fee', T('Cleaning fee (KES)'), x.cleaning_fee, { type: 'number', inputmode: 'numeric', hint: T('optional') }) + '</div>' +
+        '<div class="md-card md-min" data-fk="min"><b>' + esc(T('Minimum stay')) + ' <span class="dim" style="font-weight:400">· ' + esc(T('do you have a rule?')) + '</span></b>' +
+        '<div class="md-chipset" data-cs="min">' + SMIN.map(function (o) { var on = x.min === o[0]; return '<button type="button" data-v="' + o[0] + '" aria-pressed="' + on + '">' + (on ? ICON.check : '') + esc(T(o[1])) + '</button>'; }).join('') + '</div>' +
+        (x.min === 'other' ? inp('min_other', T('Minimum nights'), x.min_other, { type: 'number', inputmode: 'numeric', min: 1, max: 60 }) : '') +
+        '<p class="dim" style="margin:0;font-size:13px">' + esc(T('"No minimum" means guests can book 1 night. We only show a minimum on the listing if you set one.')) + '</p></div>' +
+        '<div class="md-two-f"><label class="md-f">' + esc(T('Check-in from')) + '<select data-sk="check_in">' + STIMES.map(function (t) { return '<option' + (x.check_in === t ? ' selected' : '') + '>' + t + '</option>'; }).join('') + '</select></label>' +
+        '<label class="md-f">' + esc(T('Check-out by')) + '<select data-sk="check_out">' + SOUT.map(function (t) { return '<option' + (x.check_out === t ? ' selected' : '') + '>' + t + '</option>'; }).join('') + '</select></label></div>' +
+        '<div class="md-f">' + esc(T('Discounts')) + ' <small>' + esc(T('optional')) + '</small>' + cs('discounts', ['10% off a week', '20% off a month', 'None'], x.discounts) + '</div>' +
+        (ex ? '<div class="md-ex"><span>' + esc(T('Example: {n} nights', { n: Math.max(2, shortMin(x)) })) + '</span><b>KES ' + V.money(ex) + '</b></div>' : '');
+    } else if (n === 3) {
+      body = '<div class="md-card md-grp"><b>' + esc(T('Included')) + '</b>' + cs('included', SINC, x.included, true) + '</div>' +
+        '<div class="md-card md-grp"><b>' + esc(T('House rules')) + ' <span class="dim" style="font-weight:400;font-size:13px">· ' + esc(T('on = allowed')) + '</span></b><div class="md-rules">' + SRULES.map(function (r) {
+          return '<div class="md-toggle"><span>' + esc(T(r[1])) + '</span><button type="button" role="switch" aria-checked="' + !!x.rules[r[0]] + '" aria-label="' + esc(T(r[1])) + '" data-rule="' + r[0] + '"><i></i></button></div>';
+        }).join('') + '</div></div>' +
+        '<div class="md-card md-grp" style="display:flex;flex-direction:column;gap:12px"><b>' + esc(T('Who checks guests in?')) + '</b><p class="dim" style="margin:-8px 0 0;font-size:13px">' + esc(T('Sent to the guest on WhatsApp the day before. Never shown publicly.')) + '</p>' +
+        '<div class="md-two-f">' + inp('checkin_name', T('Name'), x.checkin_name, { ph: T('e.g. Peter (caretaker)') }) + inp('checkin_phone', T('Phone'), x.checkin_phone, { type: 'tel', maxlength: 20 }) + '</div>' +
+        cs('keys', ['Meets guest', 'Key in lockbox', 'Key at reception'], x.keys) + '</div>' +
+        '<label class="md-f">' + esc(T('Anything else guests should know?')) + ' <small>' + esc(T('optional')) + '</small><textarea data-k="notes" rows="3" maxlength="1000">' + esc(x.notes) + '</textarea></label>';
+    } else {
+      var b = shortBuilding(x), mn = shortMin(x);
+      body = '<div class="md-card md-prev"><div class="bphoto h1">' + sil() + '<span class="md-prev-tag">' + esc(T('Photos after our visit')) + '</span></div>' +
+        '<div class="in"><b style="font-size:18px">' + esc(shortTitle(x)) + '</b><span class="dim">' + esc([b ? b.name : x.building_name, b ? b.location : x.area, T(x.max_guests === 1 ? '{n} guest' : '{n} guests', { n: x.max_guests }), T(x.beds === 1 ? '{n} bed' : '{n} beds', { n: x.beds })].filter(Boolean).join(' · ')) + '</span>' +
+        '<div class="md-prev-price"><span><b>KES ' + V.money(parseInt(x.night_rate, 10) || 0) + '</b> <span class="dim">/ ' + esc(T('night')) + '</span></span><span class="dim">' + esc(mn > 1 ? T('Minimum {n} nights', { n: mn }) : T('No minimum stay')) + '</span></div>' +
+        '<span class="dim" style="font-size:13px">' + esc([T('In {t}', { t: x.check_in }), T('Out {t}', { t: x.check_out })].concat(x.included.slice(0, 3).map(function (i) { return T(i); })).join(' · ') + (x.included.length > 3 ? ' +' + (x.included.length - 3) : '')) + '</span></div></div>' +
+        '<div class="md-card md-whatnext"><b>' + esc(T('What happens next')) + '</b>' + nextList(0) + '</div>';
+    }
+    var bars = [1, 2, 3, 4].map(function (i) { return '<i class="' + (i <= n ? 'on' : '') + '"></i>'; }).join('');
+    var lab = [T('The place'), T('Price & stay'), T('What\'s included'), T('Check')];
+    el.innerHTML = '<section class="md-wiz md-short"><div class="md-wiz-top"><span class="k">' + esc(T('List a short stay')) + ' · ' + esc(T('{a} of {b}', { a: n, b: 4 })) + ' · ' + esc(lab[n - 1]) + '</span></div><div class="md-bars">' + bars + '</div>' +
+      '<div><h1 style="font-size:26px">' + esc(title) + '</h1><p class="dim" style="margin:4px 0 0">' + esc(sub) + '</p></div>' + body + '</section>' +
+      '<div class="md-wiz-foot">' + (n > 1 ? '<button type="button" class="md-btn" data-prev>' + esc(T('Back')) + '</button>' : '<button type="button" class="md-btn" data-cancel>' + esc(T('Cancel')) + '</button>') +
+      '<button type="button" class="md-btn sun" data-next>' + esc(n === 4 ? T('Send to Viustay') : T('Next: {s}', { s: lab[n] })) + '</button><span class="err hidden" data-werr></span></div>';
+    wireShort(el);
+  }
+  function floorField(x) {
+    var b = shortBuilding(x), fl = b && parseInt(b.floors, 10);
+    if (!fl) return inp('floor', T('Floor'), x.floor, { hint: T('optional'), maxlength: 30 });
+    var list = [T('Ground')]; for (var i = 1; i <= fl; i++) list.push(ordinal(i));
+    return '<label class="md-f">' + esc(T('Floor')) + ' <small>' + esc(T('optional')) + '</small><select data-sk="floor"><option value="">' + esc(T('Choose')) + '</option>' + list.map(function (f) { return '<option' + (x.floor === f ? ' selected' : '') + '>' + esc(f) + '</option>'; }).join('') + '</select></label>';
+  }
+  function wireShort(el) {
+    var x = Q.data, keep = function () { var y = window.scrollY; render(); window.scrollTo(0, y); };
+    V.$$('[data-k]', el).forEach(function (i) {
+      var k = i.getAttribute('data-k');
+      i.oninput = function () { setK(k, i.value); var f = i.closest('.md-f'); if (f) f.classList.remove('bad'); };
+      if (/night_rate|cleaning_fee|min_other/.test(k)) i.onchange = keep;
+    });
+    V.$$('[data-sk]', el).forEach(function (sel) { sel.onchange = function () {
+      var k = sel.getAttribute('data-sk'), v = sel.value;
+      if (k === 'building_id') {
+        x.building_id = v ? +v : null; x.floor = '';
+        var nb = shortBuilding(x); if (nb) { var c = D(nb).contacts || {}; if (!x.checkin_name) x.checkin_name = c.caretaker || ''; if (!x.checkin_phone) x.checkin_phone = c.caretaker_phone || ''; }
+        keep(); return;
+      }
+      x[k] = v; var f = sel.closest('.md-f'); if (f) f.classList.remove('bad');
+    }; });
+    V.$$('[data-cs]', el).forEach(function (set) {
+      var key = set.getAttribute('data-cs'), multi = set.hasAttribute('data-multi');
+      V.$$('button', set).forEach(function (b) { b.onclick = function () {
+        var v = b.getAttribute('data-v');
+        if (multi) { var arr = (x[key] || []).slice(), i = arr.indexOf(v); if (i > -1) arr.splice(i, 1); else arr.push(v); x[key] = arr; }
+        else x[key] = (key === 'min' || key === 'keys' || key === 'discounts') ? v : (x[key] === v ? '' : v);
+        keep();
+      }; });
+    });
+    V.$$('[data-sd]', el).forEach(function (b) { b.onclick = function () { var k = b.getAttribute('data-sd'); x[k] = Math.max(1, Math.min(20, x[k] + (+b.getAttribute('data-d')))); keep(); }; });
+    V.$$('[data-rule]', el).forEach(function (b) { b.onclick = function () { var k = b.getAttribute('data-rule'); x.rules[k] = !x.rules[k]; b.setAttribute('aria-checked', String(x.rules[k])); }; });
+    var prev = V.$('[data-prev]', el); if (prev) prev.onclick = function () { Q.step--; render(); window.scrollTo(0, 0); };
+    var cancel = V.$('[data-cancel]', el); if (cancel) cancel.onclick = function () { Q = null; nav('buildings'); };
+    V.$('[data-next]', el).onclick = function () {
+      var btn = this, er = V.$('[data-werr]', el);
+      var fail = function (key, t) { var f = key && V.$('[data-fk="' + key + '"]', el); if (f) { f.classList.add('bad'); f.scrollIntoView({ block: 'center', behavior: 'smooth' }); } er.textContent = t; er.classList.remove('hidden'); };
+      if (Q.step === 1) {
+        if (!x.building_id && x.building_name.trim().length < 2) return fail('building_name', T('Enter the building or house name.'));
+        if (!x.building_id && !x.area) return fail('area', errText({ message: 'bad_area' }));
+        if (!x.type) return fail('type', T('Choose the type.'));
+      }
+      if (Q.step === 2) {
+        var r = parseInt(x.night_rate, 10);
+        if (!r || r < 500 || r > 500000) return fail('night_rate', T('Enter a price per night between KES 500 and 500,000.'));
+        if (x.min === 'other' && !(parseInt(x.min_other, 10) >= 1)) return fail('min_other', T('Enter the minimum number of nights.'));
+      }
+      if (Q.step === 3) { var dg = String(x.checkin_phone || '').replace(/\D/g, '').length; if (x.checkin_phone && (dg < 9 || dg > 13)) return fail('checkin_phone', errText({ message: 'bad_phone' })); }
+      if (Q.step < 4) { Q.step++; render(); window.scrollTo(0, 0); return; }
+      btn.disabled = true;
+      var ty = STYPES.filter(function (t) { return t[0] === x.type; })[0];
+      var p = { building_id: x.building_id, building_name: x.building_name.trim(), area: x.area, unit_label: x.unit_label.trim(), floor: x.floor, type: x.type, bedrooms: ty ? ty[1] : null,
+        beds: x.beds, bathrooms: x.bathrooms, max_guests: x.max_guests, title: x.title.trim(), night_rate: parseInt(x.night_rate, 10), cleaning_fee: parseInt(x.cleaning_fee, 10) || 0,
+        min_nights: shortMin(x), check_in: x.check_in, check_out: x.check_out, discounts: x.discounts === 'None' ? '' : x.discounts, included: x.included, rules: x.rules,
+        checkin_name: x.checkin_name.trim(), checkin_phone: x.checkin_phone.trim(), keys: x.keys, notes: x.notes.trim() };
+      rpc('manager_submit_short_stay', { p: p }).then(function (res) {
+        S.shorts = [{ id: res && res.id, status: 'new', building_id: p.building_id, building_name: p.building_name || ((shortBuilding(x) || {}).name), title: shortTitle(x), night_rate: p.night_rate, min_nights: p.min_nights, type: p.type, created_at: new Date().toISOString() }].concat(S.shorts || []);
+        Q.sent = true; render(); window.scrollTo(0, 0);
+      }).catch(function (e) {
+        btn.disabled = false;
+        var m = (e && e.message) || '';
+        fail('', /bad_rate/.test(m) ? T('Enter a price per night between KES 500 and 500,000.') : /not_yours/.test(m) ? T('That building is not on your login.') : /function|does not exist|schema cache/.test(m) ? T('Short stays are not switched on yet. Please WhatsApp us.') : errText(e));
+      });
+    };
+  }
+  function shortCard() {
+    return '<div class="md-card md-ss"><span class="k2">' + ICON.moon + esc(T('Short stays')) + '</span><b>' + esc(T('Earn per night from a furnished unit')) + '</b><span>' + esc(T('Guests pay Viustay by M-Pesa before they arrive. You get the check-in date and their name.')) + '</span>' +
+      '<button type="button" class="md-btn sun" data-short>' + ICON.plus + esc(T('List a short stay')) + '</button></div>';
+  }
+  function shortList() {
+    var L = S.shorts || []; if (!L.length) return '';
+    var ST = { 'new': [T('Sent · we\'ll call you'), 'p-due'], 'visit booked': [T('Photo visit booked'), 'p-due'], listed: [T('Live'), 'p-ok'], declined: [T('Not listed'), 'p-pau'] };
+    return '<div class="md-card md-sslist"><b>' + esc(T('Your short stays')) + '</b>' + L.map(function (r) {
+      var st = ST[r.status] || [r.status, 'p-pau'];
+      return '<div class="row"><span><b>' + esc(r.title || T(r.type || '')) + '</b><span class="dim">' + esc((r.building_name ? r.building_name + ' · ' : '') + 'KES ' + V.money(r.night_rate || 0) + ' / ' + T('night')) + '</span></span><span class="pill ' + st[1] + '">' + esc(st[0]) + '</span></div>';
+    }).join('') + '</div>';
+  }
+
   // ================= My buildings =================
   function drawBuildings(el) {
     var bs = S.buildings;
-    if (!bs.length) {
+    if (!bs.length && (S.profile.kinds || []).length) {
+      var kd = S.profile.kinds, joined = S.justJoined; S.justJoined = false;
+      el.innerHTML = '<section class="md-karibu">' + (joined ? '<div class="md-done-tick pop">' + ICON.check + '</div>' : '') +
+        '<div class="md-head"><div><h1>' + esc(T('Karibu')) + (firstName() ? ', ' + esc(firstName()) : '') + '!</h1><p>' + esc(joined ? T('Your account is ready. Where do you want to start?') : T('Where do you want to start?')) + '</p></div></div>' +
+        '<div class="md-starts">' + (kd.indexOf('monthly') >= 0 ? '<div class="md-start em"><span class="hd"><i>' + ICON.bld + '</i><b>' + esc(T('Register a building')) + '</b></span><span>' + esc(T('For monthly rentals. 6 short steps, about 5 minutes. Add vacancies after.')) + '</span><button type="button" class="md-btn sun" data-reg>' + esc(T('Register a building')) + '</button></div>' : '') +
+        (kd.indexOf('short') >= 0 ? '<div class="md-start nb"><span class="hd"><i>' + ICON.moon + '</i><b>' + esc(T('List a short stay')) + '</b></span><span>' + esc(T('For furnished units. 4 steps: unit, price & minimum stay, what\'s included, check.')) + '</span><button type="button" class="md-btn sun" data-short>' + esc(T('List a short stay')) + '</button></div>' : '') +
+        '</div>' + shortList() + '<p class="dim" style="text-align:center;font-size:13px">' + esc(T('You only see the cards for what you ticked. Change it any time in Profile.')) + '</p>' +
+        (loadDraft().name ? '<div class="md-note">' + esc(T('You have a building half registered.')) + ' <button type="button" class="md-link" data-reg>' + esc(T('Continue')) + '</button></div>' : '') + '</section>';
+    } else if (!bs.length) {
       var how = [[T('Register your building'), T('Location, contacts, house types, amenities and rules. About 5 minutes.')],
         [T('We visit and take photos'), T('Our agent checks the units and films a short video.')],
         [T('Families start viewing'), T('You see every viewing and the agent bringing them.')]];
@@ -234,9 +440,11 @@ document.addEventListener('DOMContentLoaded', function () {
         '<div class="md-bsum"><span><b>' + bs.length + '</b>' + esc(T('Buildings')) + '</span><span><b>' + allU.length + '</b>' + esc(T('Units')) + '</span><span><b>' +
         allU.filter(function (u) { return u.status === 'vacant'; }).length + '</b>' + esc(T('Vacant')) + '</span><span><b>' + wk + '</b>' + esc(T('Viewings this week')) + '</span></div>' +
         '<div class="md-blist">' + bs.map(bCard).join('') +
-        '<button type="button" class="md-addb" data-reg><i>' + ICON.plus + '</i><span><b>' + esc(T('Register another building')) + '</b><span class="dim" style="font-size:13px">' + esc(T('Takes about 5 minutes')) + '</span></span></button></div></section>';
+        '<button type="button" class="md-addb" data-reg><i>' + ICON.plus + '</i><span><b>' + esc(T('Register another building')) + '</b><span class="dim" style="font-size:13px">' + esc(T('Takes about 5 minutes')) + '</span></span></button></div>' +
+        (shortOk() ? '<div class="md-ssrow">' + shortCard() + shortList() + '</div>' : shortList()) + '</section>';
     }
     V.$$('[data-reg]', el).forEach(function (b) { b.onclick = function () { nav('register'); }; });
+    V.$$('[data-short]', el).forEach(function (b) { b.onclick = function () { Q = null; nav('short'); }; });
     V.$$('[data-bid]', el).forEach(function (c) { c.onclick = function () { openB(S.buildings.filter(function (b) { return String(b.id) === c.getAttribute('data-bid'); })[0]); }; });
   }
   function bCard(b) {
@@ -613,7 +821,7 @@ document.addEventListener('DOMContentLoaded', function () {
       '<input data-k="' + key + '" type="' + (opts.type || 'text') + '"' + (opts.inputmode ? ' inputmode="' + opts.inputmode + '"' : '') + (opts.min ? ' min="' + opts.min + '"' : '') + (opts.max ? ' max="' + opts.max + '"' : '') +
       ' maxlength="' + (opts.maxlength || 160) + '" value="' + esc(val == null ? '' : val) + '"' + (opts.ph ? ' placeholder="' + esc(opts.ph) + '"' : '') + '></label>';
   }
-  function getK(path) { var o = W.data, p = path.split('.'); for (var i = 0; i < p.length - 1; i++) o = o[p[i]]; return [o, p[p.length - 1]]; }
+  function getK(path) { var o = S.route.page === 'short' ? Q.data : W.data, p = path.split('.'); for (var i = 0; i < p.length - 1; i++) o = o[p[i]]; return [o, p[p.length - 1]]; }
   function setK(path, v) { var r = getK(path); r[0][r[1]] = v; }
   function valK(path) { var r = getK(path); return r[0][r[1]]; }
 
@@ -793,6 +1001,8 @@ document.addEventListener('DOMContentLoaded', function () {
       li('name', T('Name'), p.name || T('Add')) + li('phone', T('Phone'), p.phone || T('Add')) +
       '<div class="md-li"><b>' + esc(T('Email')) + '</b><span class="v">' + esc(p.email || '') + '</span></div>' +
       li('password', T('Password'), T('Change')) + '</div>' +
+      '<div class="md-card md-list" style="margin-top:10px"><div class="md-li" style="flex-direction:column;align-items:stretch;gap:8px"><b>' + esc(T('What do you have?')) + '</b>' +
+      '<div class="md-chipset" data-kinds>' + [['monthly', T('Monthly rentals')], ['short', T('Furnished short stays')]].map(function (o) { var on = (p.kinds || []).indexOf(o[0]) >= 0; return '<button type="button" data-v="' + o[0] + '" aria-pressed="' + on + '">' + (on ? ICON.check : '') + esc(o[1]) + '</button>'; }).join('') + '</div></div></div>' +
       '<div class="md-card md-list" style="margin-top:10px"><label class="md-li"><b>' + esc(T('Language')) + '</b><select data-lang>' + Object.keys(langs).map(function (k) { return '<option value="' + k + '"' + (k === cur ? ' selected' : '') + '>' + esc(langs[k]) + '</option>'; }).join('') + '</select></label>' +
       '<a class="md-li" target="_blank" rel="noopener" href="' + V.wa('Hi Viustay, I need help with my manager dashboard') + '"><b>' + esc(T('Help')) + '</b><span class="v">' + esc(T('WhatsApp us')) + '</span><span class="chev">›</span></a></div></div>' +
       '<div style="display:flex;flex-direction:column;gap:8px"><span class="k">' + esc(T('Notify me when')) + '</span><div class="md-card md-list">' +
@@ -806,6 +1016,12 @@ document.addEventListener('DOMContentLoaded', function () {
       };
     });
     V.$$('[data-pedit]', el).forEach(function (b) { b.onclick = function () { var k = b.getAttribute('data-pedit'); if (k === 'password') pwSheet(); else fieldSheet(k); }; });
+    V.$$('[data-kinds] button', el).forEach(function (b) { b.onclick = function () {
+      var k = b.getAttribute('data-v'), arr = (p.kinds || []).slice(), i = arr.indexOf(k); if (i >= 0) arr.splice(i, 1); else arr.push(k);
+      if (!arr.length) { toast(T('Keep at least one.')); return; }
+      p.kinds = arr; render();
+      rpc('save_my_profile', { p: { kinds: arr } }).then(function () { toast(T('Saved')); }).catch(function (e) { toast(errText(e)); });
+    }; });
     V.$('[data-lang]', el).onchange = function () { if (window.VT && VT.set) VT.set(this.value); };
     V.$('[data-logout2]', el).onclick = logout;
   }
@@ -889,15 +1105,24 @@ document.addEventListener('DOMContentLoaded', function () {
     msg(err); msg(info);
     var email = authForm.email.value.trim().toLowerCase(), pw = authForm.password.value;
     if (!email || pw.length < 8) { msg(err, T('Enter your email and a password of at least 8 characters.')); return; }
+    var pending = null;
+    if (mode === 'signup') {
+      var nm = authForm.name.value.trim(), ph = authForm.phone.value.trim(), dg = ph.replace(/\D/g, '').length;
+      if (nm.length < 2) { msg(err, T('Enter your full name.')); authForm.name.focus(); return; }
+      if (dg < 9 || dg > 13) { msg(err, T('Check the phone number.')); authForm.phone.focus(); return; }
+      pending = { name: nm, phone: ph, company: authForm.company.value.trim(), kinds: SU.kinds, role: SU.role, unit_count: SU.unit_count };
+      try { localStorage.setItem('vs-md-pending', JSON.stringify(pending)); } catch (x) {}
+    }
     var btn = V.$('#auth-submit'); btn.disabled = true;
     var p;
     if (params.get('reset') && mode === 'login') p = V.db.auth.updateUser({ password: pw });
-    else if (mode === 'signup') p = V.db.auth.signUp({ email: email, password: pw, options: { emailRedirectTo: window.location.href.split('?')[0].split('#')[0] } });
+    else if (mode === 'signup') p = V.db.auth.signUp({ email: email, password: pw, options: { emailRedirectTo: window.location.href.split('?')[0].split('#')[0], data: { vs_profile: pending } } });
     else p = V.db.auth.signInWithPassword({ email: email, password: pw });
     p.then(function (r) {
       btn.disabled = false;
       if (r.error) throw r.error;
       if (mode === 'signup' && !r.data.session) { setMode('login'); msg(info, T('Check your email and tap the link to confirm, then log in here.')); return; }
+      if (mode === 'signup') S.justJoined = true;
       if (params.get('reset')) { history.replaceState(null, '', window.location.pathname); params.delete('reset'); }
       start();
     }).catch(function (e2) {
@@ -915,15 +1140,22 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
       V.$('#auth').classList.add('hidden');
-      Promise.all([
+      var pend = null; try { pend = JSON.parse(localStorage.getItem('vs-md-pending') || 'null'); } catch (e) {}
+      if (!pend && session.user && session.user.user_metadata && session.user.user_metadata.vs_profile && !session.user.user_metadata.vs_applied) pend = session.user.user_metadata.vs_profile;
+      var first = pend ? V.db.rpc('save_my_profile', { p: pend }).then(function (r) {
+        if (!r.error) { try { localStorage.removeItem('vs-md-pending'); } catch (e) {} S.justJoined = true; V.db.auth.updateUser({ data: { vs_applied: true } }).catch(function () {}); }
+      }) : Promise.resolve();
+      first.then(function () { return Promise.all([
         V.db.from('buildings').select('id, code, name, location, road, landmark, floors, total_units, lat, lng, status, visit_date, visit_time, details').order('name'),
         V.db.from('units').select('id, label, type, rent, status, vacant_since, listing_id, building_id, paused, added_by_manager, floor, deposit, furnished, available_from').order('label'),
         V.db.rpc('my_viewings_v2'),
-        V.db.rpc('my_profile')
-      ]).then(function (res) {
+        V.db.rpc('my_profile'),
+        V.db.rpc('my_short_stays').then(function (r) { return { data: r.error ? [] : (r.data || []) }; })
+      ]); }).then(function (res) {
         var bad2 = res.filter(function (x) { return x.error; })[0];
         if (bad2) throw bad2.error;
         var prof = res[3].data || {}; if (!prof.email) prof.email = session.user && session.user.email;
+        S.shorts = res[4].data || [];
         showDash({ buildings: res[0].data, units: res[1].data, viewings: res[2].data, profile: prof });
       }).catch(function (e) {
         console.error(e);

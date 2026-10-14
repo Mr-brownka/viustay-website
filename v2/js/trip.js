@@ -10,12 +10,18 @@ document.addEventListener('DOMContentLoaded', function () {
   function today() { var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
   function isStay(ref) { return /^ST-/i.test(ref || ''); }
 
-  // Which bookings to show
-  var list = [], trip = get('vs-trip'), stay = get('vs-stay'), qref = (params.get('ref') || '').toUpperCase();
-  if (qref) {
-    var saved = [trip, stay].filter(function (x) { return x && x.ref === qref; })[0];
-    if (saved) list.push(saved); else { $('#find-form').ref.value = qref; }
-  } else { if (stay) list.push(stay); if (trip) list.push(trip); }
+  // Which bookings to show: every booking saved on this phone (vs-bookings), plus the last trip / stay.
+  var qref = (params.get('ref') || '').toUpperCase();
+  function savedList() {
+    var all = (get('vs-bookings') || []).concat([get('vs-stay'), get('vs-trip')]).filter(function (x) { return x && x.ref && x.phone; }), seen = {};
+    return all.filter(function (x) { x.ref = String(x.ref).toUpperCase(); if (seen[x.ref]) return false; seen[x.ref] = 1; return true; });
+  }
+  function remember(ref, phone) {
+    var a = (get('vs-bookings') || []).filter(function (x) { return x && x.ref !== ref; }); a.unshift({ ref: ref, phone: phone });
+    try { localStorage.setItem('vs-bookings', JSON.stringify(a.slice(0, 12))); } catch (e) {}
+  }
+  var list = savedList();
+  if (qref && !list.filter(function (x) { return x.ref === qref; }).length) { $('#find-form').ref.value = qref; list = []; }
 
   function progress(stages, n) {
     return '<ol class="t-progress">' + stages.map(function (s, i) { return '<li class="' + (i <= n ? 'on' : '') + (i === n + 1 ? ' now' : '') + '">' + T(s) + '</li>'; }).join('') + '</ol>';
@@ -111,23 +117,8 @@ document.addEventListener('DOMContentLoaded', function () {
       : done ? '<span class="mb-pill ok">' + T('Trip done') + '</span>'
       : isToday && agentReady ? '<span class="mb-pill live"><i></i>' + T('Your agent is ready') + '</span>'
       : '<span class="mb-pill">' + V.esc(countdown(t.date, base) || '') + '</span>';
-    var note = (t.pickup_note || '').trim();
-    var h = '<div class="mb-ticket' + (dead ? ' dead' : '') + '">' +
-      '<div class="mb-tk-top"><span>' + T('Viewing trip') + (isToday ? ' · ' + V.esc(t.ref) : '') + '</span>' + pill + '</div>' +
-      '<div class="mb-tk-when"><b>' + V.esc(bigDate(t.date, base)) + '</b><span>' + V.esc(t.slot) + '</span></div>' +
-      '<div class="mb-tk-cut"></div>' +
-      '<div class="mb-tk-foot"><span><small>' + T('Pickup') + '</small><b>' + V.esc(T('Near {x}', { x: t.pickup_area })) + '</b>' + (note ? '<em>' + V.esc(note) + '</em>' : '') + '</span>' +
-      '<span class="r"><small>' + T('Booking') + '</small><b>' + V.esc(t.ref) + '</b><em>' + V.esc(T((t.homes || []).length === 1 ? '{n} home' : '{n} homes', { n: (t.homes || []).length })) + '</em></span></div></div>';
-    if (!dead) {
-      var labels = ['Booked', 'Confirmed', 'Agent ready', 'Done'];
-      var msg = done ? (t.mpesa_code ? T('Paid {x}. Thank you for viewing with Viustay!', { x: kes(t.total) }) : T('Your trip is done.'))
-        : agentReady ? T('{name} accepted your trip. Check the plate before you get in.', { name: V.esc(t.agent.name.split(' ')[0]) })
-        : n === 1 ? T('Your homes are confirmed. We\'ll show your agent here the day before.')
-        : T('We\'re checking the homes are still free. You\'ll hear from us soon.');
-      h += '<div class="mb-steps"><div class="mb-track">' + labels.map(function (l, i) {
-        return '<i class="' + (i <= n ? 'on' : '') + (i === n && !done ? ' now' : '') + '"></i>' + (i < labels.length - 1 ? '<s class="' + (i < n ? 'on' : '') + '"></s>' : '');
-      }).join('') + '</div><div class="mb-labels">' + labels.map(function (l, i) { return '<span class="' + (i === n ? 'cur' : '') + '">' + T(l) + '</span>'; }).join('') + '</div><p>' + msg + '</p></div>';
-    }
+    var h = backLink() + ticketCard(t, true);
+    if (!dead) h += stepList(t);
     if (t.agent) {
       var a = t.agent;
       h += '<div class="mb-agent"><div class="mb-agent-row"><span class="mb-face" style="' + (a.photo_url ? V.photoStyle(a.photo_url) : '') + '">' + (a.photo_url ? '' : V.esc((a.name || '?').charAt(0))) + '</span>' +
@@ -187,30 +178,81 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // ---------- short stay ----------
-  var STAY = { awaiting_payment: ['warn', 'Waiting for payment'], expired: ['bad', 'Not paid in time'], paid: ['ok', 'Paid · we\'re confirming with the host'],
-    confirmed: ['ok', 'Confirmed'], checked_in: ['ok', 'Checked in · enjoy your stay'], completed: ['ok', 'Stay complete'], cancelled: ['bad', 'Cancelled'] };
   function drawStay(box, s, phone) {
-    var st = STAY[s.status] || ['', s.status];
-    var n = { awaiting_payment: 0, paid: 1, confirmed: 2, checked_in: 3, completed: 4 }[s.status];
-    var h = '<div class="t-card"><div class="row-between" style="flex-wrap:wrap;gap:8px"><span><span class="kicker">' + T('Short stay') + '</span><br><strong style="font-size:18px">' + V.esc(s.ref) + '</strong></span><span class="t-badge ' + st[0] + '">' + V.esc(T(st[1])) + '</span></div>';
-    if (n !== undefined) h += progress(['Booked', 'Paid', 'Confirmed', 'Checked in', 'Done'], n);
-    h += '<h2 style="font-size:20px;margin:0"><a href="home.html?id=' + encodeURIComponent(s.listing_id) + '">' + V.esc(s.title || s.listing_id) + '</a></h2>' +
-      '<div class="t-kv"><span>' + T('Check-in') + '</span><strong>' + V.esc(long(s.check_in)) + ' · ' + V.esc(T('from {t}', { t: s.check_in_time || '2:00 PM' })) + '</strong>' +
-      '<span>' + T('Check-out') + '</span><strong>' + V.esc(long(s.check_out)) + ' · ' + V.esc(T('by {t}', { t: s.check_out_time || '11:00 AM' })) + '</strong>' +
-      '<span>' + T('Guests') + '</span><span>' + s.guests + ' · ' + V.esc(T(s.nights === 1 ? '{n} night' : '{n} nights', { n: s.nights })) + '</span>' +
-      (s.pickup ? '<span>' + T('Airport pickup') + '</span><span>' + T('Booked') + '</span>' : '') +
-      '<span>' + T('Paid') + '</span><span>' + (s.mpesa_code ? kes(s.total) + ' · M-Pesa ' + V.esc(s.mpesa_code) : kes(s.total) + ' (' + T('not paid yet') + ')') + '</span></div></div>';
+    var dead = ['cancelled', 'expired'].indexOf(s.status) >= 0, paid = ['paid', 'confirmed', 'checked_in', 'completed'].indexOf(s.status) >= 0;
+    var h = backLink() + ticketCard(s, true);
+    if (paid && s.status !== 'completed') h += '<button type="button" class="btn btn-primary mb-show">☀ ' + T('Show ticket at reception') + '</button>';
+    if (!dead) h += stepList(s);
     if (s.status === 'awaiting_payment') {
-      h += '<div class="t-card"><p style="margin:0">' + T('Your dates are held until you pay. Pay by M-Pesa and enter the confirmation code.') + '</p><div><a class="btn btn-primary" href="stay.html?id=' + encodeURIComponent(s.listing_id) + '&pay=1">' + T('Finish paying') + '</a></div></div>';
+      h += '<div class="t-card"><p style="margin:0">' + T('Your dates are held until you pay.') + '</p><div><a class="btn btn-primary" href="stay.html?id=' + encodeURIComponent(s.listing_id) + '&pay=1">' + T('Finish paying') + '</a></div></div>';
     }
-    if (s.checkin_info) h += '<div class="t-card"><strong style="font-size:15px">' + T('Your check-in details') + '</strong><div class="t-info">' + V.esc(s.checkin_info) + '</div></div>';
-    else if (s.status === 'paid' || s.status === 'confirmed') h += '<div class="t-card"><strong style="font-size:15px">' + T('Your check-in details') + '</strong><span>' + T('We\'ll send your check-in details (address, directions, caretaker and keys) on WhatsApp the day before you arrive.') + '</span></div>';
+    if (paid && s.status !== 'completed') {
+      h += '<div class="mb-ci"><b>' + T('Your check-in details') + '</b>' + (s.checkin_info ? '<div class="t-info">' + V.esc(s.checkin_info) + '</div>' :
+        '<ul><li><i class="ic-pin"></i><span>' + T('Exact address & gate') + '</span><em>' + T('the day before') + '</em></li><li><i class="ic-user"></i><span>' + T('Caretaker & keys') + '</span><em>' + T('the day before') + '</em></li><li><i class="ic-wifi"></i><span>' + T('Wi-Fi name & password') + '</span><em>' + T('at check-in') + '</em></li></ul>') + '</div>';
+    }
     if ((s.status === 'checked_in' || s.status === 'confirmed') && s.check_out === today()) h += '<p class="t-warn">' + T('Check-out is today by {t}. Leave the keys as agreed with the caretaker. Safe travels!', { t: s.check_out_time || '11:00 AM' }) + '</p>';
+    h += '<a class="mb-place" href="home.html?id=' + encodeURIComponent(s.listing_id) + '" data-hid="' + V.esc(s.listing_id) + '"><span class="ph"></span><span class="tx"><b>' + V.esc(s.title || s.listing_id) + '</b><small>' + V.esc(s.area || '') + (s.mpesa_code ? ' · ' + T('Paid') + ' · M-Pesa ' + V.esc(s.mpesa_code) : '') + '</small></span></a>';
     if ((s.status === 'completed' || s.status === 'checked_in') && !s.rating) h += rateForm('How was your stay?');
     else if (s.rating) h += '<div class="t-card"><span>' + T('Thanks for your rating') + ' ' + '★★★★★'.slice(0, s.rating) + '</span></div>';
-    h += '<div class="t-actions"><a class="btn btn-dark" target="_blank" rel="noopener" href="' + V.wa('Hi Viustay, I\'m a guest on stay ' + s.ref + ': ') + '">' + T('Guest support on WhatsApp') + '</a></div>';
-    box.innerHTML = h; rating(box, 'stay', s, phone);
+    h += '<div class="mb-two">' + (paid ? '<button type="button" class="btn btn-outline mb-mail">' + T('Email my ticket') + '</button>' : '') +
+      (s.checkin_info ? '<a class="btn btn-outline" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent((s.title || '') + ' ' + (s.area || '') + ' Nairobi') + '">' + T('Directions') + '</a>' : '') + '</div>' +
+      '<p class="note hidden mb-mailnote" role="status">' + T('Email tickets are coming soon. For now, tap "Show ticket at reception" when you arrive.') + '</p>' +
+      '<p class="mb-helpline">' + T('Need help?') + ' <a target="_blank" rel="noopener" href="' + V.wa('Hi Viustay, I\'m a guest on stay ' + s.ref + ': ') + '">' + T('Chat on WhatsApp') + '</a></p>';
+    box.innerHTML = h; box.classList.add('mb-view'); rating(box, 'stay', s, phone);
+    var sh = box.querySelector('.mb-show'); if (sh) sh.addEventListener('click', function () { V.Ticket.show(Object.assign({ phone: phone }, s)); });
+    var ml = box.querySelector('.mb-mail'); if (ml) ml.addEventListener('click', function () { box.querySelector('.mb-mailnote').classList.remove('hidden'); });
+    listings().then(function (all) {
+      var l = all.filter(function (x) { return x.id === s.listing_id; })[0], ph = box.querySelector('.mb-place .ph');
+      if (l && l.photoList && l.photoList[0] && ph) ph.setAttribute('style', V.photoStyle(l.photoList[0]));
+    });
   }
+
+  // ---------- one ticket card for both kinds (item 21) ----------
+  function kindOf(b) { return b.kind === 'stay' || isStay(b.ref) ? 'stay' : 'trip'; }
+  function info(b) {
+    var base = b.today || today(), k = kindOf(b);
+    if (k === 'stay') {
+      var dead = ['cancelled', 'expired'].indexOf(b.status) >= 0, done = b.status === 'completed';
+      var reach = { awaiting_payment: 1, paid: 2, confirmed: b.checkin_info ? 4 : 3, checked_in: 5, completed: 5 }[b.status] || 1;
+      var paidS = ['paid', 'confirmed', 'checked_in', 'completed'].indexOf(b.status) >= 0;
+      var next = b.status === 'awaiting_payment' ? T('Waiting for payment · finish paying') : b.status === 'paid' ? T('Paid · we\'re confirming with the host')
+        : b.status === 'confirmed' ? (b.checkin_info ? T('Your check-in details are ready') : T('Confirmed · check-in details come the day before'))
+        : b.status === 'checked_in' ? T('Checked in · enjoy your stay') : done ? T('Stay complete') : T(b.status === 'expired' ? 'Not paid in time' : 'Cancelled');
+      return { k: k, dead: dead, done: done, date: b.check_in, time: b.check_in_time || '2:00 PM', reach: reach, steps: 5, next: next,
+        l1: b.title || b.listing_id, l2: [b.area, T(b.nights === 1 ? '{n} night' : '{n} nights', { n: b.nights }), T(b.guests === 1 ? '{n} guest' : '{n} guests', { n: b.guests })].filter(Boolean).join(' · '),
+        r1: paidS ? T('Paid') : T('Not paid yet'), r2: kes(b.total), label: T('Short stay'), base: base };
+    }
+    var deadT = ['cancelled', 'expired', 'no_show'].indexOf(b.status) >= 0, doneT = b.status === 'completed', ready = b.status === 'confirmed' && !!b.agent;
+    var reachT = doneT ? 4 : ready ? 3 : b.status === 'confirmed' ? 2 : 1;
+    var nextT = deadT ? T(b.status === 'cancelled' ? 'Cancelled' : b.status === 'no_show' ? 'Missed trip' : 'Not paid in time') : doneT ? T('Trip done') : ready ? T('{name} is your agent', { name: b.agent.name.split(' ')[0] })
+      : b.status === 'confirmed' ? T('Confirmed · your agent shows here the day before') : T('Booked · we\'re checking the homes are still free');
+    var nh = (b.homes || []).length;
+    return { k: 'trip', dead: deadT, done: doneT, date: b.date, time: b.slot, reach: reachT, steps: 4, next: nextT,
+      l1: T('Pickup: near {x}', { x: b.pickup_area }), l2: [(b.pickup_note || '').trim(), T(nh === 1 ? '{n} home' : '{n} homes', { n: nh })].filter(Boolean).join(' · '),
+      r1: b.mpesa_code ? T('Paid') : b.pay_after ? T('Pay after') : T('Not paid yet'), r2: kes(b.total), label: T('Viewing trip'), base: base };
+  }
+  function ticketCard(b, big) {
+    var x = info(b), cd = countdown(x.date, x.base);
+    var pill = x.dead ? '<span class="mb-pill bad">' + V.esc(x.next) + '</span>' : x.done ? '<span class="mb-pill ok">' + V.esc(x.next) + '</span>' : cd ? '<span class="mb-pill">' + V.esc(cd) + '</span>' : '';
+    var bar = ''; for (var i = 0; i < x.steps; i++) bar += '<i class="' + (i < x.reach ? 'on' : '') + '"></i>';
+    var icon = x.k === 'stay' ? '<svg viewBox="0 0 24 24"><path d="M20 14A8 8 0 0 1 10 4a8 8 0 1 0 10 10z"/></svg>' : '<svg viewBox="0 0 24 24"><path d="M5 16V11l2-5h10l2 5v5M3 16h18M7 19v-3M17 19v-3"/></svg>';
+    return '<div class="mb-tk ' + x.k + (big ? ' big' : '') + (x.dead ? ' dead' : '') + '">' +
+      '<div class="mb-tk-top"><span class="mb-kind"><i>' + icon + '</i>' + V.esc(x.label) + ' · ' + V.esc(b.ref) + '</span>' + pill + '</div>' +
+      '<div class="mb-tk-when"><b>' + V.esc(bigDate(x.date, x.base)) + '</b><span>' + V.esc(x.time || '') + '</span></div>' +
+      '<div class="mb-tk-cut"></div>' +
+      '<div class="mb-tk-foot"><span><b>' + V.esc(x.l1) + '</b><em>' + V.esc(x.l2) + '</em></span><span class="r"><b>' + V.esc(x.r1) + '</b><em>' + V.esc(x.r2) + '</em></span></div>' +
+      (x.dead ? '' : '<div class="mb-tk-bar">' + bar + '</div>') + '</div>';
+  }
+  function stepList(b) {
+    var x = info(b), labels = x.k === 'stay' ? ['Booked', 'Paid', 'Confirmed', 'Check-in details', 'Checked in'] : ['Booked', 'Homes confirmed', 'Agent ready', 'Trip done'];
+    var sub = x.k === 'stay' ? ['', b.total ? kes(b.total) : '', T('by Viustay'), b.checkin_info ? T('ready') : T('the day before'), V.date(b.check_in, { weekday: 'short', day: 'numeric' }) + ' · ' + (b.check_in_time || '')]
+      : ['', T('by Viustay'), b.agent ? b.agent.name.split(' ')[0] : T('the day before'), b.pay_after ? T('pay after') : ''];
+    return '<ol class="mb-stepl">' + labels.map(function (l, i) {
+      var st = i < x.reach ? 'on' : i === x.reach && !x.done ? 'now' : '';
+      return '<li class="' + st + '"><i></i><b>' + T(l) + '</b><span>' + V.esc(sub[i] || '') + '</span></li>';
+    }).join('') + '</ol><p class="mb-next">' + V.esc(x.next) + '</p>';
+  }
+  function backLink() { return '<a class="mb-back" href="#">‹ ' + T('My bookings') + '</a>'; }
 
   function draw(box, b, phone) { if (b.kind === 'stay' || isStay(b.ref)) drawStay(box, b, phone); else drawTrip(box, b, phone); }
 
@@ -220,30 +262,92 @@ document.addEventListener('DOMContentLoaded', function () {
     return { ref: ref, status: 'confirmed', date: today(), slot: '9:00 AM', pickup_area: 'South B', pickup_note: 'Gate B', homes: [{ id: 'VS-001', title: '1 bedroom, Argwings Kodhek Rd', area: 'Kilimani', rent: 38000 }], fare: 1600, viewing_fee: 950,
       total: 2550, pay_after: true, till: '123456', pay_name: 'Viustay', agent: { name: 'Hassan Ali', phone: '0712345678', car: 'Toyota Axio, silver', plate: 'KDA 123A' } };
   }
-  function load(ref, phone) {
-    var box = document.createElement('div'); box.className = 'stack-sm'; box.style.gap = '14px';
-    box.innerHTML = V.skel.rows(2);
-    $('#trip-view').appendChild(box); $('#trip-view').classList.remove('hidden');
-    if (V.demo) { draw(box, demoData(ref), phone); return Promise.resolve(); }
-    return rpc(isStay(ref) ? 'lookup_stay' : 'lookup_trip', { p_ref: ref, p_phone: phone }).then(function (b) { draw(box, b, phone); }).catch(function (e) {
-      console.error(e); box.parentNode.removeChild(box);
-      $('#find-form').classList.remove('hidden');
-      var er = $('#find-error'); er.textContent = /not_found/.test(e.message || '') ? T('We couldn\'t find that booking. Check the number and phone, or WhatsApp us.') : T('Could not load your booking. Please try again.');
-      er.classList.remove('hidden');
+  // ---------- list of bookings + one booking opened ----------
+  var data = {}, filter = 'all';
+  function fetchOne(ref, phone) {
+    if (V.demo) return Promise.resolve(demoData(ref));
+    return rpc(isStay(ref) ? 'lookup_stay' : 'lookup_trip', { p_ref: ref, p_phone: phone });
+  }
+  function drawList() {
+    var view = $('#trip-view'), refs = list.map(function (x) { return x.ref; }).filter(function (r) { return data[r]; });
+    var items = refs.map(function (r) { return data[r]; });
+    var kinds = {}; items.forEach(function (b) { kinds[kindOf(b)] = 1; });
+    var both = kinds.stay && kinds.trip;
+    if (!both) filter = 'all';
+    var show = items.filter(function (b) { return filter === 'all' || kindOf(b) === filter; });
+    var act = show.filter(function (b) { var x = info(b); return !x.dead && !x.done; }).sort(function (p, q) { return info(p).date < info(q).date ? -1 : 1; });
+    var past = show.filter(function (b) { var x = info(b); return x.dead || x.done; });
+    var h = '';
+    if (both) h += '<div class="mb-chips" role="group" aria-label="' + T('Show') + '">' + [['all', T('All') + ' · ' + items.length], ['stay', T('Short stays')], ['trip', T('Viewing trips')]].map(function (c) {
+      return '<button type="button" class="mb-chip ' + c[0] + (filter === c[0] ? ' on' : '') + '" data-f="' + c[0] + '" aria-pressed="' + (filter === c[0]) + '"><i></i>' + V.esc(c[1]) + '</button>';
+    }).join('') + '</div>';
+    if (act.length) h += '<p class="mb-kick">' + T('Coming up · soonest first') + '</p>';
+    h += act.map(function (b, i) { var x = info(b); return '<a class="mb-item" href="#' + V.esc(b.ref) + '" style="--d:' + (i * .08).toFixed(2) + 's">' + ticketCard(b) + '<span class="mb-nextl ' + x.k + '">' + V.esc(x.next) + ' →</span></a>'; }).join('');
+    if (!act.length && items.length) h += '<p class="mb-empty">' + T('No upcoming bookings.') + ' <a href="index.html">' + T('Find a home') + '</a></p>';
+    if (past.length) h += '<details class="mb-past"><summary><b>' + T('Past bookings') + '</b> · ' + past.length + '</summary>' + past.map(function (b) { return '<a class="mb-item" href="#' + V.esc(b.ref) + '">' + ticketCard(b) + '</a>'; }).join('') + '</details>';
+    h += '<a class="mb-helprow" target="_blank" rel="noopener" href="' + V.wa('Hi Viustay, I have a question about my booking.') + '"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 10h8"/></svg><span><b>' + T('Need help?') + '</b> ' + T('We reply on WhatsApp') + '</span><b>' + T('Chat') + '</b></a>';
+    view.innerHTML = h; view.classList.remove('hidden');
+    V.$$('.mb-chip', view).forEach(function (c) { c.addEventListener('click', function () { filter = c.getAttribute('data-f'); drawList(); }); });
+  }
+  function openOne(ref) {
+    var b = data[ref], e = list.filter(function (x) { return x.ref === ref; })[0];
+    if (!b || !e) return false;
+    var view = $('#trip-view'); view.innerHTML = '';
+    var box = document.createElement('div'); box.className = 'stack-sm mb-detail'; box.style.gap = '14px'; view.appendChild(box);
+    draw(box, b, e.phone);
+    var back = box.querySelector('.mb-back'); if (back) back.addEventListener('click', function (ev) { ev.preventDefault(); history.pushState(null, '', location.pathname); route(); });
+    window.scrollTo(0, 0);
+    return true;
+  }
+  function route() {
+    var ref = decodeURIComponent((location.hash || '').slice(1)).toUpperCase();
+    if (ref && openOne(ref)) return;
+    drawList();
+  }
+  window.addEventListener('hashchange', route);
+  var sig = '';
+  function loadAll(quiet) {
+    if (!list.length) return Promise.resolve();
+    if (!quiet) { $('#trip-view').innerHTML = V.skel.rows(2); $('#trip-view').classList.remove('hidden'); }
+    return Promise.all(list.map(function (e) {
+      return fetchOne(e.ref, e.phone).then(function (b) { data[e.ref] = b; }).catch(function (err) {
+        console.error(err); if (/not_found/.test((err && err.message) || '')) list = list.filter(function (x) { return x.ref !== e.ref; });
+      });
+    })).then(function () {
+      var now = JSON.stringify(data);
+      if (quiet && now === sig) return;   // nothing changed: leave the screen alone
+      var open = document.activeElement && document.activeElement.closest && document.activeElement.closest('form');
+      if (quiet && open) return;          // don't redraw while they're typing
+      sig = now;
+      if (!list.length) { $('#trip-view').classList.add('hidden'); $('#find-form').classList.remove('hidden'); return; }
+      route();
     });
   }
+  // Updates show by themselves (item 22): every 30 s while open, and when the app comes back to the front.
+  setInterval(function () { if (document.visibilityState === 'visible') loadAll(true); }, 30000);
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') loadAll(true); });
+  window.addEventListener('vs-refresh', function (e) { e.preventDefault && e.preventDefault(); loadAll(true); });
 
   $('#find-form').addEventListener('submit', function (e) {
     e.preventDefault();
     var ref = e.target.ref.value.trim().toUpperCase(), phone = e.target.phone.value.trim(), er = $('#find-error');
     if (!ref || !V.phoneOk(phone)) { er.textContent = T('Enter your booking number and phone number.'); er.classList.remove('hidden'); return; }
     er.classList.add('hidden');
-    try { localStorage.setItem(isStay(ref) ? 'vs-stay' : 'vs-trip', JSON.stringify({ ref: ref, phone: phone })); } catch (e2) {}
-    $('#trip-view').innerHTML = ''; $('#find-form').classList.add('hidden');
-    load(ref, phone);
+    var btn = e.target.querySelector('button'); btn.disabled = true;
+    fetchOne(ref, phone).then(function (b) {
+      remember(ref, phone); data[ref] = b;
+      list = list.filter(function (x) { return x.ref !== ref; }); list.unshift({ ref: ref, phone: phone });
+      $('#find-form').classList.add('hidden'); sig = JSON.stringify(data);
+      if (location.hash === '#' + ref) route(); else location.hash = ref;
+    }).catch(function (err) {
+      er.textContent = /not_found/.test((err && err.message) || '') ? T('We couldn\'t find that booking. Check the number and phone, or WhatsApp us.') : T('Could not load your booking. Please try again.');
+      er.classList.remove('hidden');
+    }).then(function () { btn.disabled = false; });
   });
 
-  if (list.length) list.forEach(function (b) { load(b.ref, b.phone); });
+  list.forEach(function (x) { remember(x.ref, x.phone); });
+  if (qref && list.filter(function (x) { return x.ref === qref; }).length && !location.hash) history.replaceState(null, '', '#' + qref);
+  loadAll(false);
   $('#find-form').classList.toggle('hidden', !!list.length);
   $('#find-again').addEventListener('click', function () { $('#find-form').classList.remove('hidden'); $('#find-form').scrollIntoView({ behavior: 'smooth' }); });
 });
