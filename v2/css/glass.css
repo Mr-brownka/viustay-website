@@ -325,7 +325,6 @@ html.onb-open, html.onb-open body { overflow: hidden; }
   .nav-more-list { position: absolute; top: calc(100% + 12px); left: 50%; transform: translateX(-50%); min-width: 200px; display: flex; flex-direction: column; padding: 8px; border-radius: 18px; background: var(--white); border: 1px solid var(--glass-edge); box-shadow: 0 18px 40px rgba(4, 32, 28, .18); animation: vs-rise .2s ease-out both; z-index: 5; }
   .site-header .nav-more .nav-more-list a { color: var(--ink); opacity: .9; padding: 10px 12px; border-radius: 12px; }
   .site-header .nav-more .nav-more-list a:hover { background: rgba(17, 17, 17, .08); opacity: 1; }
-  body[data-page="home2"] .nav-more summary { color: #fff; opacity: .9; }
 }
 @media (max-width: 1024px) { .nav-more { display: none; } }
 @media (min-width: 1025px) { .site-nav .nav-extra { display: none; } }
@@ -393,3 +392,12 @@ html:not([data-look="night"]) .door .door-ic { background: #F4F4F2 !important; c
 html:not([data-look="night"]) h1, html:not([data-look="night"]) h2, html:not([data-look="night"]) h3 { color: #111111; }
 html[data-look="night"] .tabbar a.on { color: #8FD9C6 !important; }
 html[data-look="night"] h1, html[data-look="night"] h2, html[data-look="night"] h3 { color: #F4F4F2; }
+/* contrast fixes after the rebrand */
+.stage-list .num { color: #FFFFFF; }
+body .home-shortcuts span { color: var(--muted); }
+body .home-shortcuts a { background: #F4F4F2; border-color: #ECECEC; color: var(--ink); }
+.home-shortcuts a:hover { background: #ECECEC; color: var(--ink); }
+html[data-look="night"] .home-shortcuts a { background: rgba(255, 255, 255, .08); border-color: rgba(255, 255, 255, .14); }
+html[data-look="night"] :is(.values, .trust, .map-card, .panel, .card, .box, #l-how) strong, html[data-look="night"] strong[style*="--emerald"] { color: #F4F4F2 !important; }
+html[data-look="night"] .dt-change { color: #8FD9C6; }
+html[data-look="night"] .sc-guests button { color: #F4F4F2; border-color: rgba(255, 255, 255, .3); }

@@ -2,6 +2,8 @@
 (function () {
   var look = 'pearl';
   try { look = localStorage.getItem('vs-look') === 'night' ? 'night' : 'pearl'; } catch (e) {}
+  // Work pages (manager dashboard, admin, agent) always use the light look: they're built for daylight work and stay easy to read.
+  if (document.documentElement.hasAttribute('data-light-only')) look = 'pearl';
   document.documentElement.setAttribute('data-look', look);
 
   // First open of the app/site this session: paint white straight away (same as the phone's splash) until the launch logo is up.
@@ -22,6 +24,7 @@
   } else { window.VSBootEnd = function () {}; }
 
   function set(l) {
+    if (document.documentElement.hasAttribute('data-light-only')) return;
     document.documentElement.setAttribute('data-look', l);
     try { localStorage.setItem('vs-look', l); } catch (e) {}
     Array.prototype.forEach.call(document.querySelectorAll('.vs-looks button, .menu-looks button'), function (b) {
