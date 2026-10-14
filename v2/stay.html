@@ -23,9 +23,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&family=Source+Sans+3:wght@400;600&display=swap">
-<link rel="stylesheet" href="css/styles.css?v=16">
-<link rel="stylesheet" href="css/glass.css?v=16">
-<link rel="stylesheet" href="css/trips.css?v=16">
+<link rel="stylesheet" href="css/styles.css?v=17">
+<link rel="stylesheet" href="css/glass.css?v=17">
+<link rel="stylesheet" href="css/trips.css?v=17">
 <script src="js/look.js"></script>
 </head>
 <body data-header="flow" data-steps="0" data-page="stay" data-no-wa>
@@ -42,8 +42,10 @@
       <div class="sc-bar" aria-hidden="true"><i id="sc-fill"></i></div>
       <div class="sc-pills" id="sc-pills" aria-label="Your choices"></div>
       <div class="sc-view" id="sc-view"><div class="sc-track" id="sc-track">
-        <section class="sc-card" data-s="in"><span class="sc-k"><span data-i18n>Step 1 of 3</span></span><h2 data-i18n>When do you arrive?</h2><p class="sc-sub" id="sc-in-sub"></p><div id="cal-in"></div></section>
-        <section class="sc-card" data-s="out"><span class="sc-k"><span data-i18n>Step 2 of 3</span></span><h2 data-i18n>When do you leave?</h2><p class="sc-sub" id="sc-out-sub"></p><div id="cal-out"></div></section>
+        <section class="sc-card" data-s="in"><span class="sc-k"><span data-i18n>Step 1 of 3</span></span><h2 data-i18n>When do you check in?</h2><p class="sc-sub" data-i18n>Pick your check-in date.</p><div id="cal-in"></div></section>
+        <section class="sc-card" data-s="out"><span class="sc-k"><span data-i18n>Step 2 of 3</span></span><h2 data-i18n>When do you leave?</h2>
+          <div class="dt-strip"><span class="dt-ok">✓</span><span class="dt-txt"><small data-i18n>CHECK-IN</small><b id="sc-in-date">–</b></span><button type="button" class="dt-change" id="sc-in-change" data-i18n>Change</button></div>
+          <p class="sc-sub" data-i18n>Days before your check-in are greyed out.</p><div id="cal-out"></div></section>
         <section class="sc-card" data-s="guests"><span class="sc-k"><span data-i18n>Step 3 of 3</span></span><h2 data-i18n>Who's coming?</h2>
           <div class="sc-guests"><button type="button" id="g-minus" aria-label="Fewer guests">−</button><b id="g-n" aria-live="polite">2</b><button type="button" id="g-plus" aria-label="More guests">+</button></div>
           <p class="sc-sub sc-center" id="g-max"></p>
@@ -127,15 +129,15 @@
   </div>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="js/lang.js?v=16"></script>
+<script src="js/lang.js?v=17"></script>
 <script src="js/i18n.js"></script>
 <script src="js/config.js"></script>
-<script src="js/common.js?v=16"></script>
+<script src="js/common.js?v=17"></script>
 <script src="js/install.js"></script>
 <script src="js/trip-math.js"></script>
 <script src="js/qrcode.js"></script>
-<script src="js/ticket.js?v=16"></script>
-<script src="js/cal.js?v=16"></script>
-<script src="js/stay.js?v=16"></script>
+<script src="js/ticket.js?v=17"></script>
+<script src="js/cal.js?v=17"></script>
+<script src="js/stay.js?v=17"></script>
 </body>
 </html>

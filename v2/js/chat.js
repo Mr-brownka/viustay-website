@@ -266,7 +266,7 @@
     }
     function stepOut(anim) {
       area.innerHTML = ''; area.className = 'q-body';
-      var t = title(); if (t) { t.textContent = T('And when do you check out?'); t.style.display = ''; }
+      var t = title(); if (t) { t.textContent = T('When do you leave?'); t.style.display = ''; }
       var strip = el('div', 'dt-strip');
       strip.innerHTML = '<span class="dt-ok">✓</span><span class="dt-txt"><small>' + V.esc(T('CHECK-IN')) + '</small><b>' + V.esc(longDate(ci)) + '</b></span>';
       var ch = el('button', 'dt-change', T('Change')); ch.type = 'button'; ch.addEventListener('click', stepIn); strip.appendChild(ch);

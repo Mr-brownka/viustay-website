@@ -36,6 +36,8 @@ document.addEventListener('DOMContentLoaded', function () {
     $('#sv-c').classList.toggle('folded', i >= 3);
     fit();
     $('#sc-fill').style.width = (i >= 3 ? 100 : (i + 1) * 25) + '%';
+    if (i > was && was >= 0) showErr($('#stay-error'));
+    if (!(quote && guestsOk)) $('#sv-break').textContent = T(['Step 1 of 3', 'Step 2 of 3', 'Step 3 of 3'][Math.min(i, 2)]);
     if (i < 3 && was !== i && was >= 0) { setTimeout(function () { var h = cards[i].querySelector('h2'); if (byUser) G.scrollTo($('#sv-c'), 'start'); if (h) { h.tabIndex = -1; h.focus({ preventScroll: true }); } }, 380); }
     pills();
   }
@@ -47,6 +49,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var had = {}; Array.prototype.forEach.call(box.children, function (p) { had[p.getAttribute('data-go')] = p.textContent; });
     box.innerHTML = list.map(function (p) { return '<button type="button" class="sc-pill' + (had[p[0]] === undefined ? ' new' : '') + '" data-go="' + p[0] + '" aria-label="' + V.esc(T('Change')) + ': ' + V.esc(p[1]) + '"><i>✓</i>' + V.esc(p[1]) + '</button>'; }).join('');
   }
+  $('#sc-in-change').addEventListener('click', function () { go(0, true); });
   $('#sc-pills').addEventListener('click', function (e) { var p = e.target.closest('[data-go]'); if (p) go(+p.getAttribute('data-go'), true); });
   function update() {
     var a = f.check_in.value, b = f.check_out.value, hint = $('#s-dates-hint'), n = a && b ? nightsOf(a, b) : 0, bad = '';
@@ -59,8 +62,7 @@ document.addEventListener('DOMContentLoaded', function () {
     quote = (n >= 1 && !bad) ? { nights: n, rooms: n * L.night_rate, clean: L.cleaning_fee, pick: pick ? S.airport_pickup_fee : 0 } : null;
     if (quote) quote.total = quote.rooms + quote.clean + quote.pick;
     var ready = !!quote && guestsOk;
-    $('#sc-in-sub').textContent = T('Check-in from {t}', { t: L.check_in });
-    $('#sc-out-sub').textContent = a ? T('Check-in') + ' ' + V.date(a, { weekday: 'short', day: 'numeric', month: 'short' }) + ' · ' + T('check-out by {t}', { t: L.check_out }) : T('Pick your check-in first.');
+    $('#sc-in-date').textContent = a ? V.date(a, { weekday: 'short', day: 'numeric', month: 'short' }) : '–';
     // The stay card and the totals only fill once dates and guests are set
     var nt = function (x) { return T(x === 1 ? '{n} night' : '{n} nights', { n: x }); };
     $('#sv-stay').classList.toggle('ready', ready);

@@ -468,12 +468,35 @@ html[data-look="night"] .sc-card { background: rgba(255, 255, 255, .06); }
 .sc.folded .sc-view { margin-bottom: 0; }
 .sc .rt-stay { display: none; }
 .sc .rt-stay.ready { display: flex; margin-top: 2px; }
-/* inline calendar */
-.cal .cal-head { margin: 4px 0; }
-.cal-key { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 6px; font-size: 12px; color: var(--muted); }
-.cal-key span { display: inline-flex; align-items: center; gap: 6px; }
-.cal-key i { width: 16px; height: 2px; background: rgba(179, 38, 30, .55); }
-.cal-d.anchor span { background: #DDF1E9; color: #0E5E54; }
+/* calendar: same look as the home-page questions calendar (copied from chat.css so stay.html matches) */
+.cal { background: var(--white); border: 1px solid var(--glass-edge); border-radius: 20px; padding: 14px; max-width: 380px; width: 100%; }
+.cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.cal-head b { font-family: var(--heading); font-size: 17px; color: var(--ink); text-transform: capitalize; }
+.cal-nav { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--glass-edge); background: transparent; color: var(--ink); font-size: 22px; line-height: 1; cursor: pointer; }
+.cal-nav:disabled { opacity: .3; cursor: default; }
+.cal-dow, .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+.cal-dow span { font-size: 12px; font-weight: 600; color: var(--faint); padding: 4px 0; text-transform: uppercase; }
+.cal-day { aspect-ratio: 1; border: 0; background: transparent; border-radius: 12px; font: inherit; font-size: 15px; font-weight: 600; color: var(--ink); cursor: pointer; transition: background .12s, transform .1s; }
+.cal-day:hover:not(:disabled) { background: var(--sand-deep); }
+.cal-day:active:not(:disabled) { transform: scale(.92); }
+.cal-day:disabled { color: var(--faint); opacity: .35; cursor: default; font-weight: 400; }
+.cal-day.today { box-shadow: inset 0 0 0 1.5px var(--glass-edge-hi); }
+.cal-day.mid { background: rgba(242, 169, 59, .2); border-radius: 0; }
+.cal-day.sel { background: #F2A93B; color: #2A1A02; }
+.cal-note { margin: 10px 0 0; font-size: 14px; color: var(--muted); text-align: center; min-height: 1.3em; }
+.cal-day.in { opacity: 1 !important; background: rgba(14, 94, 84, .12); color: var(--emerald, #0E5E54); font-weight: 700; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; }
+.cal-day.in small { font-size: 9px; font-weight: 700; letter-spacing: .04em; margin-top: 2px; }
+.dt-strip { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 14px; background: rgba(14, 94, 84, .1); margin-bottom: 12px; max-width: 380px; }
+.dt-ok { width: 28px; height: 28px; border-radius: 50%; background: #0E5E54; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; flex: none; }
+.dt-txt { flex: 1; line-height: 1.25; }
+.dt-txt small { display: block; font-size: 11px; font-weight: 700; letter-spacing: .06em; color: var(--muted); }
+.dt-txt b { font-size: 16px; color: var(--ink); }
+.dt-change { border: 0; background: none; color: var(--emerald, #0E5E54); font: inherit; font-weight: 700; font-size: 14px; cursor: pointer; padding: 6px; }
+.sc .cal { max-width: none; margin-top: 8px; }
+.sc .dt-strip { max-width: none; margin: 8px 0 4px; }
+.cal-day.took { text-decoration: line-through; text-decoration-color: rgba(179, 38, 30, .6); }
+.cal-key { display: flex; justify-content: center; align-items: center; gap: 6px; margin: 4px 0 0; font-size: 12px; color: var(--muted); }
+.cal-key i { width: 16px; height: 2px; background: rgba(179, 38, 30, .6); }
 @media (prefers-reduced-motion: reduce) { .sc-bar i, .sc-view, .sc-track { transition: none !important; } .sc-pill.new, .sc-guests b.bump { animation: none !important; } }
 @media (min-width: 861px) { .sv-mini { display: none; } .sc { max-width: 600px; } .sv-bar { max-width: 600px; box-sizing: border-box; } }
 .sv-bar { background: var(--sheet, #fff); }
