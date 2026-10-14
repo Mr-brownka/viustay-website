@@ -12,11 +12,13 @@
   document.addEventListener('DOMContentLoaded', function () {
     var help = V.$('#d-help'), back = V.$('#d-back');
     if (help) help.addEventListener('click', function () { mode(true); window.scrollTo(0, 0); var q = V.$('#c-chat button'); if (q) q.focus({ preventScroll: true }); });
-    // Rent a home -> straight to "Where in Nairobi would you like to live?" (long stay already chosen)
-    var rent = V.$('#d-rent');
-    if (rent) rent.addEventListener('click', function (e) {
-      e.preventDefault(); mode(true); window.scrollTo(0, 0);
-      if (window.VSChat) window.VSChat.preset({ stay: 'long' });
+    // Both doors go straight to "Where in Nairobi…?" with the kind of stay already chosen, then the questions continue
+    [['#d-rent', 'long'], ['#d-stay', 'short']].forEach(function (d) {
+      var door = V.$(d[0]);
+      if (door) door.addEventListener('click', function (e) {
+        e.preventDefault(); mode(true); window.scrollTo(0, 0);
+        if (window.VSChat) window.VSChat.preset({ stay: d[1] });
+      });
     });
     if (back) back.addEventListener('click', function () { mode(false); window.scrollTo(0, 0); });
     window.addEventListener('hashchange', function () { mode(/#ask/.test(location.hash)); });
