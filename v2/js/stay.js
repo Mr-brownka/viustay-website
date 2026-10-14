@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function () {
   var ERR = {
     dates_taken: 'Sorry, those dates were just booked. Please pick other dates.', min_nights: 'This place has a minimum stay. Please add nights.',
     bad_dates: 'Please check your dates.', too_long: 'For stays over 60 nights, please WhatsApp us.', bad_guests: 'Please check the number of guests.',
-    bad_phone: 'Please enter a valid M-Pesa number.', bad_name: 'Please enter your name.',
+    bad_phone: 'Please enter a valid M-Pesa number.', too_many: 'We\'ve sent several requests already. Please WhatsApp us and we\'ll help.', bad_name: 'Please enter your name.',
     bad_mpesa: 'That doesn\'t look like an M-Pesa code. It\'s 10 letters and numbers, like SJK3ABCD12.',
     not_found: 'We couldn\'t find that booking. Please WhatsApp us.', not_open: 'This booking can\'t take a payment any more. Please WhatsApp us.'
   };
@@ -53,7 +53,11 @@ document.addEventListener('DOMContentLoaded', function () {
   $('#g-plus').addEventListener('click', function () { setGuests(guests + 1); });
 
   // ---------- payment ----------
-  var timer = null;
+  // 1) Guest gives their M-Pesa number -> request_stay_payment (later this also sends the real M-Pesa prompt).
+  // 2) Waiting screen ("It shows VIUSTAY") checks the booking every few seconds.
+  // 3) When the booking turns paid (today: admin taps "Payment received"; later: M-Pesa tells us), the Paid moment plays.
+  var timer = null, poll = null, againT = null;
+  function mask(n) { var d = String(n || '').replace(/\D/g, ''); if (d.indexOf('254') === 0) d = '0' + d.slice(3); return d.length >= 9 ? d.slice(0, 2) + '•• ••• ' + d.slice(-3) : n; }
   function showPay(t) {
     $('#stay-form-wrap').classList.add('hidden'); $('#stay-done').classList.add('hidden'); $('#pay-wrap').classList.remove('hidden');
     $('#pay-ref').textContent = t.ref;
@@ -63,6 +67,8 @@ document.addEventListener('DOMContentLoaded', function () {
       '<li><span>' + T('Amount:') + ' <strong>' + kes(t.total) + '</strong></span></li>' +
       '<li><span>' + T('Enter your PIN. You\'ll get an SMS from M-Pesa with a code like <b>SJK3ABCD12</b>.') + '</span></li>';
     $('#pay-help').href = V.wa('Hi Viustay, I need help paying for my stay ' + t.ref + '.');
+    $('#req-form').mpesa_phone.value = t.mpesa_phone || t.phone || '';
+    if (t.requested) waiting(t); else asking();
     clearInterval(timer);
     function tick() {
       var left = Math.max(0, Math.round((new Date(t.expires_at) - Date.now()) / 1000));
@@ -72,6 +78,53 @@ document.addEventListener('DOMContentLoaded', function () {
     tick(); timer = setInterval(tick, 1000);
     window.scrollTo(0, 0);
   }
+  function asking() { $('#req-form').classList.remove('hidden'); $('#pay-wait').classList.add('hidden'); clearInterval(poll); }
+  function waiting(t) {
+    $('#req-form').classList.add('hidden'); $('#pay-wait').classList.remove('hidden');
+    $('#pw-text').innerHTML = T('We\'ve sent a request for <b>{x}</b> to <b>{n}</b>. It shows <b>VIUSTAY</b>. Enter your M-Pesa PIN to pay.', { x: kes(t.total), n: V.esc(mask(t.mpesa_phone)) });
+    var again = $('#pw-again'); again.disabled = true; clearTimeout(againT); againT = setTimeout(function () { again.disabled = false; }, 30000);
+    clearInterval(poll); var tries = 0;
+    function check() {
+      if (V.demo || ++tries > 360) { if (tries > 360) clearInterval(poll); return; }   // stop after ~30 minutes
+      rpc('lookup_stay', { p_ref: t.ref, p_phone: t.phone }).then(function (r) {
+        if (r && ['paid', 'confirmed', 'checked_in', 'completed'].indexOf(r.status) >= 0) { clearInterval(poll); paidNow(t, r.mpesa_code); }
+        if (r && r.status === 'cancelled') { clearInterval(poll); showErr($('#req-error'), T(ERR.not_open)); asking(); }
+      }).catch(function () {});
+    }
+    poll = setInterval(check, 5000); setTimeout(check, 1500);
+  }
+  function sendRequest(t, num) {
+    var err = $('#req-error'), btn = $('#req-submit'); showErr(err);
+    if (!V.phoneOk(num)) { showErr(err, T(ERR.bad_phone)); return Promise.resolve(); }
+    btn.disabled = true; btn.textContent = T('Sending…');
+    return (V.demo ? Promise.resolve({ ok: true }) : rpc('request_stay_payment', { p_ref: t.ref, p_phone: t.phone, p_mpesa_phone: num })).then(function (r) {
+      t.mpesa_phone = num; t.requested = true; store(t);
+      if (r && r.paid) { paidNow(t); return; }
+      waiting(t);
+    }).catch(function (e) { console.error(e); showErr(err, errText(e)); asking(); })
+      .then(function () { btn.disabled = false; btn.textContent = T('Send payment request'); });
+  }
+  $('#req-form').addEventListener('submit', function (e) { e.preventDefault(); var t = stored(); if (!t) { showErr($('#req-error'), T(ERR.not_found)); return; } sendRequest(t, e.target.mpesa_phone.value.trim()); });
+  $('#pw-again').addEventListener('click', function () { var t = stored(); if (t) sendRequest(t, t.mpesa_phone); });
+  $('#pw-change').addEventListener('click', function () { var t = stored(); if (t) { t.requested = false; store(t); } asking(); });
+  // The "Paid" moment, then the voucher
+  function paidNow(t, code) {
+    clearInterval(timer); clearInterval(poll);
+    t.paid = true; store(t);
+    var o = document.createElement('div'); o.className = 'paid-moment'; o.setAttribute('role', 'status');
+    var cols = ['#F2A93B', '#FCD38A', '#9FE3C9', '#ffffff'], cf = '';
+    for (var i = 0; i < 26; i++) cf += '<i class="cf" style="left:' + Math.round(Math.random() * 100) + '%;background:' + cols[i % 4] + ';animation-delay:' + (Math.random() * .6).toFixed(2) + 's"></i>';
+    o.innerHTML = cf + '<span class="pm-tick"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><h2>' + V.esc(T('Paid')) + '</h2><span class="pm-amt">' + kes(t.total) + '</span><p>' + V.esc(T('Thank you! Your stay is booked.')) + '</p>';
+    document.body.appendChild(o);
+    setTimeout(function () {
+      $('#pay-wrap').classList.add('hidden'); $('#stay-done').classList.remove('hidden');
+      voucher(t, code || t.mpesa_code_seen || '—');
+      $('#done-trip').href = 'trip.html?ref=' + encodeURIComponent(t.ref);
+      $('#done-wa').href = V.wa('Hi Viustay, I just paid for my stay ' + t.ref + '.');
+      window.scrollTo(0, 0);
+      o.style.transition = 'opacity .4s'; o.style.opacity = '0'; setTimeout(function () { o.remove(); }, 450);
+    }, 2600);
+  }
   function voucher(t, code) {
     $('#voucher').innerHTML = '<div class="v-top"><b>viustay</b><span>' + T('Booking voucher') + '</span></div><div class="v-body">' +
       '<span class="v-ok">✓ ' + T('Paid · we\'re confirming with the host') + '</span>' +
@@ -79,7 +132,7 @@ document.addEventListener('DOMContentLoaded', function () {
       '<div class="v-grid"><div><small>' + T('Check-in') + '</small><strong>' + V.esc(V.date(t.check_in)) + '</strong><span class="note">' + V.esc(T('from {t}', { t: t.check_in_time })) + '</span></div>' +
       '<div><small>' + T('Check-out') + '</small><strong>' + V.esc(V.date(t.check_out)) + '</strong><span class="note">' + V.esc(T('by {t}', { t: t.check_out_time })) + '</span></div>' +
       '<div><small>' + T('Guests') + '</small><strong>' + t.guests + '</strong></div><div><small>' + T('Nights') + '</small><strong>' + t.nights + '</strong></div>' +
-      '<div><small>' + T('Paid') + '</small><strong>' + kes(t.total) + '</strong><span class="note">M-Pesa ' + V.esc(code) + '</span></div><div><small>' + T('Booking') + '</small><strong>' + V.esc(t.ref) + '</strong></div></div>' +
+      '<div><small>' + T('Paid') + '</small><strong>' + kes(t.total) + '</strong>' + (code && code !== '—' ? '<span class="note">M-Pesa ' + V.esc(code) + '</span>' : '') + '</div><div><small>' + T('Booking') + '</small><strong>' + V.esc(t.ref) + '</strong></div></div>' +
       (t.pickup ? '<span>✈ ' + T('Airport pickup booked. We\'ll confirm your driver before you land.') + '</span>' : '') +
       '<div class="v-cut"></div><span>' + T('We\'ll send your check-in details (address, directions, caretaker and keys) on WhatsApp the day before you arrive.') + '</span></div>';
   }
@@ -91,12 +144,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!/^[A-Z0-9]{8,12}$/.test(code)) { showErr(err, T(ERR.bad_mpesa)); return; }
     var btn = $('#pay-submit'); btn.disabled = true; btn.textContent = T('Checking…');
     (V.demo ? Promise.resolve({ ok: true }) : rpc('submit_stay_payment', { p_ref: t.ref, p_phone: t.phone, p_mpesa: code })).then(function () {
-      t.paid = true; store(t); clearInterval(timer);
-      $('#pay-wrap').classList.add('hidden'); $('#stay-done').classList.remove('hidden');
-      voucher(t, code);
-      $('#done-trip').href = 'trip.html?ref=' + encodeURIComponent(t.ref);
-      $('#done-wa').href = V.wa('Hi Viustay, I just paid for my stay ' + t.ref + ' (M-Pesa ' + code + ').');
-      window.scrollTo(0, 0);
+      paidNow(t, code);
     }).catch(function (e2) { console.error(e2); showErr(err, errText(e2)); })
       .then(function () { btn.disabled = false; btn.textContent = T('Confirm payment'); });
   });

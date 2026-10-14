@@ -46,7 +46,7 @@
   function calendar(o) {
     var start = o.start || null, end = o.end || null;
     var today = new Date(); today.setHours(0, 0, 0, 0);
-    var view = new Date((start ? new Date(start + 'T00:00:00') : today)); view.setDate(1);
+    var view = new Date((start ? new Date(start + 'T00:00:00') : o.min ? new Date(o.min + 'T00:00:00') : today)); view.setDate(1);
     var box = document.createElement('div'); box.className = 'cal';
     function nights(a, b) { return Math.round((new Date(b + 'T00:00:00') - new Date(a + 'T00:00:00')) / 864e5); }
     function draw() {
@@ -59,13 +59,14 @@
       h += '</div><div class="cal-grid">';
       for (var p = 0; p < pad; p++) h += '<span></span>';
       for (var d = 1; d <= days; d++) {
-        var di = iso(new Date(y, m, d)), past = new Date(y, m, d) < today;
+        var di = iso(new Date(y, m, d)), past = new Date(y, m, d) < today || (o.min && di < o.min);
         var cls = di === start ? ' sel start' : di === end ? ' sel end' : (start && end && di > start && di < end ? ' mid' : '');
+        if (o.mark && di === o.mark) { cls += ' in'; past = true; }
         if (di === iso(today)) cls += ' today';
-        h += '<button type="button" class="cal-day' + cls + '" data-d="' + di + '"' + (past ? ' disabled' : '') + '>' + d + '</button>';
+        h += '<button type="button" class="cal-day' + cls + '" data-d="' + di + '"' + (past ? ' disabled' : '') + '>' + d + (o.mark && di === o.mark ? '<small>' + V.esc(T('IN')) + '</small>' : '') + '</button>';
       }
       h += '</div>';
-      var note = o.mode === 'range' ? (start && end ? T(nights(start, end) === 1 ? '{n} night' : '{n} nights', { n: nights(start, end) }) + ' · ' + V.date(start, { day: 'numeric', month: 'short' }) + ' → ' + V.date(end, { day: 'numeric', month: 'short' }) :
+      var note = o.note ? o.note : o.mode === 'range' ? (start && end ? T(nights(start, end) === 1 ? '{n} night' : '{n} nights', { n: nights(start, end) }) + ' · ' + V.date(start, { day: 'numeric', month: 'short' }) + ' → ' + V.date(end, { day: 'numeric', month: 'short' }) :
         start ? T('Now tap your check-out date') : T('Tap your check-in date, then your check-out date')) : (start ? V.date(start, { weekday: 'long', day: 'numeric', month: 'long' }) : T('Tap the day you\'d like to move in'));
       h += '<p class="cal-note">' + V.esc(note) + '</p>';
       box.innerHTML = h;
@@ -147,6 +148,7 @@
     chat.innerHTML = '';
     var r = answersRow(); if (r) chat.appendChild(r);
     chat.appendChild(cur >= N ? summary() : card(STEPS[cur], cur, dir));
+    var pill = $('c-pill'); if (pill) pill.classList.toggle('hidden', cur >= N && short());
     updatePanel();
   }
   function goTo(i, edit) { cur = i; editing = !!edit; render('back'); topOfStage(); }
@@ -239,20 +241,69 @@
       r2.appendChild(f1); r2.appendChild(f2); r2.appendChild(ok); area.appendChild(r2);
     } else if (s.type === 'when') {
       var shortStay = short();
-      if (shortStay) area.appendChild(el('p', 'q-hint', T('Pick your check-in and check-out dates.')));
-      area.appendChild(calendar({ mode: shortStay ? 'range' : 'single', start: shortStay ? A.checkin : A.when_iso, end: shortStay ? A.checkout : null,
-        onPick: function (a, b) { setWhen(A, a, b); next(i); } }));
       var sk = el('button', 'btn btn-pill c-ghost', shortStay ? T('Not sure of my dates yet') : T('Not sure yet')); sk.type = 'button';
       sk.addEventListener('click', function () { delete A.checkin; delete A.checkout; delete A.when_iso; A.when = 'Flexible'; next(i); });
+      if (shortStay) { datesFlow(area, i, sk); return area; }
+      area.appendChild(calendar({ mode: 'single', start: A.when_iso, onPick: function (a) { setWhen(A, a); next(i); } }));
       area.appendChild(sk);
     }
     return area;
   }
 
+  // Short stays: check-in calendar -> check-out calendar slides in (same card) -> "Are these your dates?"
+  function datesFlow(area, i, skipBtn) {
+    var ci = A.checkin || null, co = A.checkout || null;
+    var title = function () { return area.parentNode && area.parentNode.querySelector('.q-title'); };
+    function longDate(d) { return V.date(d, { weekday: 'short', day: 'numeric', month: 'short' }); }
+    function addDay(d, n) { var x = new Date(d + 'T00:00:00'); x.setDate(x.getDate() + n); return iso(x); }
+    function nights() { return Math.round((new Date(co + 'T00:00:00') - new Date(ci + 'T00:00:00')) / 864e5); }
+    function stepIn() {
+      area.innerHTML = ''; area.className = 'q-body';
+      var t = title(); if (t) { t.textContent = T('When do you check in?'); t.style.display = ''; }
+      area.appendChild(el('p', 'q-hint', T('Pick your check-in date.')));
+      area.appendChild(calendar({ mode: 'single', start: ci, note: T('Tap the day you arrive'), onPick: function (a) { ci = a; if (co && co <= ci) co = null; stepOut(true); } }));
+      area.appendChild(skipBtn);
+    }
+    function stepOut(anim) {
+      area.innerHTML = ''; area.className = 'q-body';
+      var t = title(); if (t) { t.textContent = T('And when do you check out?'); t.style.display = ''; }
+      var strip = el('div', 'dt-strip');
+      strip.innerHTML = '<span class="dt-ok">✓</span><span class="dt-txt"><small>' + V.esc(T('CHECK-IN')) + '</small><b>' + V.esc(longDate(ci)) + '</b></span>';
+      var ch = el('button', 'dt-change', T('Change')); ch.type = 'button'; ch.addEventListener('click', stepIn); strip.appendChild(ch);
+      area.appendChild(strip);
+      var wrap = el('div', anim ? 'dt-slide' : '');
+      wrap.appendChild(el('p', 'q-hint', T('Days before your check-in are greyed out.')));
+      wrap.appendChild(calendar({ mode: 'single', start: co, min: addDay(ci, 1), mark: ci, note: T('Tap the day you leave'), onPick: function (b) { co = b; confirmDates(); } }));
+      area.appendChild(wrap);
+    }
+    function tile(lbl, d, sub) {
+      var dt = new Date(d + 'T00:00:00');
+      return '<div class="dt-tile"><small>' + V.esc(lbl) + '</small><b>' + dt.getDate() + '</b><span>' + V.esc(V.date(d, { weekday: 'short' }) + ', ' + V.date(d, { month: 'short' })) + '</span><em>' + V.esc(sub) + '</em></div>';
+    }
+    function confirmDates() {
+      area.innerHTML = ''; area.className = 'q-body';
+      var t = title(); if (t) t.style.display = 'none';
+      var n = nights(), box = el('div', 'dt-confirm');
+      box.innerHTML = '<div class="dt-top"><small>' + V.esc(T('YOUR STAY')) + '</small><h3>' + V.esc(T('Are these your dates?')) + '</h3></div>' +
+        '<div class="dt-tiles">' + tile(T('CHECK-IN'), ci, T('from 2:00 pm')) +
+        '<div class="dt-mid"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>' + V.esc(T(n === 1 ? '{n} night' : '{n} nights', { n: n })) +
+        '<svg class="dt-arrow" viewBox="0 0 44 10" aria-hidden="true"><path d="M0 5h40M36 1l4 4-4 4"/></svg></div>' +
+        tile(T('CHECK-OUT'), co, T('by 11:00 am')) + '</div>';
+      var acts = el('div', 'dt-acts');
+      var yes = el('button', 'btn btn-primary btn-pill', T('Yes, these are my dates')); yes.type = 'button';
+      yes.addEventListener('click', function () { setWhen(A, ci, co); next(i); });
+      var no = el('button', 'btn btn-pill c-ghost', T('Change dates')); no.type = 'button'; no.addEventListener('click', stepIn);
+      acts.appendChild(yes); acts.appendChild(no); box.appendChild(acts);
+      area.appendChild(box);
+    }
+    // Coming back to edit: start on the confirm card if both dates are set
+    if (ci && co) setTimeout(confirmDates, 0); else stepIn();
+  }
+
   function summary() {
     var n = matchList(HOMES, A).length;
     var c = el('div', 'q-card q-sumcard c-glass q-dir-fwd');
-    c.appendChild(el('h2', 'q-title', short() ? T('Here\'s your stay search.') : T('Here\'s your search. Ready to see verified homes?')));
+    c.appendChild(el('h2', 'q-title', short() ? T('Here is what you chose') : T('Here\'s your search. Ready to see verified homes?')));
     var card = el('div', 'c-sum');
     STEPS.forEach(function (s, i) {
       var r = el('div', 'c-sum-row'); r.appendChild(el('span', 'k', name(s.k))); r.appendChild(el('span', 'v', label(A, s.k) || '–'));
@@ -263,7 +314,7 @@
     var hint = el('div', 'c-sum-hint'); hint.appendChild(el('i'));
     var ht = el('span'); ht.appendChild(el('b', '', loaded ? String(n) : '…'));
     ht.appendChild(document.createTextNode(' ' + (short() ? (n === 1 ? T('stay matches') : T('stays match')) : (n === 1 ? T('verified home matches') : T('verified homes match')))));
-    hint.appendChild(ht); card.appendChild(hint);
+    hint.appendChild(ht); if (!short()) card.appendChild(hint);   // short stays: no match-count box, just Find my stay
     var noMatch = loaded && !n;
     var go = el('a', 'btn btn-primary c-find'); go.href = noMatch ? 'request.html' : 'matches.html';
     go.innerHTML = '<span></span><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M3 9h11M10 4l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';

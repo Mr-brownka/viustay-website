@@ -267,9 +267,25 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // ================= Building banner =================
+  // "Bedsitters, 1 & 2 bedrooms" from the house types registered (or the units added, for older buildings)
+  var BEDN = { 'Bedsitter / studio': 0, 'Studio': 0, 'Bedsitter': 0, 'One bedroom': 1, '1 bedroom': 1, 'Two bedroom': 2, '2 bedrooms': 2, 'Three bedroom': 3, '3 bedrooms': 3, 'Four bedroom +': 4, '4 bedrooms': 4, '4+ bedrooms': 4 };
+  function typesText(b) {
+    var list = (D(b).house_types || []).map(function (h) { return h.type; });
+    if (!list.length) list = bUnits(b).map(function (u) { return u.type; });
+    var nums = [];
+    list.forEach(function (t) { var n = BEDN.hasOwnProperty(t) ? BEDN[t] : null; if (n !== null && nums.indexOf(n) < 0) nums.push(n); });
+    nums.sort();
+    var studio = nums.indexOf(0) > -1, beds = nums.filter(function (n) { return n > 0; }).map(function (n) { return n === 4 ? '4+' : String(n); });
+    var bedTxt = '';
+    if (beds.length) bedTxt = (beds.length > 1 ? beds.slice(0, -1).join(', ') + ' & ' + beds[beds.length - 1] : beds[0]) + ' ' + (beds.length === 1 && beds[0] === '1' ? T('bedroom') : T('bedrooms'));
+    if (studio && bedTxt) return T('Bedsitters') + (beds.length > 1 ? ', ' : ' & ') + bedTxt;
+    return studio ? T('Bedsitters') : bedTxt;
+  }
+  function ordinal(n) { var s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); }
   function band(b, actions) {
     var us = bUnits(b), live = b.status !== 'setting_up';
-    var sub = [b.location, us.length ? T('{n} units', { n: us.length }) : (b.total_units ? T('{n} units', { n: b.total_units }) : ''), b.floors ? T('{n} floors', { n: b.floors }) : ''].filter(Boolean).join(' · ');
+    var total = b.total_units || us.length;
+    var sub = [typesText(b), total ? T('{n} units total', { n: V.money(total) }) : '', b.floors ? T('{n} floors', { n: b.floors }) : ''].filter(Boolean).join(' · ');
     return '<button type="button" class="md-band" data-det>' + photo(b, '<span class="shade2"></span><span class="txt"><span class="pill ' + (live ? 'pill-live">● ' + esc(T('Live')) : 'pill-setup">' + esc(T('Setting up'))) + '</span><b>' + esc(b.name) + '</b><span class="s">' + esc(sub) + '</span></span>' +
       '<span class="act">' + (actions || '<span>' + esc(T('Building details')) + ICON.chev + '</span>') + '</span>') + '</button>';
   }
@@ -400,7 +416,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var acts = u.status === 'let'
       ? btn('vacant', T('Mark vacant')) + btn('rent', T('Edit rent'))
       : btn('let', T('Mark let'), 'sun') + btn('rent', T('Edit rent')) + (u.paused ? btn('resume', T('Resume')) : btn('pause', T('Pause')));
-    var extra = [u.floor ? T('Floor {f}', { f: u.floor }) : '', u.furnished && u.furnished !== 'No' ? T(u.furnished + ' furnished') : '', u.available_from && u.available_from > today() ? T('Free from {d}', { d: dayName(u.available_from) }) : ''].filter(Boolean).join(' · ');
+    var extra = [u.floor ? (/^\d+$/.test(u.floor) ? T('Floor {f}', { f: u.floor }) : T('{f} floor', { f: T(u.floor) })) : '', u.furnished && u.furnished !== 'No' ? T(u.furnished + ' furnished') : '', u.available_from && u.available_from > today() ? T('Free from {d}', { d: dayName(u.available_from) }) : ''].filter(Boolean).join(' · ');
     return '<div class="md-card md-unit"><div class="top"><span class="md-sq">' + esc(u.label) + '</span><span class="grow"><b>' + esc(T(u.type)) + '</b><br><span class="dim" style="font-size:13px">' +
       esc(T('KES {r} / month', { r: V.money(u.rent) })) + (extra ? ' · ' + esc(extra) : '') + '</span></span><span class="pill ' + st[0] + '">' + esc(st[1]) + '</span></div>' +
       (u.status === 'vacant' ? '<div class="daysrow">' + daysBar(u).replace('class="md-days"', 'class="md-days" style="width:auto;flex:1;display:flex;align-items:center;gap:8px"').replace('display:block', 'display:block;flex:1') + '</div>' : '') +
@@ -438,14 +454,21 @@ document.addEventListener('DOMContentLoaded', function () {
   // Add a vacancy: short Form B
   function addSheet() {
     var b = S.b, hts = (D(b).house_types || []);
-    var types = hts.length ? hts.map(function (h) { return h.type; }) : HTYPES;
-    HTYPES.forEach(function (t) { if (types.indexOf(t) < 0) types.push(t); });
+    // Only the house types registered for this building (older buildings without any: the full list)
+    var types = hts.length ? hts.map(function (h) { return h.type; }) : HTYPES.slice();
+    // Floors from registration: Ground, 1st, 2nd ... (typed in if the building has no floor count)
+    var nf = parseInt(b.floors, 10), floorField;
+    if (nf > 0) {
+      var fl = [T('Ground')]; for (var i = 1; i <= Math.min(nf, 80); i++) fl.push(ordinal(i));
+      floorField = '<select data-fl>' + fl.map(function (f) { return '<option>' + esc(f) + '</option>'; }).join('') + '</select>';
+    } else floorField = '<input type="text" maxlength="20" placeholder="' + esc(T('e.g. 3')) + '" data-fl>';
     var rentFor = function (t) { var h = hts.filter(function (x) { return x.type === t; })[0]; return h && h.rent ? h.rent : ''; };
     var depFor = function (t) { var h = hts.filter(function (x) { return x.type === t; })[0]; return h && h.deposit ? h.deposit : '1 month'; };
     sheet('<h2>' + esc(T('Add a vacancy')) + '</h2><p>' + esc(T('One empty unit at {b}. We list it after our agent checks it.', { b: b.name })) + '</p>' +
       '<div class="row"><label>' + esc(T('Unit no.')) + '<input type="text" maxlength="20" placeholder="' + esc(T('e.g. C2')) + '" data-l></label>' +
-      '<label>' + esc(T('Floor')) + '<input type="text" maxlength="20" placeholder="' + esc(T('e.g. 3')) + '" data-fl></label></div>' +
-      '<label>' + esc(T('House type')) + '<select data-t>' + types.map(function (t) { return '<option value="' + esc(t) + '">' + esc(T(t)) + '</option>'; }).join('') + '</select></label>' +
+      '<label>' + esc(T('Floor')) + floorField + '</label></div>' +
+      '<label>' + esc(T('House type')) + '<select data-t>' + types.map(function (t) { return '<option value="' + esc(t) + '">' + esc(T(t)) + '</option>'; }).join('') + '</select>' +
+      (hts.length ? '<small class="dim" style="font-weight:400">' + esc(T('Only the types you registered. Add others in Building details.')) + '</small>' : '') + '</label>' +
       '<div class="row"><label>' + esc(T('Rent (KES)')) + '<input type="number" inputmode="numeric" min="1000" step="500" data-r value="' + esc(rentFor(types[0])) + '"></label>' +
       '<label>' + esc(T('Deposit')) + '<select data-d>' + ['1 month', '2 months', 'None'].map(function (o) { return '<option value="' + o + '"' + (o === depFor(types[0]) ? ' selected' : '') + '>' + esc(T(o)) + '</option>'; }).join('') + '</select></label></div>' +
       '<div class="row"><label>' + esc(T('Furnished')) + '<select data-fu>' + ['No', 'Semi', 'Fully'].map(function (o) { return '<option value="' + o + '">' + esc(T(o)) + '</option>'; }).join('') + '</select></label>' +

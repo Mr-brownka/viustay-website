@@ -23,9 +23,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&family=Source+Sans+3:wght@400;600&display=swap">
-<link rel="stylesheet" href="css/styles.css">
-<link rel="stylesheet" href="css/glass.css">
-<link rel="stylesheet" href="css/trips.css">
+<link rel="stylesheet" href="css/styles.css?v=14">
+<link rel="stylesheet" href="css/glass.css?v=14">
+<link rel="stylesheet" href="css/trips.css?v=14">
 <script src="js/look.js"></script>
 </head>
 <body data-header="flow" data-steps="0" data-page="stay">
@@ -75,13 +75,33 @@
 <main class="t-pay hidden" id="pay-wrap">
   <span class="kicker"><span data-i18n>Booking</span> <span id="pay-ref"></span></span>
   <h1 style="font-size:32px" id="pay-h"></h1>
-  <ol class="t-steps" id="pay-steps"></ol>
-  <p class="t-timer" id="pay-timer"></p>
-  <form id="pay-form" class="stack-sm" novalidate>
-    <label class="field"><span data-i18n>M-Pesa confirmation code</span><input type="text" name="mpesa" autocomplete="off" autocapitalize="characters" maxlength="14" placeholder="e.g. SJK3ABCD12" data-i18n-ph></label>
-    <p class="error hidden" id="pay-error" role="alert"></p>
-    <div class="actions"><button type="submit" class="btn btn-primary" id="pay-submit" data-i18n>Confirm payment</button><a href="#" id="pay-help" target="_blank" rel="noopener" data-i18n>Trouble paying? WhatsApp us</a></div>
+  <!-- 1. Ask for the M-Pesa number -->
+  <form id="req-form" class="stack-sm" novalidate>
+    <p style="margin:0;font-size:16px" data-i18n>We'll send a payment request to your phone. It will show VIUSTAY. Enter your M-Pesa PIN and you're done.</p>
+    <label class="field"><span data-i18n>M-Pesa number</span><input type="tel" name="mpesa_phone" autocomplete="tel" inputmode="tel" maxlength="20" placeholder="07XX XXX XXX"></label>
+    <p class="error hidden" id="req-error" role="alert"></p>
+    <button type="submit" class="btn btn-primary" id="req-submit" data-i18n>Send payment request</button>
   </form>
+  <!-- 2. Waiting for the payment -->
+  <div class="pw hidden" id="pay-wait" role="status" aria-live="polite">
+    <div class="pw-phone" aria-hidden="true"><span class="pw-ring"></span><span class="pw-ring r2"></span><svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M10.5 18.5h3"/></svg><b>VIUSTAY</b></div>
+    <h2 data-i18n>Check your phone</h2>
+    <p id="pw-text"></p>
+    <p class="pw-status"><i></i><span data-i18n>Waiting for your payment…</span></p>
+    <div class="actions" style="justify-content:center"><button type="button" class="btn btn-outline" id="pw-again" disabled data-i18n>Send again</button><button type="button" class="btn-link" id="pw-change" data-i18n>Change number</button></div>
+  </div>
+  <p class="t-timer" id="pay-timer"></p>
+  <!-- Paid some other way: enter the M-Pesa code -->
+  <details class="pay-alt" id="pay-alt">
+    <summary data-i18n>Paid another way? Enter your M-Pesa code</summary>
+    <ol class="t-steps" id="pay-steps"></ol>
+    <form id="pay-form" class="stack-sm" novalidate>
+      <label class="field"><span data-i18n>M-Pesa confirmation code</span><input type="text" name="mpesa" autocomplete="off" autocapitalize="characters" maxlength="14" placeholder="e.g. SJK3ABCD12" data-i18n-ph></label>
+      <p class="error hidden" id="pay-error" role="alert"></p>
+      <div class="actions"><button type="submit" class="btn btn-outline" id="pay-submit" data-i18n>Confirm payment</button></div>
+    </form>
+  </details>
+  <a href="#" id="pay-help" target="_blank" rel="noopener" data-i18n>Trouble paying? WhatsApp us</a>
 </main>
 
 <main class="t-pay hidden" id="stay-done">
@@ -93,12 +113,12 @@
   </div>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="js/lang.js"></script>
+<script src="js/lang.js?v=14"></script>
 <script src="js/i18n.js"></script>
 <script src="js/config.js"></script>
-<script src="js/common.js"></script>
+<script src="js/common.js?v=14"></script>
 <script src="js/install.js"></script>
 <script src="js/trip-math.js"></script>
-<script src="js/stay.js"></script>
+<script src="js/stay.js?v=14"></script>
 </body>
 </html>

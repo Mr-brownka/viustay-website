@@ -52,6 +52,9 @@
     '.ba-unit textarea{min-height:60px;resize:vertical}' +
     '.ba-th{display:flex;gap:6px;flex-wrap:wrap;min-height:20px}.ba-th img{width:64px;height:48px;object-fit:cover;border-radius:8px;background:#EEE}' +
     '.ba-th .bad{font-size:12px;color:#A32D2D;font-weight:600}' +
+    '.ba-ph{position:relative;display:inline-block}.ba-ph img{width:78px;height:58px}.ba-ph.cover img{outline:3px solid #F2A93B;outline-offset:1px}' +
+    '.ba-ph button{position:absolute;top:3px;width:22px;height:22px;border-radius:50%;border:0;background:rgba(0,0,0,.55);color:#fff;font-size:12px;line-height:22px;padding:0;cursor:pointer}' +
+    '.ba-ph [data-cover]{left:3px}.ba-ph.cover [data-cover]{background:#F2A93B;color:#2A1A02}.ba-ph [data-rm]{right:3px}' +
     '.ba-sq{width:40px;height:40px;border-radius:11px;background:#E7F2EE;color:#0E5E54;font:600 15px Outfit,sans-serif;display:inline-flex;align-items:center;justify-content:center;flex:none}' +
     '.ba-kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;font-size:14px}.ba-kv span{color:var(--muted);display:block;font-size:12px}' +
     '.ba-bar{position:sticky;bottom:0;background:#fff;border-radius:16px;box-shadow:0 -6px 20px rgba(20,40,36,.1);padding:12px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;z-index:5}' +
@@ -131,7 +134,7 @@
       '<div style="grid-column:1/-1"><span>House types</span><strong>' + esc((d.house_types || []).map(function (h) { return h.type + (h.rent ? ' KES ' + V.money(h.rent) : ''); }).join(' · ') || '–') + '</strong></div>' +
       '</div>' +
       (c.phone ? '<div class="actions" style="gap:8px"><a class="btn btn-outline" style="font-size:15px;padding:8px 14px" href="tel:' + esc(c.phone) + '">Call manager</a><a class="btn btn-outline" style="font-size:15px;padding:8px 14px" target="_blank" rel="noopener" href="https://wa.me/' + esc(String(c.phone).replace(/\D/g, '').replace(/^0/, '254')) + '?text=' + encodeURIComponent('Hi ' + (c.person || '') + ', this is Viustay about ' + b.name + '.') + '">WhatsApp manager</a></div>' : '') +
-      '<div class="actions" style="justify-content:space-between"><h2 style="font-size:20px">Vacancies · ' + vac.length + '</h2><span class="note">Photos: upload to GitHub → v2/assets, then type the file names.</span></div>' +
+      '<div class="actions" style="justify-content:space-between"><h2 style="font-size:20px">Vacancies · ' + vac.length + '</h2><span class="note">Tap Upload photos on each unit (or use GitHub file names).</span></div>' +
       (vac.length ? '<div class="ba-units">' + vac.map(function (u) { return unitCard(b, u, withPhotos); }).join('') + '</div>' :
         '<div class="box"><p class="note" style="margin:0">No vacancies yet. The manager adds them from their dashboard ("Add vacancy").</p></div>') +
       (us.filter(function (u) { return u.status !== 'vacant'; }).length ? '<p class="note">Let units: ' + us.filter(function (u) { return u.status !== 'vacant'; }).map(function (u) { return esc(u.label) + (u.listing_id ? ' (' + esc(u.listing_id) + ', off the site)' : ''); }).join(', ') + '</p>' : '') +
@@ -152,8 +155,11 @@
       '<label style="display:flex;align-items:center;gap:12px;cursor:pointer"><input type="checkbox" data-on' + (f.on ? ' checked' : '') + ' style="width:20px;height:20px">' +
       '<span class="ba-sq">' + esc(u.label) + '</span><span style="flex:1;line-height:1.3"><strong>' + esc(u.type) + (u.floor ? ' · floor ' + esc(u.floor) : '') + '</strong><br><span class="note" style="font-size:13px">KES ' + V.money(u.rent) +
       (u.deposit ? ' · deposit ' + esc(u.deposit) : '') + (u.furnished && u.furnished !== 'No' ? ' · ' + esc(u.furnished) + ' furnished' : '') + '</span></span>' + state + '</label>' +
-      '<label class="note" style="font-size:13px;display:flex;flex-direction:column;gap:4px">Photo file names (first one is the cover)<input type="text" data-ph value="' + esc(f.photos) + '" placeholder="e.g. vs-031-1.jpg vs-031-2.jpg vs-031-3.jpg"></label>' +
+      '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><label class="btn btn-dark" style="font-size:15px;padding:9px 16px;min-height:40px;cursor:pointer">' +
+        '<input type="file" accept="image/*" multiple data-up style="display:none">Upload photos</label><span class="note" style="font-size:13px" data-upmsg>' + esc(f.msg || 'From your phone or computer. ★ = cover photo.') + '</span></div>' +
       '<div class="ba-th" data-th></div>' +
+      '<details' + (hasNames(f.photos) ? ' open' : '') + '><summary class="note" style="font-size:13px;cursor:pointer">Or type GitHub file names</summary>' +
+      '<input type="text" data-ph value="' + esc(f.photos) + '" placeholder="e.g. vs-031-1.jpg vs-031-2.jpg vs-031-3.jpg" style="margin-top:6px"></details>' +
       (reuse.length ? '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><select data-reuse style="flex:1 1 200px">' + opts + '</select>' +
         (f.reuse ? '<label class="note" style="font-size:13px;display:flex;gap:6px;align-items:center"><input type="checkbox" data-chk' + (f.checked ? ' checked' : '') + '> Caretaker\'s video checked: same finish, clean, ready</label>' : '') + '</div>' : '') +
       '<div style="display:flex;gap:8px"><label class="note" style="font-size:13px;flex:0 0 110px">Bathrooms<select data-baths>' + ['1', '2', '3', '4'].map(function (n) { return '<option' + (f.baths === n ? ' selected' : '') + '>' + n + '</option>'; }).join('') + '</select></label>' +
@@ -162,19 +168,60 @@
 
   function thumbs(card, txt) {
     var box = V.$('[data-th]', card), list = photoList(txt);
-    box.innerHTML = list.slice(0, 6).map(function (p) { return '<img alt="" src="' + esc(p) + '">'; }).join('');
+    box.innerHTML = list.map(function (p, i) {
+      return '<span class="ba-ph' + (i === 0 ? ' cover' : '') + '"><img alt="" src="' + esc(p) + '"><button type="button" data-cover="' + i + '" title="Make cover">★</button><button type="button" data-rm="' + i + '" title="Remove">✕</button></span>';
+    }).join('');
     V.$$('img', box).forEach(function (img) {
-      img.onerror = function () { var s = document.createElement('span'); s.className = 'bad'; s.textContent = 'Not found: ' + img.getAttribute('src'); img.replaceWith(s); };
+      img.onerror = function () { var s = document.createElement('span'); s.className = 'bad'; s.textContent = 'Not found: ' + img.getAttribute('src').replace(/^assets\//, ''); img.replaceWith(s); };
     });
+  }
+  function hasNames(t) { return String(t || '').split(/\s+/).some(function (x) { return x && !/^https?:/.test(x); }); }
+  function shortName(p) { return /^assets\//.test(p) ? p.slice(7) : p; }
+  // Shrink a photo on the device before upload: longest side 1600 px, JPEG ~80% (about 200-400 KB)
+  function shrink(file) {
+    return new Promise(function (ok, no) {
+      var url = URL.createObjectURL(file), img = new Image();
+      img.onload = function () {
+        var k = Math.min(1, 1600 / Math.max(img.width, img.height)), c = document.createElement('canvas');
+        c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+        c.toBlob(function (b) { b ? ok(b) : no(new Error('Could not read the photo')); }, 'image/jpeg', 0.8);
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); no(new Error('That file is not a photo')); };
+      img.src = url;
+    });
+  }
+  function upload(b, u, files, card) {
+    var f = S.form[u.id], msg = V.$('[data-upmsg]', card), done = 0, list = Array.prototype.slice.call(files, 0, 15);
+    msg.textContent = 'Uploading 0 of ' + list.length + '…';
+    var chain = Promise.resolve();
+    list.forEach(function (file, i) {
+      chain = chain.then(function () { return shrink(file); }).then(function (blob) {
+        var path = (b.code || 'b' + b.id) + '/' + u.label.replace(/[^A-Za-z0-9-]/g, '') + '-' + Date.now() + '-' + i + '.jpg';
+        return V.db.storage.from('listing-photos').upload(path, blob, { contentType: 'image/jpeg', upsert: false }).then(function (r) {
+          if (r.error) throw r.error;
+          var pub = V.db.storage.from('listing-photos').getPublicUrl(path).data.publicUrl;
+          f.photos = ((f.photos || '').trim() + ' ' + pub).trim(); f.on = true; f.reuse = '';
+          done++; msg.textContent = 'Uploading ' + done + ' of ' + list.length + '…'; thumbs(card, f.photos); wireThumbs(card, f);
+        });
+      });
+    });
+    return chain.then(function () { f.msg = done + ' photo' + (done === 1 ? '' : 's') + ' uploaded. ★ = cover photo.'; render(); })
+      .catch(function (e) { console.error(e); f.msg = 'Upload stopped: ' + (/bucket|not found|row-level/i.test(e.message || '') ? 'run supabase/add-photo-storage.sql first.' : (e.message || 'please try again.')); render(); });
+  }
+  function wireThumbs(card, f) {
+    V.$$('[data-cover]', card).forEach(function (x) { x.onclick = function () { var l = photoList(f.photos), i = +x.getAttribute('data-cover'); l.unshift(l.splice(i, 1)[0]); f.photos = l.map(shortName).join(' '); render(); }; });
+    V.$$('[data-rm]', card).forEach(function (x) { x.onclick = function () { var l = photoList(f.photos); l.splice(+x.getAttribute('data-rm'), 1); f.photos = l.map(shortName).join(' '); render(); }; });
   }
 
   function wireUnits(el, b) {
     V.$$('[data-u]', el).forEach(function (card) {
       var id = +card.getAttribute('data-u'), f = S.form[id];
-      thumbs(card, f.photos);
+      thumbs(card, f.photos); wireThumbs(card, f);
+      var up = V.$('[data-up]', card); if (up) up.onchange = function () { if (up.files && up.files.length) upload(S.buildings.filter(function (x) { return x.id === S.open; })[0], S.units.filter(function (x) { return x.id === id; })[0], up.files, card); };
       V.$('[data-on]', card).onchange = function () { f.on = this.checked; card.classList.toggle('on', f.on); sum(el, b); };
       var ph = V.$('[data-ph]', card);
-      ph.oninput = function () { f.photos = ph.value; f.reuse = ''; clearTimeout(ph._t); ph._t = setTimeout(function () { thumbs(card, f.photos); }, 400); };
+      ph.oninput = function () { f.photos = ph.value; f.reuse = ''; clearTimeout(ph._t); ph._t = setTimeout(function () { thumbs(card, f.photos); wireThumbs(card, f); }, 400); };
       var re = V.$('[data-reuse]', card);
       if (re) re.onchange = function () {
         f.reuse = re.value; f.checked = false;

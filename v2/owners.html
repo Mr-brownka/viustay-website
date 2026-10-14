@@ -3,18 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Viustay for owners and managers | Fill your vacant units</title>
+<title>Viustay for owners | Vacant units? We fill them.</title>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Viustay">
-<meta property="og:title" content="Viustay for owners and managers | Fill your vacant units">
-<meta property="og:description" content="We photograph your units, market them and bring serious tenants. You only pay when a tenant signs.">
+<meta property="og:title" content="Viustay for owners | Vacant units? We fill them.">
+<meta property="og:description" content="Vacant units? We fill them. We bring verified families to view your vacant units. You pay nothing until a tenant signs.">
 <meta property="og:url" content="https://mr-brownka.github.io/viustay-website/v2/owners.html">
 <meta property="og:image" content="https://mr-brownka.github.io/viustay-website/assets/share.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#FAFBFA">
-<meta name="description" content="We photograph your units, market them and bring serious tenants. You only pay when a tenant signs.">
+<meta name="description" content="Vacant units? We fill them. We bring verified families to view your vacant units. You pay nothing until a tenant signs.">
 <link rel="icon" href="assets/favicon.png">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
@@ -26,76 +26,73 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&family=Source+Sans+3:wght@400;600&display=swap">
 <link rel="stylesheet" href="css/styles.css">
 <link rel="stylesheet" href="css/glass.css">
+<link rel="stylesheet" href="css/owners.css?v=14">
 <script src="js/look.js"></script>
 </head>
-<body data-header="owners">
-<header id="site-header"></header>
+<body class="ow-page" data-no-looks data-no-wa>
+<header class="ow-head">
+  <a class="ow-logo" href="index.html"><img src="assets/viustay-logo-white.svg" alt="Viustay"><span data-i18n>for owners</span></a>
+  <a class="ow-login" href="dashboard.html" data-i18n>Log in</a>
+</header>
 <main>
-  <section class="container hero">
-    <div class="stack">
-      <h1>Fill your vacant units.<br>We handle the rest.</h1>
-      <p class="lede">We photograph your units, market them, screen and bring serious tenants, and only charge when a tenant signs.</p>
-      <div class="actions">
-        <a class="btn btn-primary" href="list-property.html">List your property</a>
-        <a href="homes.html" style="font-weight:600">See how listings look</a>
+  <section class="ow-hero">
+    <div class="ow-hero-in">
+      <div class="ow-copy">
+        <h1 class="ow-a" style="--d:.1s"><span data-i18n>Vacant units?</span><br><em data-i18n>We fill them.</em></h1>
+        <p class="ow-a" style="--d:.35s" data-i18n>We bring verified families to view your vacant units. You pay nothing until a tenant signs.</p>
+        <div class="ow-a ow-ctas" style="--d:.6s">
+          <a class="ow-btn ow-pulse" href="dashboard.html?signup=1#register" data-i18n>Register your building</a>
+          <span class="ow-small"><span data-i18n>Already registered?</span> <a href="dashboard.html" data-i18n>Log in</a></span>
+        </div>
       </div>
-      <div class="chips">
-        <span class="tag-pill">No upfront cost</span>
-        <span class="tag-pill">Works alongside your other agents</span>
-        <span class="tag-pill">Owner details optional</span>
-      </div>
-    </div>
-    <div class="panel" style="border-radius:20px;padding:24px">
-      <span class="note" style="font-weight:600">Your dashboard shows</span>
-      <div class="stats" style="grid-template-columns:repeat(2,minmax(0,1fr))">
-        <div class="stat"><small>Vacant units</small><b>Live</b></div>
-        <div class="stat"><small>Viewings booked</small><b>Live</b></div>
-        <div class="stat"><small>Tenants placed</small><b>Live</b></div>
-        <div class="stat"><small>Days to fill</small><b>Live</b></div>
-      </div>
-      <a href="dashboard.html" style="font-weight:600;font-size:14px">Log in to your dashboard</a>
+      <div class="ow-a ow-tower-wrap" style="--d:.8s" aria-hidden="true"><div class="ow-tower" id="ow-tower"></div></div>
     </div>
   </section>
-  <section class="band" id="how">
-    <div class="container section stack">
-      <h2>How it works</h2>
-      <div class="how-grid">
-        <div><span class="num">1</span><strong>Tell us your vacancies</strong><span style="font-size:14px;color:var(--muted)">3 quick steps online, or on WhatsApp.</span></div>
-        <div><span class="num">2</span><strong>We visit and shoot</strong><span style="font-size:14px;color:var(--muted)">Photos and video of every unit, plus a verified badge.</span></div>
-        <div><span class="num">3</span><strong>We bring tenants</strong><span style="font-size:14px;color:var(--muted)">Pre-matched on budget and needs. We run every viewing.</span></div>
-        <div><span class="num">4</span><strong>You pay on move-in</strong><span style="font-size:14px;color:var(--muted)">Our fee is due when the lease is signed, paid at move-in.</span></div>
-      </div>
+  <div class="ow-legend" aria-hidden="true"><span><i class="v"></i><span data-i18n>Vacant</span></span><span><i class="f"></i><span data-i18n>Filled by Viustay</span></span></div>
+
+  <section class="ow-how">
+    <p class="ow-k ow-r" data-i18n>How it works</p>
+    <div class="ow-steps">
+      <div class="ow-line" aria-hidden="true"><i></i></div>
+      <div class="ow-step ow-r" style="--d:.0s"><b>1</b><span><strong data-i18n>Register your building</strong><small data-i18n>5 minutes on your phone</small></span></div>
+      <div class="ow-step ow-r" style="--d:.2s"><b>2</b><span><strong data-i18n>We visit and take photos</strong><small data-i18n>Our agent checks every unit</small></span></div>
+      <div class="ow-step ow-r" style="--d:.4s"><b>3</b><span><strong data-i18n>Families come to view</strong><small data-i18n>You see who is coming and when</small></span></div>
     </div>
   </section>
-  <section class="container section" style="display:flex;flex-wrap:wrap;gap:40px">
-    <div class="stack-sm" style="flex:1 1 420px;min-width:0">
-      <h2>Our fee</h2>
-      <p class="lede">One placement fee per tenant: <strong data-text="PLACEMENT_FEE_TEXT">[PLACEMENT FEE]</strong>. No listing fees, no monthly charges.</p>
-    </div>
-    <div class="stack-sm" style="flex:1 1 420px;min-width:0">
-      <h2>Why Viustay</h2>
-      <ul style="margin:0;padding-left:20px;font-size:17px;line-height:1.7;color:var(--muted)">
-        <li>Faster fills: tenants arrive already matched to your unit</li>
-        <li>Fewer wasted viewings for your caretaker</li>
-        <li>Everything tracked: viewings, placements, invoices</li>
-      </ul>
-    </div>
+
+  <section class="ow-trust">
+    <div class="ow-r" style="--d:0s"><span class="ow-tick">✓</span><span><strong data-i18n>No fee until a tenant signs</strong><small data-i18n>Zero upfront cost</small></span></div>
+    <div class="ow-r" style="--d:.15s"><span class="ow-tick">✓</span><span><strong data-i18n>Verified families only</strong><small data-i18n>ID checked before viewing</small></span></div>
+    <div class="ow-r" style="--d:.3s"><span class="ow-tick">✓</span><span><strong data-i18n>Every viewing on your phone</strong><small data-i18n>Agent name, car and time</small></span></div>
   </section>
-  <section class="container" id="caretakers" style="padding-bottom:64px">
-    <div class="cta-band">
-      <div class="stack-sm" style="flex:1 1 420px;min-width:0">
-        <h2>Caretaker? Earn with Viustay.</h2>
-        <span style="font-size:16px">Tell us about vacant units in your building. When we place a tenant, you earn <strong data-text="CARETAKER_REWARD_TEXT">[CARETAKER REWARD]</strong>.</span>
-      </div>
-      <a class="btn btn-primary" href="list-property.html?role=Caretaker">Refer a building</a>
-    </div>
+
+  <section class="ow-end ow-r">
+    <div><h2 data-i18n>Ready in 5 minutes</h2><p data-i18n>Register now. We call you to book the photo visit.</p></div>
+    <a class="ow-btn" href="dashboard.html?signup=1#register" data-i18n>Register your building</a>
   </section>
+  <p class="ow-foot"><a href="index.html" data-i18n>Looking for a home? Go to Viustay</a> · <a href="#" data-wa="Hi Viustay, I have a question about listing my building" data-i18n>Questions? WhatsApp us</a></p>
 </main>
-<footer id="site-footer"></footer>
-<script src="js/lang.js"></script>
+<script src="js/lang.js?v=14"></script>
 <script src="js/i18n.js"></script>
 <script src="js/config.js"></script>
-<script src="js/common.js"></script>
+<script src="js/common.js?v=14"></script>
 <script src="js/install.js"></script>
+<script>
+// Owners page: a building whose vacant windows fill up one by one, and sections that rise in as you scroll.
+(function () {
+  var t = document.getElementById('ow-tower'), cols = window.innerWidth > 900 ? 7 : 5, rows = window.innerWidth > 900 ? 6 : 5;
+  var vac = cols === 7 ? [4, 9, 16, 24, 30, 37] : [3, 11, 17, 21], h = '';
+  t.style.gridTemplateColumns = 'repeat(' + cols + ', 1fr)';
+  for (var i = 0; i < cols * rows; i++) {
+    var k = vac.indexOf(i);
+    h += k > -1 ? '<span class="w v" style="animation-delay:' + (k * 0.9) + 's"><i style="animation-delay:' + (k * 0.9) + 's">✓</i></span>' : '<span class="w"></span>';
+  }
+  t.innerHTML = h;
+  var els = document.querySelectorAll('.ow-r, .ow-steps');
+  if (!('IntersectionObserver' in window)) { els.forEach(function (e) { e.classList.add('in'); }); return; }
+  var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }); }, { threshold: .2 });
+  els.forEach(function (e) { io.observe(e); });
+})();
+</script>
 </body>
 </html>

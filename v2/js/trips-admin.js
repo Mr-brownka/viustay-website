@@ -165,7 +165,7 @@
   // ---------- short stays ----------
   var SST = { awaiting_payment: ['warn', 'Waiting for payment'], paid: ['warn', 'Paid: check M-Pesa'], confirmed: ['ok', 'Confirmed'], checked_in: ['ok', 'Checked in'], completed: ['ok', 'Completed'], cancelled: ['bad', 'Cancelled'], expired: ['bad', 'Expired'] };
   var stayFilter = 'action';
-  function stayAction(s) { return s.status === 'paid' || (s.status === 'confirmed' && !s.checkin_info) || (s.status === 'confirmed' && s.check_in <= today()) || (s.status === 'checked_in' && s.check_out <= today()); }
+  function stayAction(s) { return (s.status === 'awaiting_payment' && s.pay_requested_at && (Date.now() - new Date(s.pay_requested_at)) < 2 * 3600000) || s.status === 'paid' || (s.status === 'confirmed' && !s.checkin_info) || (s.status === 'confirmed' && s.check_in <= today()) || (s.status === 'checked_in' && s.check_out <= today()); }
   function stayCard(s) {
     var st = SST[s.status] || ['', s.status];
     if (s.status === 'awaiting_payment' && (Date.now() - new Date(s.created_at)) > (S.pay_window_min || 30) * 60000) st = ['bad', 'Not paid in time'];
@@ -177,6 +177,8 @@
       '<span>Money</span><span>' + kes(s.total) + ' = ' + s.nights + ' × ' + kes(s.night_rate) + (s.cleaning_fee ? ' + ' + kes(s.cleaning_fee) + ' cleaning' : '') + (s.pickup_fee ? ' + ' + kes(s.pickup_fee) + ' pickup' : '') + (s.mpesa_code ? ' · M-Pesa <strong>' + V.esc(s.mpesa_code) + '</strong> ' + when(s.paid_at) : '') + '</span>' +
       (s.pickup ? '<span>Pickup</span><span><strong>Airport / bus pickup booked</strong>' + (s.pickup_note ? ': ' + V.esc(s.pickup_note) : '') + '</span>' : '') +
       (s.rating ? '<span>Rating</span><span>' + '★★★★★'.slice(0, s.rating) + (s.rating_note ? ' · ' + V.esc(s.rating_note) : '') + '</span>' : '') + '</div>';
+    if (s.status === 'awaiting_payment' && s.mpesa_phone) h += '<p class="t-warn">M-Pesa request: <strong>' + kes(s.total) + '</strong> from <strong>' + V.esc(s.mpesa_phone) + '</strong> (asked ' + when(s.pay_requested_at) + (s.pay_requests > 1 ? ', ' + s.pay_requests + ' times' : '') + '). Send the request from the till app, or call them. When the money arrives, tap <strong>Payment received</strong>: the guest\'s screen turns to Paid by itself.</p>' +
+      '<div class="t-actions"><button class="btn btn-primary" data-s="received">Payment received</button><a class="btn btn-outline" href="tel:' + V.esc(s.mpesa_phone) + '">Call ' + V.esc(s.mpesa_phone) + '</a></div>';
     if (s.status === 'paid') h += '<p class="t-warn">Find <strong>' + V.esc(s.mpesa_code) + '</strong> for <strong>' + kes(s.total) + '</strong> in your M-Pesa statement and confirm the dates with the host, then confirm.</p>' +
       '<div class="t-actions"><button class="btn btn-primary" data-s="confirm">Payment checked: confirm stay</button><button class="btn btn-outline" data-s="cancel">Payment not found: cancel</button></div>';
     if (['confirmed', 'checked_in'].indexOf(s.status) >= 0) {
@@ -209,6 +211,12 @@
   function setStay(s, patch) { return db().from('stays').update(patch).eq('id', s.id).then(check).then(function () { Object.assign(s, patch); render(); }).catch(fail); }
   function stayDo(s, act, card) {
     if (act === 'confirm') setStay(s, { status: 'confirmed' });
+    if (act === 'received') {
+      var code = prompt('M-Pesa code for ' + kes(s.total) + ' from ' + s.mpesa_phone + ' (optional, e.g. SJK3ABCD12):', '');
+      if (code === null) return;
+      code = code.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+      setStay(s, { status: 'paid', paid_at: new Date().toISOString(), mpesa_code: code || null });
+    }
     if (act === 'cancel') { if (confirm('Cancel stay ' + s.booking_ref + '? Refund the guest yourself if they paid.')) setStay(s, { status: 'cancelled' }); }
     if (act === 'info') setStay(s, { checkin_info: card.querySelector('[data-info]').value.trim() || null });
     if (act === 'checkin') setStay(s, { status: 'checked_in' });

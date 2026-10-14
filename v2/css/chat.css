@@ -246,14 +246,14 @@ html.intro-wait, html.intro-wait body { overflow: hidden; }
 .intro-light { position: absolute; inset: -20%; background: linear-gradient(110deg, transparent 40%, rgba(255, 214, 150, .28) 50%, transparent 60%); mix-blend-mode: screen; animation: in-sweep 5.5s .6s ease-in-out both; pointer-events: none; }
 @keyframes in-sweep { from { transform: translateX(-60%); opacity: 0; } 30% { opacity: 1; } to { transform: translateX(60%); opacity: 0; } }
 .intro-grain { position: absolute; inset: 0; opacity: .08; pointer-events: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
-.intro-copy { position: absolute; left: 0; right: 0; bottom: 0; padding: 0 max(24px, 6vw) calc(64px + env(safe-area-inset-bottom, 0px)); color: #fff; transform: translate3d(calc(var(--mx) * 8px), calc(var(--my) * 6px), 0); transition: transform .4s ease-out; }
+.intro-copy { position: absolute; left: 0; right: 0; bottom: 0; padding: 0 max(24px, 6vw) calc(150px + env(safe-area-inset-bottom, 0px)); color: #fff; transform: translate3d(calc(var(--mx) * 8px), calc(var(--my) * 6px), 0); transition: transform .4s ease-out; }
 .intro-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; padding: 6px 12px; border-radius: 999px; background: rgba(255, 255, 255, .14); border: 1px solid rgba(255, 255, 255, .25); animation: c-rise .6s .1s both; }
 .intro-eyebrow i { width: 7px; height: 7px; border-radius: 50%; background: #F2A93B; box-shadow: 0 0 12px #F2A93B; }
 .intro h1 { color: #fff; font-size: clamp(40px, 8vw, 84px); line-height: 1.02; letter-spacing: -.02em; margin: 16px 0 10px; max-width: 14ch; text-shadow: 0 10px 40px rgba(0, 0, 0, .35); }
 .intro h1 em { font-style: normal; color: #FFC46B; }
 .intro .iw { display: inline-block; animation: in-word 1.1s cubic-bezier(.2, .8, .2, 1) both; }
 @keyframes in-word { from { opacity: 0; transform: translateY(40%) rotate(2deg); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
-.intro p { margin: 0; font-size: clamp(17px, 2vw, 21px); color: rgba(255, 255, 255, .85); animation: c-rise 1s 1.8s both; }
+.intro p { margin: 0; font-size: clamp(17px, 2vw, 21px); color: rgba(255, 255, 255, .85); animation: c-rise 1s 1.1s both; }
 .intro-skip { display: inline-block; margin-top: 22px; font-size: 13px; color: rgba(255, 255, 255, .6); animation: c-rise .8s 2.6s both; }
 .intro-credit { position: absolute; right: 12px; bottom: calc(10px + env(safe-area-inset-bottom, 0px)); font-size: 11px; color: rgba(255, 255, 255, .55); text-decoration: none; }
 html.intro-wait .q-stage { opacity: 0; }
@@ -332,3 +332,47 @@ body[data-page="home2"] .c-pill { background: rgba(255, 255, 255, .16); border-c
   body[data-page="home2"] .q-card { -webkit-backdrop-filter: none; backdrop-filter: none; }
 }
 body[data-page="home2"] .site-header > .container:has(.menu-panel.open) { background: rgba(8, 44, 39, .97); }
+
+/* Intro: tapping finger + 3-second bar (tap anywhere skips) */
+.intro-tap { position: absolute; left: 0; right: 0; bottom: calc(46px + env(safe-area-inset-bottom)); z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 6px; color: #fff; animation: c-rise .8s .9s both; pointer-events: none; }
+.it-hand { position: relative; width: 60px; height: 64px; }
+.it-hand svg { position: absolute; left: 9px; top: 14px; width: 42px; height: 42px; fill: #fff; filter: drop-shadow(0 4px 10px rgba(0, 0, 0, .35)); animation: it-tap 1.1s ease-in-out infinite; }
+.it-ring { position: absolute; left: 50%; top: 4px; width: 46px; height: 46px; margin-left: -23px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, .8); animation: it-ring 1.1s ease-out infinite; }
+.it-txt { font-size: 13px; font-weight: 600; letter-spacing: .06em; }
+.it-bar { width: 140px; height: 4px; border-radius: 9px; background: rgba(255, 255, 255, .18); overflow: hidden; margin-top: 4px; }
+.it-bar i { display: block; height: 100%; width: 0; background: #F2A93B; border-radius: 9px; }
+.intro.run .it-bar i { animation: it-bar 3s linear forwards; }
+@keyframes it-tap { 0%, 100% { transform: translateY(0) scale(1); } 45% { transform: translateY(-6px) scale(1); } 55% { transform: translateY(0) scale(.88); } 65% { transform: scale(1); } }
+@keyframes it-ring { 0%, 45% { opacity: 0; transform: scale(.4); } 55% { opacity: .9; transform: scale(.6); } 100% { opacity: 0; transform: scale(1.6); } }
+@keyframes it-bar { from { width: 0; } to { width: 100%; } }
+@media (prefers-reduced-motion: reduce) { .it-hand svg, .it-ring { animation: none; } .intro-tap { animation: none; } }
+
+/* Short-stay dates: check-in strip, check-out calendar, "Are these your dates?" */
+.cal-day.in { opacity: 1 !important; background: rgba(14, 94, 84, .12); color: var(--emerald, #0E5E54); font-weight: 700; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; }
+.cal-day.in small { font-size: 9px; font-weight: 700; letter-spacing: .04em; margin-top: 2px; }
+.dt-strip { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 14px; background: rgba(14, 94, 84, .1); margin-bottom: 12px; max-width: 380px; }
+.dt-ok { width: 28px; height: 28px; border-radius: 50%; background: #0E5E54; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; flex: none; }
+.dt-txt { flex: 1; line-height: 1.25; }
+.dt-txt small { display: block; font-size: 11px; font-weight: 700; letter-spacing: .06em; color: var(--muted); }
+.dt-txt b { font-size: 16px; color: var(--ink); }
+.dt-change { border: 0; background: none; color: var(--emerald, #0E5E54); font: inherit; font-weight: 700; font-size: 14px; cursor: pointer; padding: 6px; }
+.dt-slide { animation: dt-up .55s cubic-bezier(.2, .7, .2, 1) both; }
+@keyframes dt-up { from { opacity: 0; transform: translateY(36px); } to { opacity: 1; transform: none; } }
+.dt-confirm { border-radius: 24px; overflow: hidden; box-shadow: 0 18px 40px rgba(14, 60, 52, .18); background: var(--white); max-width: 400px; animation: dt-pop .55s cubic-bezier(.2, .7, .2, 1) both; }
+@keyframes dt-pop { 0% { opacity: 0; transform: scale(.9); } 70% { opacity: 1; transform: scale(1.03); } 100% { transform: scale(1); } }
+.dt-top { background: linear-gradient(150deg, #14806F, #0E5E54); color: #fff; text-align: center; padding: 22px 18px 24px; }
+.dt-top small { font-size: 12px; font-weight: 700; letter-spacing: .1em; color: #FCD38A; }
+.dt-top h3 { color: #fff; font-family: var(--heading); font-size: 26px; margin: 6px 0 0; }
+.dt-tiles { display: flex; align-items: center; gap: 8px; padding: 18px 14px; }
+.dt-tile { flex: 1; text-align: center; padding: 12px 6px; border-radius: 16px; background: rgba(14, 94, 84, .07); line-height: 1.2; }
+.dt-tile small { display: block; font-size: 11px; font-weight: 700; letter-spacing: .08em; color: var(--muted); }
+.dt-tile b { display: block; font-family: var(--heading); font-size: 34px; color: var(--emerald, #0E5E54); line-height: 1.1; }
+.dt-tile span { display: block; font-weight: 700; font-size: 14px; color: var(--ink); text-transform: capitalize; }
+.dt-tile em { display: block; font-style: normal; font-size: 12px; color: var(--muted); }
+.dt-mid { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; color: #9A5B05; white-space: nowrap; }
+.dt-mid svg { width: 18px; height: 18px; fill: none; stroke: #F2A93B; stroke-width: 2; }
+.dt-mid svg.dt-arrow { width: 44px; height: 10px; stroke-dasharray: 60; animation: dt-draw 1s .35s both; }
+@keyframes dt-draw { from { stroke-dashoffset: 60; } to { stroke-dashoffset: 0; } }
+.dt-acts { display: flex; flex-direction: column; gap: 10px; padding: 0 14px 18px; }
+.dt-acts .btn { width: 100%; justify-content: center; }
+@media (prefers-reduced-motion: reduce) { .dt-slide, .dt-confirm, .dt-mid svg.dt-arrow { animation: none; } }
