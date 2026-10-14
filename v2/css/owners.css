@@ -33,7 +33,7 @@ body.ow-page::before, body.ow-page .vs-sky { display: none !important; }
 .ow-legend i.v { background: #0E5E54; } .ow-legend i.f { background: #DDDDDD; }
 
 .ow-how { max-width: 1100px; margin: 0 auto; padding: 48px max(22px, 5vw) 16px; }
-.ow-k { text-align: center; font-size: 13px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #6B6B6B; margin: 0 0 26px; }
+.ow-k { text-align: center; font-size: 13px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #B8551A; margin: 0 0 26px; }
 .ow-steps { position: relative; display: flex; gap: 30px; }
 .ow-line { position: absolute; left: 16%; right: 16%; top: 21px; height: 3px; border-radius: 3px; background: #E2DDD3; }
 .ow-line i { display: block; height: 100%; width: 0; background: #0E5E54; border-radius: 3px; transition: width 1.4s .5s ease-out; }
