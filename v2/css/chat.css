@@ -412,3 +412,4 @@ body.home-ask .doors-back { display: inline-flex; align-self: flex-start; border
   body[data-page="home2"] .home-shortcuts, body[data-page="home2"] .c-pill { display: none !important; }
 }
 @media (prefers-reduced-motion: reduce) { .door, .doors-copy h1, .doors-copy p, .doors-k, .doors-help, .doors-help i { animation: none !important; } }
+.doors-help { text-decoration: none; } .doors-help:hover { color: #fff; opacity: 1; border-color: #F2A93B; }

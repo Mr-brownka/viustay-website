@@ -1133,7 +1133,9 @@ window.VS_DICT = {
   "Key in lockbox": "Ufunguo kwenye kisanduku",
   "Key at reception": "Ufunguo mapokezi",
   "Check-in details": "Maelezo ya kuingia",
-  "Homes confirmed": "Nyumba zimethibitishwa"
+  "Homes confirmed": "Nyumba zimethibitishwa",
+  "Just looking?": "Unaangalia tu?",
+  "See every home and short stay": "Ona kila nyumba na malazi ya muda mfupi"
  },
  "so": {
   "Find a home": "Raadi guri",
@@ -2268,6 +2270,8 @@ window.VS_DICT = {
   "Key in lockbox": "Furaha sanduuqa quful",
   "Key at reception": "Furaha soo-dhaweynta",
   "Check-in details": "Faahfaahinta soo gelitaanka",
-  "Homes confirmed": "Guryaha waa la xaqiijiyay"
+  "Homes confirmed": "Guryaha waa la xaqiijiyay",
+  "Just looking?": "Daawasho kaliya?",
+  "See every home and short stay": "Arag guri kasta iyo joogitaan gaaban kasta"
  }
 };

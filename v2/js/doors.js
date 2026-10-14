@@ -12,6 +12,12 @@
   document.addEventListener('DOMContentLoaded', function () {
     var help = V.$('#d-help'), back = V.$('#d-back');
     if (help) help.addEventListener('click', function () { mode(true); window.scrollTo(0, 0); var q = V.$('#c-chat button'); if (q) q.focus({ preventScroll: true }); });
+    // Rent a home -> straight to "Where in Nairobi would you like to live?" (long stay already chosen)
+    var rent = V.$('#d-rent');
+    if (rent) rent.addEventListener('click', function (e) {
+      e.preventDefault(); mode(true); window.scrollTo(0, 0);
+      if (window.VSChat) window.VSChat.preset({ stay: 'long' });
+    });
     if (back) back.addEventListener('click', function () { mode(false); window.scrollTo(0, 0); });
     window.addEventListener('hashchange', function () { mode(/#ask/.test(location.hash)); });
     // Header "Help me choose" on this page opens the questions instead of reloading
