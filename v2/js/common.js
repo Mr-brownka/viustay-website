@@ -211,6 +211,27 @@
     if (useCache) { fresh.catch(function () {}); return Promise.resolve(cached.csv); }
     return fresh;
   }
+  // Listings published from admin.html -> Buildings live in Supabase (table "listings").
+  // Read with a plain request so pages don't need the Supabase library. Saved on the phone like the sheet.
+  function dbListings() {
+    if (!cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY) return Promise.resolve([]);
+    var KEY = 'vs-dblistings-v1', cached = null;
+    try { cached = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) {}
+    var fresh = fetch(cfg.SUPABASE_URL + '/rest/v1/listings?select=*&status=eq.available&order=published_at.desc', {
+      headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + cfg.SUPABASE_ANON_KEY }, cache: 'no-store'
+    }).then(function (r) { if (!r.ok) throw new Error('listings ' + r.status); return r.json(); })
+      .then(function (rows) {
+        rows = (rows || []).map(function (r) {
+          var o = {}; for (var k in r) o[k] = r[k] == null ? '' : String(r[k]);
+          o.status = 'available'; return o;
+        });
+        try { localStorage.setItem(KEY, JSON.stringify({ t: Date.now(), rows: rows })); } catch (e) {}
+        return rows;
+      });
+    // Show the saved copy at once if it is fresh (2 minutes); otherwise wait for the network
+    if (cached && Date.now() - cached.t < 2 * 60 * 1000) { fresh.catch(function () {}); return Promise.resolve(cached.rows); }
+    return fresh.catch(function () { return cached ? cached.rows : []; });
+  }
   V.loadListings = function () {
     if (listingsPromise) return listingsPromise;
     var url = cfg.LISTINGS_CSV_URL || 'data/sample-listings.csv';
@@ -218,9 +239,13 @@
     var shortUrl = cfg.SHORT_STAYS_CSV_URL || '';
     listingsPromise = Promise.all([
       sheetText(url, 'vs-listings-v1'),
-      shortUrl ? sheetText(shortUrl, 'vs-shortstays-v1').catch(function () { return ''; }) : Promise.resolve('')
+      shortUrl ? sheetText(shortUrl, 'vs-shortstays-v1').catch(function () { return ''; }) : Promise.resolve(''),
+      dbListings()
     ]).then(function (res) {
       var rows = V.parseCSV(res[0]).concat(V.parseCSV(res[1] || '').map(function (r) { r.stay = 'short'; return r; }));
+      // Units published from admin -> Buildings (sheet rows win if the same id is in both)
+      var seen = {}; rows.forEach(function (r) { seen[r.id] = 1; });
+      (res[2] || []).forEach(function (r) { if (r.id && !seen[r.id]) rows.push(r); });
       return rows.filter(function (l) {
           return l.id && (l.status || 'available').toLowerCase() === 'available';
         }).map(function (l) {

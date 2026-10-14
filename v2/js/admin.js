@@ -145,13 +145,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
   V.$$('.dash-nav [data-tab]').forEach(function (t) { t.addEventListener('click', function () {
     current = t.getAttribute('data-tab');
-    var survey = current === 'survey', trips = ['trips', 'stays', 'agents', 'fares'].indexOf(current) >= 0;
-    V.$('#a-main').classList.toggle('hidden', survey || trips);
+    var survey = current === 'survey', trips = ['trips', 'stays', 'agents', 'fares'].indexOf(current) >= 0, blds = current === 'buildings';
+    V.$('#a-main').classList.toggle('hidden', survey || trips || blds);
+    V.$('#b-main').classList.toggle('hidden', !blds);
     V.$('#s-main').classList.toggle('hidden', !survey);
     V.$('#t-main').classList.toggle('hidden', !trips);
     try { localStorage.setItem('vs-admin-tab', current); } catch (e) {}
     renderTabs();
-    if (survey) window.VSurvey.open(); else if (trips) window.VTripsAdmin.open(current); else render();
+    if (survey) window.VSurvey.open(); else if (blds) window.VBuildingsAdmin.open(); else if (trips) window.VTripsAdmin.open(current); else render();
   }); });
   V.$('#a-open').addEventListener('change', render);
   V.$('#a-refresh').addEventListener('click', loadAll);
