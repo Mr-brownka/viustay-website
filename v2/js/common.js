@@ -157,15 +157,15 @@
     if (seen) { bootEnd(); return; }
     var o = document.createElement('div');
     o.className = 'vs-launch'; o.setAttribute('aria-hidden', 'true');
-    o.innerHTML = '<svg viewBox="0 0 40 46"><path class="pin" d="M20 2 C10 2 3 9.5 3 19 C3 31 20 44 20 44 C20 44 37 31 37 19 C37 9.5 30 2 20 2 Z" fill="#0A4740" stroke="rgba(255,255,255,.18)" stroke-width=".6"/>' +
+    o.innerHTML = '<svg viewBox="0 0 40 46"><path class="pin" d="M20 2 C10 2 3 9.5 3 19 C3 31 20 44 20 44 C20 44 37 31 37 19 C37 9.5 30 2 20 2 Z" fill="#0E5E54"/>' +
       '<path class="roof" d="M10.5 17 L20 9.5 L29.5 17" fill="none" stroke="#F2A93B" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>' +
-      '<path class="vee" d="M13.5 19.5 L20 29 L26.5 19.5" fill="none" stroke="#F4F1EB" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="word">viustay</span>';
+      '<path class="vee" d="M13.5 19.5 L20 29 L26.5 19.5" fill="none" stroke="#FFFFFF" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="word">viustay</span>';
     b.appendChild(o);
     var done = false;
     window.VS_LAUNCHING = true;
     function end() { if (done) return; done = true; bootEnd(); o.classList.add('out'); window.VS_LAUNCHING = false; try { window.dispatchEvent(new Event('vs-launch-done')); } catch (e) {} setTimeout(function () { if (o.parentNode) o.parentNode.removeChild(o); }, 320); }
     o.addEventListener('click', end);
-    setTimeout(end, window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches ? 450 : 1150);
+    setTimeout(end, window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches ? 350 : 900);
   })();
 
   document.addEventListener('DOMContentLoaded', function () {
@@ -363,7 +363,7 @@
     function ui() {
       if (el) return el;
       el = document.createElement('div'); el.className = 'ptr'; el.setAttribute('aria-hidden', 'true');
-      el.innerHTML = '<span class="ptr-ball"><svg viewBox="0 0 28 34"><path d="M14 33S2 21 2 13a12 12 0 0 1 24 0c0 8-12 20-12 20Z" fill="#F2A93B"/><circle cx="14" cy="13" r="5" fill="#0E5E54"/></svg></span>';
+      el.innerHTML = '<span class="ptr-ball"><svg viewBox="0 0 28 34"><path d="M14 33S2 21 2 13a12 12 0 0 1 24 0c0 8-12 20-12 20Z" fill="#0E5E54"/><circle cx="14" cy="13" r="5" fill="#111111"/></svg></span>';
       document.body.appendChild(el); return el;
     }
     function set(d, anim) { var e = ui(); e.style.transition = anim ? 'transform .25s, opacity .25s' : 'none'; e.style.transform = 'translate(-50%,' + (d - 50) + 'px)'; e.style.opacity = Math.min(1, d / GO); e.querySelector('svg').style.transform = 'rotate(' + d * 4 + 'deg)'; }

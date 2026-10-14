@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   function madeOverlay(title, after) {
     var o = document.createElement('div'); o.className = 'mb-made';
-    o.innerHTML = '<div class="mb-made-check"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#FFC46B" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5 10 17l9-10"/></svg></div><h1>' + V.esc(title) + '</h1>';
+    o.innerHTML = '<div class="mb-made-check"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#F4F4F2" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5 10 17l9-10"/></svg></div><h1>' + V.esc(title) + '</h1>';
     document.body.appendChild(o);
     setTimeout(function () { o.classList.add('out'); if (after) after(); setTimeout(function () { o.remove(); }, 400); }, 1800);
   }

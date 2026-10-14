@@ -107,7 +107,7 @@
       el.innerHTML = '<div class="actions" style="justify-content:space-between;align-items:flex-end"><div><h1 style="font-size:30px">' + hello() + '</h1><p class="note" style="margin:2px 0 0">' +
         (n ? n + ' thing' + (n === 1 ? '' : 's') + ' need' + (n === 1 ? 's' : '') + ' you. Everything else is on track.' : 'Nothing needs you right now. Everything is on track.') + '</p></div>' +
         '<button type="button" class="btn btn-outline" data-today-refresh style="font-size:15px;padding:10px 16px">Refresh</button></div>' +
-        '<div class="ad-tiles">' + tile('To do', x.kpi.todo, '#B0700E') + tile('Trips this week', x.kpi.trips, 'var(--emerald)') + tile('Guests staying now', x.kpi.staying, 'var(--emerald)') + tile('Live listings', x.kpi.live, 'var(--emerald)') + '</div>' +
+        '<div class="ad-tiles">' + tile('To do', x.kpi.todo, '#6B6B6B') + tile('Trips this week', x.kpi.trips, 'var(--emerald)') + tile('Guests staying now', x.kpi.staying, 'var(--emerald)') + tile('Live listings', x.kpi.live, 'var(--emerald)') + '</div>' +
         '<div class="ad-today"><div class="ad-list"><p class="ad-k">To do · oldest first</p>' + (rows || '<div class="ad-done"><b>All done ✓</b><span>New bookings and requests show up here.</span></div>') +
         (rows ? '<p class="note" style="margin:4px 2px 0">Done items drop off this list by themselves.</p>' : '') + '</div>' +
         (detail ? '<aside class="ad-detail">' + detail + '</aside>' : '') + '</div>';

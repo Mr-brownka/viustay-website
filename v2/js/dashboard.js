@@ -455,11 +455,11 @@ document.addEventListener('DOMContentLoaded', function () {
       '<span class="nm"><b>' + esc(b.name) + '</b><span>' + ICON.pin + ' ' + esc([b.road, b.location].filter(Boolean).join(', ')) + '</span></span>';
     var body;
     if (live) {
-      body = '<span class="nums"><span><b>' + us.length + '</b>' + esc(T('Units')) + '</span><span><b style="color:#B0700E">' + vac + '</b>' + esc(T('Vacant')) + '</span><span><b>' + bViews(b).filter(function (v) { return v.viewing_date >= today(); }).length + '</b>' + esc(T('Viewings')) + '</span></span>' +
+      body = '<span class="nums"><span><b>' + us.length + '</b>' + esc(T('Units')) + '</span><span><b style="color:#6B6B6B">' + vac + '</b>' + esc(T('Vacant')) + '</span><span><b>' + bViews(b).filter(function (v) { return v.viewing_date >= today(); }).length + '</b>' + esc(T('Viewings')) + '</span></span>' +
         (nx ? '<span class="note">' + esc(T('Next viewing')) + ' <b>' + esc(nx.viewing_date === today() ? T('today') : nx.viewing_date === addDays(today(), 1) ? T('tomorrow') : dayName(nx.viewing_date)) + ' ' + esc(shortTime(nx.viewing_time)) + '</b>' + (nx.agent_name ? ' · ' + esc(nx.agent_name.split(' ')[0]) : '') + '</span>' : '');
     } else {
       var st = setupSteps(b), done = st.filter(function (s) { return s[0] === 'done'; }).length, next = st.filter(function (s) { return s[0] === 'now'; })[0];
-      body = '<span class="prog"><span class="row1"><b>' + esc(next ? next[1] + (next[2] ? ' · ' + next[2] : '') : '') + '</b><span class="dim">' + esc(T('{a} of {b}', { a: done, b: st.length })) + '</span></span><span class="bar" style="display:block"><i style="width:' + (done / st.length * 100) + '%;background:#F2A93B"></i></span></span>';
+      body = '<span class="prog"><span class="row1"><b>' + esc(next ? next[1] + (next[2] ? ' · ' + next[2] : '') : '') + '</b><span class="dim">' + esc(T('{a} of {b}', { a: done, b: st.length })) + '</span></span><span class="bar" style="display:block"><i style="width:' + (done / st.length * 100) + '%;background:#0E5E54"></i></span></span>';
     }
     return '<button type="button" class="md-bcard" data-bid="' + b.id + '">' + photo(b, lab) + body + '</button>';
   }
@@ -514,7 +514,7 @@ document.addEventListener('DOMContentLoaded', function () {
       var st = setupSteps(b), done = st.filter(function (s) { return s[0] === 'done'; }).length, next = st.filter(function (s) { return s[0] === 'now'; })[0];
       el.innerHTML = '<section>' + band(b) +
         '<div class="md-hero"><div class="md-setup"><div style="display:flex;justify-content:space-between"><span class="k">' + esc(T('Getting set up')) + '</span><b>' + esc(T('{a} of {b}', { a: done, b: st.length })) + '</b></div>' +
-        '<div class="bar"><i style="width:' + (done / st.length * 100) + '%;background:#F2A93B"></i></div>' +
+        '<div class="bar"><i style="width:' + (done / st.length * 100) + '%;background:#0E5E54"></i></div>' +
         '<div style="font-size:15px;line-height:1.45">' + esc(T('Next:')) + ' <b>' + esc(next ? next[1] : '') + '</b>' + (next && next[2] ? ' · ' + esc(next[2]) : '') + '</div>' +
         '<p style="margin:12px 0 0;opacity:.85;font-size:14px">' + esc(T('You can add your vacancies now. We list them after the visit.')) + '</p></div>' +
         '<div class="md-card md-steps">' + st.map(function (s) {
@@ -547,8 +547,8 @@ document.addEventListener('DOMContentLoaded', function () {
   function stat(label, n, sub) { return '<div class="md-stat"><small>' + esc(label) + '</small><b>' + n + '</b><span>' + esc(sub) + '</span></div>'; }
   function daysBar(u) {
     var d = daysSince(u.vacant_since), hot = d > 20;
-    return '<span class="md-days"><span class="bar" style="display:block"><i style="width:' + Math.min(100, Math.max(4, d * 3)) + '%;background:' + (hot ? '#E24B4A' : '#F2A93B') + '"></i></span>' +
-      '<span style="color:' + (hot ? '#A32D2D' : '#9A5B05') + '">' + esc(d === 0 ? T('Empty from today') : d === 1 ? T('1 day empty') : T('{n} days empty', { n: d })) + '</span></span>';
+    return '<span class="md-days"><span class="bar" style="display:block"><i style="width:' + Math.min(100, Math.max(4, d * 3)) + '%;background:' + (hot ? '#E24B4A' : '#0E5E54') + '"></i></span>' +
+      '<span style="color:' + (hot ? '#A32D2D' : '#6B6B6B') + '">' + esc(d === 0 ? T('Empty from today') : d === 1 ? T('1 day empty') : T('{n} days empty', { n: d })) + '</span></span>';
   }
   function agentMini(v) {
     if (!v.agent_name) return '<span class="dim" style="font-size:13px;width:150px;flex:none">' + esc(T('Agent being arranged')) + '</span>';
@@ -981,8 +981,8 @@ document.addEventListener('DOMContentLoaded', function () {
     var o = document.createElement('div');
     o.className = 'bk-made';
     o.setAttribute('role', 'status');
-    o.style.cssText = 'position:fixed;inset:0;z-index:80;background:linear-gradient(150deg,#14806F,#0E5E54);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font:600 26px Outfit,sans-serif;text-align:center;padding:24px';
-    o.innerHTML = '<span style="width:84px;height:84px;border-radius:50%;background:#F2A93B;color:#2A1A02;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" style="width:44px;height:44px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round"><path d="M5 12l5 5 9-10"/></svg></span>' +
+    o.style.cssText = 'position:fixed;inset:0;z-index:80;background:linear-gradient(150deg,#1F1F1F,#111111);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font:600 26px Outfit,sans-serif;text-align:center;padding:24px';
+    o.innerHTML = '<span style="width:84px;height:84px;border-radius:50%;background:#0E5E54;color:#FFFFFF;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" style="width:44px;height:44px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round"><path d="M5 12l5 5 9-10"/></svg></span>' +
       esc(text) + '<span style="font:400 16px \'Source Sans 3\',sans-serif;opacity:.9;max-width:320px">' + esc(T('Next, add your vacancies. We call you to confirm the photo visit.')) + '</span>';
     document.body.appendChild(o);
     setTimeout(function () { o.remove(); then(); }, 2200);
