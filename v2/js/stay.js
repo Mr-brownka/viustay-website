@@ -23,45 +23,83 @@ document.addEventListener('DOMContentLoaded', function () {
   function errText(e) { var m = (e && e.message) || ''; var k = Object.keys(ERR).filter(function (x) { return m.indexOf(x) >= 0; })[0]; return T(k ? ERR[k] : 'Something went wrong. Please try again or WhatsApp us.'); }
   function overlaps(a, b) { return booked.some(function (r) { return r.from < b && r.to > a; }); }
 
-  var f = $('#stay-form');
+  var today = iso(new Date());
+  var f = $('#stay-form'), G = V.Guide, guestsOk = false, cur = -1, details = $('#sv-details'), calIn = null, calOut = null;
+  var cards = Array.prototype.slice.call(document.querySelectorAll('.sc-card')), view = $('#sc-view');
+  // Option C: one card at a time. Done steps fold into ✓ pills at the top; the stay card rises in at the end.
+  function fit() { view.style.height = cur >= 3 ? '0px' : cards[cur].offsetHeight + 'px'; }
+  view.addEventListener('scroll', function () { if (view.scrollLeft) view.scrollLeft = 0; });
+  function go(i, byUser) {
+    var was = cur; cur = i; view.scrollLeft = 0;
+    $('#sc-track').style.transform = 'translateX(calc(' + (-Math.min(i, 2) * 100) + '% - ' + (Math.min(i, 2) * 24) + 'px))';
+    cards.forEach(function (c, k) { c.inert = k !== i; c.setAttribute('aria-hidden', k !== i ? 'true' : 'false'); });
+    $('#sv-c').classList.toggle('folded', i >= 3);
+    fit();
+    $('#sc-fill').style.width = (i >= 3 ? 100 : (i + 1) * 25) + '%';
+    if (i < 3 && was !== i && was >= 0) { setTimeout(function () { var h = cards[i].querySelector('h2'); if (byUser) G.scrollTo($('#sv-c'), 'start'); if (h) { h.tabIndex = -1; h.focus({ preventScroll: true }); } }, 380); }
+    pills();
+  }
+  if (window.ResizeObserver) new ResizeObserver(function () { if (cur >= 0) fit(); }).observe($('#sc-track'));
+  window.addEventListener('resize', function () { if (cur >= 0) fit(); });
+  function pills() {
+    var a = f.check_in.value, b = f.check_out.value, dd = function (v) { return V.date(v, { weekday: 'short', day: 'numeric' }); }, box = $('#sc-pills');
+    var list = [a && cur !== 0 ? [0, T('In') + ' ' + dd(a)] : null, b && cur > 1 ? [1, T('Out') + ' ' + dd(b)] : null, guestsOk && cur >= 3 ? [2, T(guests === 1 ? '{n} guest' : '{n} guests', { n: guests })] : null].filter(Boolean);
+    var had = {}; Array.prototype.forEach.call(box.children, function (p) { had[p.getAttribute('data-go')] = p.textContent; });
+    box.innerHTML = list.map(function (p) { return '<button type="button" class="sc-pill' + (had[p[0]] === undefined ? ' new' : '') + '" data-go="' + p[0] + '" aria-label="' + V.esc(T('Change')) + ': ' + V.esc(p[1]) + '"><i>✓</i>' + V.esc(p[1]) + '</button>'; }).join('');
+  }
+  $('#sc-pills').addEventListener('click', function (e) { var p = e.target.closest('[data-go]'); if (p) go(+p.getAttribute('data-go'), true); });
   function update() {
     var a = f.check_in.value, b = f.check_out.value, hint = $('#s-dates-hint'), n = a && b ? nightsOf(a, b) : 0, bad = '';
     if (a && b && n < 1) bad = T('Check-out must be after check-in.');
     else if (n && n < L.min_nights) bad = T('Minimum stay is {n} nights.', { n: L.min_nights });
     else if (n && overlaps(a, b)) bad = T('Some of these nights are already booked. Please pick other dates.');
-    hint.textContent = bad || (booked.length ? T('Already booked: {list}', { list: booked.map(function (r) { return V.date(r.from, { day: 'numeric', month: 'short' }) + '–' + V.date(r.to, { day: 'numeric', month: 'short' }); }).join(', ') }) : '');
-    hint.classList.toggle('t-msg', !!bad); hint.classList.toggle('bad', !!bad);
+    hint.textContent = bad; hint.classList.toggle('t-msg', !!bad); hint.classList.toggle('bad', !!bad);
     var pick = f.pickup.checked && S.airport_pickup_fee > 0;
     $('#pickup-note-wrap').classList.toggle('hidden', !pick);
     quote = (n >= 1 && !bad) ? { nights: n, rooms: n * L.night_rate, clean: L.cleaning_fee, pick: pick ? S.airport_pickup_fee : 0 } : null;
     if (quote) quote.total = quote.rooms + quote.clean + quote.pick;
-    $('#p-nights').textContent = 'KES ' + V.money(L.night_rate) + ' × ' + T(n === 1 ? '{n} night' : '{n} nights', { n: quote ? n : '–' });
-    flash($('#p-rooms'), quote ? kes(quote.rooms) : '–');
+    var ready = !!quote && guestsOk;
+    $('#sc-in-sub').textContent = T('Check-in from {t}', { t: L.check_in });
+    $('#sc-out-sub').textContent = a ? T('Check-in') + ' ' + V.date(a, { weekday: 'short', day: 'numeric', month: 'short' }) + ' · ' + T('check-out by {t}', { t: L.check_out }) : T('Pick your check-in first.');
+    // The stay card and the totals only fill once dates and guests are set
+    var nt = function (x) { return T(x === 1 ? '{n} night' : '{n} nights', { n: x }); };
+    $('#sv-stay').classList.toggle('ready', ready);
+    $('#sv-sum').textContent = ready ? nt(n) + ' · ' + T(guests === 1 ? '{n} guest' : '{n} guests', { n: guests }) : '';
+    $('#sv-break-c').textContent = ready ? ['KES ' + V.money(L.night_rate) + ' × ' + nt(n)].concat(quote.clean ? [V.money(quote.clean) + ' ' + T('cleaning')] : [], quote.pick ? [V.money(quote.pick) + ' ' + T('pickup')] : []).join(' + ') : '';
+    flash($('#sv-total-c'), ready ? kes(quote.total) : '–');
+    $('#p-nights').textContent = 'KES ' + V.money(L.night_rate) + ' × ' + T(n === 1 ? '{n} night' : '{n} nights', { n: ready ? n : '–' });
+    flash($('#p-rooms'), ready ? kes(quote.rooms) : '–');
     flash($('#p-clean'), L.cleaning_fee ? kes(L.cleaning_fee) : T('Included'));
     $('#p-pick-row').classList.toggle('hidden', !pick); $('#p-pick').textContent = kes(S.airport_pickup_fee || 0);
-    flash($('#p-total'), quote ? kes(quote.total) : '–');
-    $('#stay-submit').disabled = !quote;
-    // The review card (dates + guests carried over from the search)
-    var dd = function (v) { return v ? V.date(v, { weekday: 'short', day: 'numeric', month: 'short' }) : '–'; };
-    $('#sv-in').textContent = dd(a); $('#sv-out').textContent = dd(b);
-    $('#sv-in-t').textContent = T('from {t}', { t: L.check_in }); $('#sv-out-t').textContent = T('by {t}', { t: L.check_out });
-    $('#sv-sum').textContent = (n >= 1 ? T(n === 1 ? '{n} night' : '{n} nights', { n: n }) + ' · ' : '') + T(guests === 1 ? '{n} guest' : '{n} guests', { n: guests });
-    flash($('#sv-total'), quote ? kes(quote.total) : '–');
-    $('#sv-break').textContent = quote ? [T(n === 1 ? '{n} night' : '{n} nights', { n: n })].concat(quote.clean ? [T('cleaning')] : [], quote.pick ? [T('pickup')] : []).join(' + ') : T('Pick your dates');
-    if (bad) openDates(true);
+    flash($('#p-total'), ready ? kes(quote.total) : '–');
+    flash($('#sv-total'), ready ? kes(quote.total) : '–');
+    $('#sv-break').textContent = ready ? nt(n) + (quote.clean ? ' + ' + T('cleaning') : '') + (quote.pick ? ' + ' + T('pickup') : '') : T(['Step 1 of 3', 'Step 2 of 3', 'Step 3 of 3', 'Step 3 of 3'][Math.max(0, cur)]);
+    if (ready && details.classList.contains('hidden')) details.classList.remove('hidden');
+    if (details._guide) details._guide.refresh(false);
+    if (cur >= 0) pills();
+    return ready;
   }
-  function openDates(on) { $('#sv-edit').classList.toggle('hidden', !on); $('#sv-change').classList.toggle('hidden', !!on); }
-  $('#sv-change').addEventListener('click', function () { openDates(true); });
-  Array.prototype.forEach.call(document.querySelectorAll('[data-open-dates]'), function (b) { b.addEventListener('click', function () { openDates(true); }); });
-  $('#sv-done').addEventListener('click', function () { if (quote) openDates(false); else { update(); $('#s-dates-hint').textContent = $('#s-dates-hint').textContent || T('Please pick your dates.'); } });
-  ['check_in', 'check_out'].forEach(function (k) { f[k].addEventListener('change', function () {
-    if (k === 'check_in' && f.check_in.value) { var minOut = addDays(f.check_in.value, L.min_nights); f.check_out.min = addDays(f.check_in.value, 1); if (!f.check_out.value || f.check_out.value <= f.check_in.value) f.check_out.value = minOut; }
-    update();
-  }); });
-  f.pickup.addEventListener('change', update);
-  function setGuests(n) { guests = Math.max(1, Math.min(L.max_guests, n)); $('#g-n').textContent = guests; $('#g-minus').disabled = guests <= 1; $('#g-plus').disabled = guests >= L.max_guests; if (quote !== undefined && L) update(); }
+  function setIn(x) { f.check_in.value = x; f.check_out.value = ''; update(); calOut.set('out', x, null); calIn.set('in', x, null); go(1, true); }
+  function startCals() {
+    var o = { min: today, booked: function () { return booked; }, minNights: L.min_nights };
+    calIn = V.Cal.inline($('#cal-in'), Object.assign({ stage: 'in', checkIn: f.check_in.value || null, checkOut: f.check_out.value || null, onIn: setIn }, o));
+    calOut = V.Cal.inline($('#cal-out'), Object.assign({ stage: 'out', checkIn: f.check_in.value || null, checkOut: f.check_out.value || null, ripple: false, onIn: setIn,
+      onOut: function (x, y) {
+        f.check_in.value = x; f.check_out.value = y; calIn.set('in', x, y);
+        if (update() && guestsOk) { go(3, true); showDetails(); } else go(2, true);
+      } }, o));
+  }
+  function showDetails() { setTimeout(function () { G.scrollTo(details, 'start'); if (details._guide) details._guide.start(); }, 450); }
+  f.pickup.addEventListener('change', function () { update(); });
+  function setGuests(n) { guests = Math.max(1, Math.min(L.max_guests, n)); var g = $('#g-n'); g.textContent = guests; g.classList.remove('bump'); void g.offsetWidth; g.classList.add('bump'); $('#g-minus').disabled = guests <= 1; $('#g-plus').disabled = guests >= L.max_guests; if (L) update(); }
   $('#g-minus').addEventListener('click', function () { setGuests(guests - 1); });
   $('#g-plus').addEventListener('click', function () { setGuests(guests + 1); });
+  $('#g-ok').addEventListener('click', function () {
+    if (!quote) { go(f.check_in.value ? 1 : 0, true); return; }
+    guestsOk = true; update(); go(3, true); showDetails();
+  });
+  G.form(details, { button: $('#stay-submit'), ready: function () { return !!quote && guestsOk; },
+    blocked: function () { if (quote && guestsOk) return false; var c = cards[Math.min(Math.max(cur, 0), 2)]; G.shake(c); G.scrollTo($('#sv-c'), 'start'); return true; } });
 
   // ---------- payment ----------
   // 1) Guest gives their M-Pesa number -> request_stay_payment (later this also sends the real M-Pesa prompt).
@@ -158,6 +196,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var err = $('#stay-error'); showErr(err);
     var name = f.name.value.trim(), phone = f.phone.value.trim();
     var problem = !quote ? T('Please pick your dates.') : !name ? T(ERR.bad_name) : !V.phoneOk(phone) ? T(ERR.bad_phone) : !f.consent.checked ? T('Please tick the box to agree.') : '';
+    if (!guestsOk && quote) problem = T('Please confirm the number of guests.');
     if (problem) { showErr(err, problem); return; }
     var btn = $('#stay-submit'); btn.disabled = true; btn.textContent = T('Holding your dates…');
     var payload = { listing_id: L.id, title: L.title, area: L.area, name: name, phone: phone, guests: guests, check_in: f.check_in.value, check_out: f.check_out.value,
@@ -181,14 +220,12 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // ---------- start ----------
-  var today = iso(new Date());
-  f.check_in.min = today; f.check_out.min = addDays(today, 1);
   Promise.all([V.getListing(id), V.Trip.loadSettings(), loadBooked()]).then(function (res) {
     L = res[0]; S = res[1];
     if (!L || L.stay !== 'short') { $('#s-listing').innerHTML = '<p>' + T('This stay is no longer available.') + ' <a href="homes.html?stay=short">' + T('See other stays') + '</a></p>'; return; }
     $('#s-back').href = 'home.html?id=' + encodeURIComponent(L.id);
     var link = 'home.html?id=' + encodeURIComponent(L.id);
-    $('#sv-photo').href = link; $('#sv-photo').setAttribute('style', V.photoStyle(L.photoList[0]));
+    $('#sv-photo').href = link; $('#sv-thumb').setAttribute('style', V.photoStyle(L.photoList[0]));
     $('#sv-title').textContent = L.title; $('#sv-sub').textContent = L.area + ' · ' + V.priceText(L);
     if (L.min_nights > 1) { $('#sv-min').textContent = T('Minimum stay: {n} nights', { n: L.min_nights }); $('#sv-min').classList.remove('hidden'); }
     $('#s-listing').innerHTML = '<a class="mini" href="home.html?id=' + encodeURIComponent(L.id) + '"><span class="thumb" style="' + V.photoStyle(L.photoList[0]) + '"></span><span><span style="font-weight:600">' + V.esc(L.title) + '</span><small>' + V.esc(L.area) + ' · ' + V.esc(V.priceText(L)) + '</small></span></a>';
@@ -201,10 +238,11 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     // Dates picked in the search carry over
     var sc = (V.getSearch() || {}).chat || {};
-    if (sc.checkin && sc.checkout && sc.checkin >= today) { f.check_in.value = sc.checkin; f.check_out.value = sc.checkout; f.check_out.min = addDays(sc.checkin, 1); }
+    if (sc.checkin && sc.checkout && sc.checkin >= today) { f.check_in.value = sc.checkin; f.check_out.value = sc.checkout; }
     var t = stored();
     if (new URLSearchParams(location.search).get('pay') && t && !t.paid) { showPay(t); return; }
+    startCals();
     update();
-    if (!quote) openDates(true);
+    go(quote ? 2 : f.check_in.value ? 1 : 0);
   }).catch(function (e) { console.error(e); showErr($('#stay-error'), T('The booking page could not load. Please refresh.')); });
 });

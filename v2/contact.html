@@ -24,8 +24,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&family=Source+Sans+3:wght@400;600&display=swap">
-<link rel="stylesheet" href="css/styles.css?v=15">
-<link rel="stylesheet" href="css/glass.css?v=15">
+<link rel="stylesheet" href="css/styles.css?v=16">
+<link rel="stylesheet" href="css/glass.css?v=16">
 <script src="js/look.js"></script>
 </head>
 <body data-header="main">
@@ -38,14 +38,14 @@
     <div><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span><small>Hours</small>Monday to Saturday, 8:00 AM – 5:00 PM</span></div>
     <div><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg><span><small>Location</small>Nairobi, Kenya <span class="placeholder">[OFFICE AREA]</span></span></div>
   </div>
-  <form id="contact-form" class="panel" novalidate>
+  <form id="contact-form" class="panel" novalidate data-guide>
     <h2 style="font-size:24px">Send us a message</h2>
     <div class="grid-2">
       <label class="field">Your name<input type="text" name="name" autocomplete="name"></label>
       <label class="field">WhatsApp number<input type="tel" name="phone" autocomplete="tel" placeholder="07XX XXX XXX"></label>
     </div>
-    <label class="field">I am a…<select name="kind"><option>Tenant / looking for a home</option><option>Landlord / manager</option><option>Caretaker</option><option>Other</option></select></label>
-    <label class="field">Message<textarea name="message" rows="4"></textarea></label>
+    <label class="field" data-opt>I am a…<select name="kind"><option>Tenant / looking for a home</option><option>Landlord / manager</option><option>Caretaker</option><option>Other</option></select></label>
+    <label class="field">Message<textarea name="message" rows="4" required></textarea></label>
     <label class="check"><input type="checkbox" name="consent"><span>Viustay may contact me about this message, as set out in the <a href="privacy.html" target="_blank">privacy notice</a>.</span></label>
     <p class="error hidden" id="c-error" role="alert"></p>
     <div><button type="submit" class="btn btn-primary" id="c-submit">Send message</button></div>
@@ -54,10 +54,10 @@
 <main class="done hidden" id="contact-done"><img src="assets/viustay-icon-colour.svg" alt=""><h1>Message sent.</h1><p>We'll reply on WhatsApp during working hours.</p><a class="btn btn-dark" href="index.html">Back to home</a></main>
 <footer id="site-footer"></footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="js/lang.js?v=15"></script>
+<script src="js/lang.js?v=16"></script>
 <script src="js/i18n.js"></script>
 <script src="js/config.js"></script>
-<script src="js/common.js?v=15"></script>
+<script src="js/common.js?v=16"></script>
 <script src="js/install.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {

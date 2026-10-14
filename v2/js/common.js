@@ -388,3 +388,113 @@
     });
   })();
 })();
+
+// ---------- Guide: the 8 motion rules, shared by every form ----------
+// Rise in · One pulse, once · Dim what's done · Button wakes up · Progress fills · Gentle shake · Scroll to it · Calm down.
+// Forms opt in with data-guide. Only ONE thing asks for attention at a time.
+(function () {
+  var V = window.V = window.V || {};
+  function calm() { return !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); }
+  function once(el, cls) { if (!el) return; el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); var t = setTimeout(done, 1400); function done() { clearTimeout(t); el.classList.remove(cls); el.removeEventListener('animationend', done); } el.addEventListener('animationend', done); }
+  function seen(el) { return !!(el && (el.offsetWidth || el.offsetHeight || el.getClientRects().length)); }
+  var G = V.Guide = {
+    calm: calm,
+    rise: function (el) { once(el, 'g-rise'); },
+    pulse: function (el) { once(el, 'g-pulse'); },
+    shake: function (el) { once(el, 'g-shake'); if (navigator.vibrate && !calm()) try { navigator.vibrate(30); } catch (e) {} },
+    scrollTo: function (el, block) {
+      if (!el) return; var r = el.getBoundingClientRect(), vh = window.innerHeight, bar = document.body.classList.contains('has-tabs') ? 90 : 20;
+      if (r.top >= 70 && r.bottom <= vh - bar - 70) return;   // already in view: don't move the page
+      el.scrollIntoView({ behavior: calm() ? 'auto' : 'smooth', block: block || 'center' });
+    },
+    wake: function (btn, on) {
+      if (!btn) return; var was = !btn.classList.contains('g-asleep');
+      btn.classList.toggle('g-asleep', !on);
+      if (on && !was) once(btn, 'g-wake');
+    },
+    // A step is done when every visible, non-optional input in it is filled.
+    filled: function (step) {
+      var ok = true, any = false;
+      Array.prototype.forEach.call(step.querySelectorAll('input, select, textarea'), function (i) {
+        if (i.type === 'hidden' || i.disabled || i.hasAttribute('data-opt') || i.closest('[data-opt]') || !seen(i)) return;
+        if (i.tagName === 'TEXTAREA' && !i.required) return;
+        any = true;
+        var v = (i.value || '').trim();
+        if (i.type === 'checkbox' || i.type === 'radio') { if (!i.checked && !(i.type === 'radio' && step.querySelector('input[name="' + i.name + '"]:checked'))) ok = false; }
+        else if (i.type === 'tel') { if (!(V.phoneOk ? V.phoneOk(v) : v.length >= 9)) ok = false; }
+        else if (i.type === 'email') { if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) ok = false; }
+        else if (i.type === 'password') { if (v.length < (+i.getAttribute('minlength') || 1)) ok = false; }
+        else if (!v) ok = false;
+      });
+      if (step.classList.contains('chips') || step.hasAttribute('data-pick')) { any = true; ok = !!step.querySelector('[aria-pressed="true"], .on, .is-on, .active'); }
+      return any ? ok : undefined;   // nothing to fill here (e.g. an optional note)
+    },
+    steps: function (root) {
+      return Array.prototype.filter.call(root.querySelectorAll('[data-step], .field, .check, .chips'), function (s) {
+        if (!seen(s) || s.closest('[data-opt]') || s.hasAttribute('data-opt')) return false;
+        var p = s.parentNode && s.parentNode.closest('[data-step], .field, .check'); return !p || !root.contains(p) || p === root;   // outermost only
+      });
+    },
+    // Attach to a form or block. opts.button: the main button; opts.ready(): extra conditions; opts.onChange(allDone)
+    form: function (root, opts) {
+      if (!root || root._guide) return root && root._guide; opts = opts || {};
+      var started = false;
+      function btn() { if (opts.button) return typeof opts.button === 'function' ? opts.button() : opts.button; var bs = Array.prototype.filter.call(root.querySelectorAll('[type=submit], .btn-primary, [data-next]'), seen); return bs.filter(function (b) { return !b.classList.contains('btn-link'); })[0]; }
+      function refresh(moveFocus) {
+        var list = G.steps(root), now = null;
+        list.forEach(function (s) {
+          var d = G.filled(s);
+          s.classList.toggle('g-done', d === true && started);
+          if (d === false && !now) now = s;
+        });
+        list.forEach(function (s) {
+          var was = s.classList.contains('g-now');
+          s.classList.toggle('g-now', s === now && started);
+          if (s === now && started && !was && moveFocus) { G.pulse(s); }
+        });
+        var all = !now && (!opts.ready || opts.ready());
+        G.wake(btn(), all);
+        if (opts.onChange) opts.onChange(all, now);
+        return now;
+      }
+      function go() { started = true; refresh(true); }
+      root.addEventListener('focusin', function () { if (!started) { started = true; refresh(false); } });
+      root.addEventListener('focusout', function () { setTimeout(function () { refresh(true); }, 0); });
+      root.addEventListener('change', function () { setTimeout(go, 0); });
+      root.addEventListener('click', function (e) { if (e.target.closest('.chip, [aria-pressed]')) setTimeout(go, 0); });
+      root.addEventListener('input', function () { started = true; var b = btn(), list = G.steps(root); G.wake(b, list.every(function (s) { return G.filled(s) !== false; }) && (!opts.ready || opts.ready())); });
+      // Pressing the sleeping button: show what's missing (shake it, take them there)
+      document.addEventListener('click', function (e) {
+        var b = e.target.closest('.g-asleep'); if (!b || !(root.contains(b) || b === btn())) return;
+        started = true;   // never block: the page's own checks still run, we only point at what's missing
+ var now = (opts.blocked && opts.blocked()) || refresh(false);
+        if (now && now !== true) { setTimeout(function () { G.shake(now); G.scrollTo(now); var i = now.querySelector('input:not([type=hidden]), select, textarea'); if (i && i.type !== 'checkbox' && i.type !== 'radio') i.focus({ preventScroll: true }); }, 30); }
+      }, true);
+      // Things that appear inside a guided form rise in
+      if (window.MutationObserver) new MutationObserver(function (ms) {
+        ms.forEach(function (m) {
+          var el = m.target; if (m.attributeName !== 'class') return;
+          if (/(^|\s)hidden(\s|$)/.test(m.oldValue || '') && !el.classList.contains('hidden')) { G.rise(el); setTimeout(function () { refresh(false); }, 0); }
+        });
+      }).observe(root, { attributes: true, attributeOldValue: true, subtree: true, attributeFilter: ['class'] });
+      root._guide = { refresh: refresh, start: go };
+      setTimeout(function () { refresh(false); }, 0);
+      return root._guide;
+    }
+  };
+  // Error messages shake once and come into view, everywhere on the site.
+  function watchErrors() {
+    if (!window.MutationObserver) return;
+    new MutationObserver(function (ms) {
+      ms.forEach(function (m) {
+        var el = m.target.nodeType === 1 ? m.target : m.target.parentNode;
+        if (!el || !el.matches || !el.matches('.error, [role=alert]')) return;
+        if (el.classList.contains('hidden') || !(el.textContent || '').trim() || !seen(el)) { el._gTxt = ''; return; }
+        if (el._gTxt === el.textContent) return; el._gTxt = el.textContent;
+        G.shake(el); G.scrollTo(el);
+      });
+    }).observe(document.body, { attributes: true, attributeFilter: ['class'], childList: true, characterData: true, subtree: true });
+  }
+  function boot() { watchErrors(); Array.prototype.forEach.call(document.querySelectorAll('[data-guide]'), function (f) { G.form(f); }); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();

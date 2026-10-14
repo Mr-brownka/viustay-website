@@ -1135,7 +1135,16 @@ window.VS_DICT = {
   "Check-in details": "Maelezo ya kuingia",
   "Homes confirmed": "Nyumba zimethibitishwa",
   "Just looking?": "Unaangalia tu?",
-  "See every home and short stay": "Ona kila nyumba na malazi ya muda mfupi"
+  "See every home and short stay": "Ona kila nyumba na malazi ya muda mfupi",
+  "In": "Kuingia",
+  "Out": "Kutoka",
+  "Pick your check-in first.": "Chagua siku ya kuingia kwanza.",
+  "Please confirm the number of guests.": "Tafadhali thibitisha idadi ya wageni.",
+  "When do you arrive?": "Utafika lini?",
+  "When do you leave?": "Utaondoka lini?",
+  "Step 2 of 3": "Hatua ya 2 kati ya 3",
+  "That's us": "Ndiyo, ni sisi",
+  "Your stay": "Kukaa kwako"
  },
  "so": {
   "Find a home": "Raadi guri",
@@ -2272,6 +2281,15 @@ window.VS_DICT = {
   "Check-in details": "Faahfaahinta soo gelitaanka",
   "Homes confirmed": "Guryaha waa la xaqiijiyay",
   "Just looking?": "Daawasho kaliya?",
-  "See every home and short stay": "Arag guri kasta iyo joogitaan gaaban kasta"
+  "See every home and short stay": "Arag guri kasta iyo joogitaan gaaban kasta",
+  "In": "Gal",
+  "Out": "Bax",
+  "Pick your check-in first.": "Marka hore dooro maalinta aad soo gelayso.",
+  "Please confirm the number of guests.": "Fadlan xaqiiji tirada martida.",
+  "When do you arrive?": "Goorma ayaad imanaysaa?",
+  "When do you leave?": "Goorma ayaad tagaysaa?",
+  "Step 2 of 3": "Tallaabada 2 ee 3",
+  "That's us": "Waa annaga",
+  "Your stay": "Joogitaankaaga"
  }
 };

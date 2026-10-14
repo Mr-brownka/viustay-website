@@ -24,9 +24,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&family=Source+Sans+3:wght@400;600&display=swap">
-<link rel="stylesheet" href="css/styles.css?v=15">
-<link rel="stylesheet" href="css/glass.css?v=15">
-<link rel="stylesheet" href="css/manager.css?v=15">
+<link rel="stylesheet" href="css/styles.css?v=16">
+<link rel="stylesheet" href="css/glass.css?v=16">
+<link rel="stylesheet" href="css/manager.css?v=16">
 <script src="js/look.js"></script>
 </head>
 <body data-no-launch data-no-lang data-header="flow" data-steps="0" data-home="owners.html" data-no-wa data-no-looks>
@@ -62,11 +62,11 @@
       <h1 id="auth-title" style="font-size:32px">Manager log in</h1>
       <p class="lede" style="font-size:16px" id="auth-lede">Register your buildings, add vacancies and see every viewing.</p>
       <div class="su-sum hidden" id="su-sum"></div>
-      <form id="auth-form" class="stack-sm" novalidate>
+      <form id="auth-form" class="stack-sm" novalidate data-guide>
         <div class="stack-sm hidden" id="su-extra">
           <label class="field"><span data-i18n>Full name</span><input type="text" name="name" autocomplete="name" maxlength="120"></label>
           <label class="field"><span data-i18n>WhatsApp number</span><input type="tel" name="phone" autocomplete="tel" inputmode="tel" maxlength="20" placeholder="07XX XXX XXX"></label>
-          <label class="field"><span><span data-i18n>Company name</span> <small class="note" data-i18n>optional</small></span><input type="text" name="company" autocomplete="organization" maxlength="120" placeholder="e.g. Hassan Properties"></label>
+          <label class="field"><span><span data-i18n>Company name</span> <small class="note" data-i18n>optional</small></span><input type="text" name="company" data-opt autocomplete="organization" maxlength="120" placeholder="e.g. Hassan Properties"></label>
         </div>
         <label class="field">Email<input type="email" name="email" autocomplete="email" required></label>
         <label class="field" id="pw-field">Password<input type="password" name="password" autocomplete="current-password" minlength="8" required></label>
@@ -114,11 +114,11 @@
 <div class="md-toast hidden" id="toast" role="status"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="js/lang.js?v=15"></script>
+<script src="js/lang.js?v=16"></script>
 <script src="js/i18n.js"></script>
 <script src="js/config.js"></script>
-<script src="js/common.js?v=15"></script>
+<script src="js/common.js?v=16"></script>
 <script src="js/install.js"></script>
-<script src="js/dashboard.js?v=15"></script>
+<script src="js/dashboard.js?v=16"></script>
 </body>
 </html>

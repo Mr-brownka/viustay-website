@@ -356,3 +356,95 @@ html[data-look="night"] .nav-more-list { background: #0B2E29; }
   body.has-tabs .vs-looks { bottom: calc(76px + env(safe-area-inset-bottom)) !important; }
 }
 html.intro-wait .doors * { animation-play-state: paused; }
+
+/* ============ Guide: the 8 motion rules (js/common.js → V.Guide) ============ */
+@keyframes gRise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@keyframes gPulse { 0% { box-shadow: 0 0 0 0 rgba(242, 169, 59, .55); } 100% { box-shadow: 0 0 0 14px rgba(242, 169, 59, 0); } }
+@keyframes gShake { 0%, 100% { transform: none; } 20% { transform: translateX(-7px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(3px); } }
+@keyframes gWake { 0% { transform: scale(1); } 40% { transform: scale(1.05); box-shadow: 0 0 0 0 rgba(242, 169, 59, .6); } 100% { transform: scale(1); box-shadow: 0 0 0 16px rgba(242, 169, 59, 0); } }
+.g-rise { animation: gRise .45s cubic-bezier(.2, .7, .2, 1) both; }
+.g-pulse { animation: gPulse .9s ease-out 1; border-radius: var(--radius, 14px); }
+.g-shake { animation: gShake .42s ease-in-out 1; }
+.g-wake { animation: gWake .7s cubic-bezier(.3, 1.4, .5, 1) 1; }
+/* The next thing to fill: a warm edge, nothing louder */
+.field.g-now > input, .field.g-now > select, .field.g-now > textarea, .field.g-now input { border-color: rgba(242, 169, 59, .85); }
+.check.g-now { border-radius: 12px; box-shadow: inset 3px 0 0 #F2A93B; padding-left: 10px; transition: box-shadow .3s, padding .3s; }
+.chips.g-now { border-radius: 14px; }
+/* Done: a small tick, never louder than the current step */
+.field.g-done > span:first-child::after { content: " ✓"; color: #0E8A6A; font-weight: 700; }
+/* The main button sleeps until everything is ready, then wakes up amber */
+.btn.g-asleep, .btn.g-asleep:hover { background: #E6E1D8 !important; color: rgba(19, 48, 43, .5) !important; border-color: transparent !important; box-shadow: none !important; animation: none !important; cursor: pointer; }
+html[data-look="night"] .btn.g-asleep { background: rgba(255, 255, 255, .1) !important; color: rgba(255, 255, 255, .45) !important; }
+@media (prefers-reduced-motion: reduce) { .g-rise, .g-pulse, .g-shake, .g-wake { animation: none !important; } }
+
+/* ============ Calendar sheet (js/cal.js) ============ */
+html.cal-open, html.cal-open body { overflow: hidden; }
+.cal-wrap { position: fixed; inset: 0; z-index: 200; display: flex; align-items: flex-end; justify-content: center; }
+.cal-scrim { position: absolute; inset: 0; background: rgba(4, 32, 28, .45); opacity: 0; transition: opacity .3s; -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); }
+.cal-sheet { position: relative; width: 100%; max-width: 480px; max-height: 94vh; overflow: auto; background: #fff; color: #13302B; border-radius: 28px 28px 0 0; padding: 10px 18px calc(18px + env(safe-area-inset-bottom)); box-shadow: 0 -20px 50px rgba(0, 0, 0, .18); transform: translateY(105%); transition: transform .5s cubic-bezier(.3, 1.25, .4, 1); }
+.cal-wrap.in .cal-scrim { opacity: 1; }
+.cal-wrap.in .cal-sheet { transform: none; }
+.cal-wrap.out .cal-scrim { opacity: 0; }
+.cal-wrap.out .cal-sheet { transform: translateY(105%); transition: transform .28s ease-in; }
+@media (min-width: 700px) {
+  .cal-wrap { align-items: center; }
+  .cal-sheet { border-radius: 28px; transform: scale(.86) translateY(24px); opacity: 0; transition: transform .45s cubic-bezier(.3, 1.35, .4, 1), opacity .25s; padding-bottom: 20px; }
+  .cal-wrap.in .cal-sheet { transform: none; opacity: 1; }
+  .cal-wrap.out .cal-sheet { transform: scale(.92); opacity: 0; transition: transform .25s, opacity .2s; }
+  .cal-grab { visibility: hidden; height: 6px !important; }
+}
+html[data-look="night"] .cal-sheet { background: #0F2E2A; color: #EAF3F0; }
+.cal-grab { height: 22px; display: flex; justify-content: center; align-items: center; cursor: grab; }
+.cal-grab i { width: 44px; height: 5px; border-radius: 9px; background: rgba(14, 94, 84, .22); }
+.cal-x { position: absolute; top: 12px; right: 14px; width: 38px; height: 38px; border-radius: 50%; border: 0; background: rgba(14, 94, 84, .07); color: inherit; font-size: 24px; line-height: 1; cursor: pointer; }
+.cal-titles h2 { margin: 2px 44px 2px 0; font: 600 23px var(--heading, Outfit, sans-serif); color: #0E5E54; }
+html[data-look="night"] .cal-titles h2 { color: #fff; }
+.cal-titles h2.cal-swap { animation: gRise .4s cubic-bezier(.2, .7, .2, 1); }
+.cal-sub { margin: 0; font-size: 14px; color: rgba(19, 48, 43, .65); min-height: 20px; }
+html[data-look="night"] .cal-sub { color: rgba(234, 243, 240, .7); }
+html[data-look="night"] .cal-head { display: flex; align-items: center; justify-content: space-between; margin: 10px 0 4px; }
+.cal-head strong { font-size: 16px; text-transform: capitalize; }
+.cal-nav { width: 40px; height: 40px; border-radius: 50%; border: 0; background: rgba(14, 94, 84, .07); color: inherit; font-size: 22px; cursor: pointer; }
+.cal-nav:disabled { opacity: .3; cursor: default; }
+.cal-dow, .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; }
+.cal-dow span { font-size: 11px; font-weight: 700; opacity: .5; padding: 4px 0; text-transform: uppercase; }
+.cal-grid { row-gap: 4px; }
+.cal-d { position: relative; height: 44px; border: 0; background: none; padding: 0; font: 600 15px var(--body, inherit); color: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.cal-d span { position: relative; z-index: 2; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background .2s, color .2s, transform .2s; }
+.cal-d:not(:disabled):hover span { background: rgba(14, 94, 84, .09); }
+.cal-d.today span { box-shadow: inset 0 0 0 1.5px rgba(14, 94, 84, .35); }
+.cal-d:disabled { cursor: default; }
+.cal-d.past span, .cal-d.short span { color: rgba(19, 48, 43, .28); }
+html[data-look="night"] .cal-d.past span, html[data-look="night"] .cal-d.short span { color: rgba(255, 255, 255, .25); }
+.cal-d.took span { color: rgba(179, 38, 30, .55); text-decoration: line-through; }
+.cal-d.in:not(.anchor) span, .cal-d.out span { background: #0E5E54 !important; color: #fff !important; box-shadow: 0 6px 14px rgba(14, 60, 52, .28); }
+html[data-look="night"] .cal-d.in:not(.anchor) span, html[data-look="night"] .cal-d.out span { background: #F2A93B !important; color: #2A1A02 !important; }
+.cal-d.pop span { animation: calPop .45s cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes calPop { 0% { transform: scale(.6); } 60% { transform: scale(1.2); } 100% { transform: none; } }
+.cal-d:focus-visible { outline: none; }
+.cal-d:focus-visible span { outline: 3px solid #F2A93B; outline-offset: 1px; }
+/* The road between check-in and check-out */
+.cal-d.mid::before, .cal-d.in.end::before, .cal-d.out.end::before { content: ""; position: absolute; top: 2px; bottom: 2px; left: 0; right: 0; background: #DDF1E9; z-index: 1; transform-origin: left; }
+html[data-look="night"] .cal-d.mid::before, html[data-look="night"] .cal-d.end::before { background: rgba(242, 169, 59, .18); }
+.cal-d.in.end::before { left: 50%; }
+.cal-d.out.end::before { right: 50%; }
+.cal-d.mid[data-c="0"]::before { border-radius: 20px 0 0 20px; }
+.cal-d.mid[data-c="6"]::before { border-radius: 0 20px 20px 0; }
+.cal-grid.drawRoad .cal-d.mid::before, .cal-grid.drawRoad .cal-d.end::before { animation: calRoad .3s cubic-bezier(.5, 0, .2, 1) both; animation-delay: calc(max(0, var(--i) - var(--a, 0)) * 45ms); }
+@keyframes calRoad { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.cal-bub { position: absolute; z-index: 3; bottom: calc(100% - 2px); left: 50%; transform: translateX(-50%); white-space: nowrap; background: #F2A93B; color: #2A1A02; font: 700 11px var(--body, inherit); font-style: normal; padding: 3px 9px; border-radius: 99px; pointer-events: none; box-shadow: 0 4px 10px rgba(0, 0, 0, .12); }
+.cal-grid.drawRoad .cal-bub { animation: calBub .4s cubic-bezier(.3, 1.5, .5, 1) .25s both; }
+@keyframes calBub { from { opacity: 0; transform: translate(-50%, 8px) scale(.6); } to { opacity: 1; transform: translateX(-50%); } }
+.cal-d[data-c="0"] .cal-bub { left: 0; transform: none; }
+.cal-d[data-c="6"] .cal-bub { left: auto; right: 0; transform: none; }
+/* Days ripple in the first time; months slide */
+.cal-grid.ripple .cal-d { animation: calIn .4s cubic-bezier(.2, .7, .2, 1) both; animation-delay: calc(var(--i) * 12ms + .12s); }
+@keyframes calIn { from { opacity: 0; transform: scale(.6); } to { opacity: 1; transform: none; } }
+.cal-grid.slideL { animation: calL .3s cubic-bezier(.2, .7, .2, 1); }
+.cal-grid.slideR { animation: calR .3s cubic-bezier(.2, .7, .2, 1); }
+@keyframes calL { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: none; } }
+@keyframes calR { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .cal-sheet, .cal-scrim { transition: none !important; }
+  .cal-grid, .cal-grid .cal-d, .cal-d span, .cal-d::before, .cal-bub, .cal-titles h2 { animation: none !important; }
+}

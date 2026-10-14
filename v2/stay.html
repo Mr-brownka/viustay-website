@@ -23,9 +23,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&family=Source+Sans+3:wght@400;600&display=swap">
-<link rel="stylesheet" href="css/styles.css?v=15">
-<link rel="stylesheet" href="css/glass.css?v=15">
-<link rel="stylesheet" href="css/trips.css?v=15">
+<link rel="stylesheet" href="css/styles.css?v=16">
+<link rel="stylesheet" href="css/glass.css?v=16">
+<link rel="stylesheet" href="css/trips.css?v=16">
 <script src="js/look.js"></script>
 </head>
 <body data-header="flow" data-steps="0" data-page="stay" data-no-wa>
@@ -34,43 +34,40 @@
   <form class="step-main sv" id="stay-form" novalidate>
     <div class="stack-sm sv-in" style="--d:0s">
       <span class="kicker" data-i18n>Short stay</span>
-      <h1 data-i18n>Almost there, check your stay</h1>
+      <h1 data-i18n>Book your stay</h1>
     </div>
-    <div class="sv-card sv-in" style="--d:.08s">
-      <a class="sv-photo" id="sv-photo" href="#"><span class="sv-photo-txt"><b id="sv-title"></b><span id="sv-sub"></span></span></a>
-      <div class="sv-tiles">
-        <button type="button" class="sv-tile" data-open-dates><small data-i18n>Check-in</small><b id="sv-in">–</b><span id="sv-in-t"></span></button>
-        <button type="button" class="sv-tile" data-open-dates><small data-i18n>Check-out</small><b id="sv-out">–</b><span id="sv-out-t"></span></button>
-        <div class="sv-sum"><span id="sv-sum">–</span><button type="button" class="btn-link" id="sv-change" data-i18n>Change</button></div>
-        <p class="sv-min hidden" id="sv-min"></p>
+    <a class="sv-mini sv-in" id="sv-photo" href="#" style="--d:.06s"><span class="sv-thumb" id="sv-thumb"></span><span><b id="sv-title"></b><small id="sv-sub"></small></span></a>
+    <input type="hidden" name="check_in"><input type="hidden" name="check_out">
+    <div class="sc sv-in" id="sv-c" style="--d:.12s">
+      <div class="sc-bar" aria-hidden="true"><i id="sc-fill"></i></div>
+      <div class="sc-pills" id="sc-pills" aria-label="Your choices"></div>
+      <div class="sc-view" id="sc-view"><div class="sc-track" id="sc-track">
+        <section class="sc-card" data-s="in"><span class="sc-k"><span data-i18n>Step 1 of 3</span></span><h2 data-i18n>When do you arrive?</h2><p class="sc-sub" id="sc-in-sub"></p><div id="cal-in"></div></section>
+        <section class="sc-card" data-s="out"><span class="sc-k"><span data-i18n>Step 2 of 3</span></span><h2 data-i18n>When do you leave?</h2><p class="sc-sub" id="sc-out-sub"></p><div id="cal-out"></div></section>
+        <section class="sc-card" data-s="guests"><span class="sc-k"><span data-i18n>Step 3 of 3</span></span><h2 data-i18n>Who's coming?</h2>
+          <div class="sc-guests"><button type="button" id="g-minus" aria-label="Fewer guests">−</button><b id="g-n" aria-live="polite">2</b><button type="button" id="g-plus" aria-label="More guests">+</button></div>
+          <p class="sc-sub sc-center" id="g-max"></p>
+          <button type="button" class="btn btn-primary sc-ok" id="g-ok" data-i18n>That's us</button></section>
+      </div></div>
+      <div class="rt-box rt-stay" id="sv-stay" aria-live="polite"><small data-i18n>Your stay</small>
+        <div class="rt-done"><span id="sv-sum">–</span><b id="sv-total-c">–</b></div><span class="rt-br" id="sv-break-c"></span></div>
+    </div>
+    <p class="t-hint sv-hint" id="s-dates-hint" aria-live="polite"></p>
+    <p class="sv-min hidden" id="sv-min"></p>
+    <div class="sv-details hidden" id="sv-details">
+      <label class="check sv-opt hidden" id="pickup-wrap" data-opt><input type="checkbox" name="pickup"><span id="pickup-text"></span></label>
+      <label class="field hidden" id="pickup-note-wrap" data-opt><span data-i18n>Flight or bus, and arrival time</span><input type="text" name="pickup_note" maxlength="200" placeholder="e.g. KQ 101, landing 6:40 PM at JKIA" data-i18n-ph></label>
+      <div class="grid-2">
+        <label class="field"><span data-i18n>Your name</span><input type="text" name="name" autocomplete="name" required></label>
+        <label class="field"><span data-i18n>M-Pesa / WhatsApp number</span><input type="tel" name="phone" autocomplete="tel" placeholder="07XX XXX XXX" required></label>
       </div>
-      <div class="sv-edit hidden" id="sv-edit">
-        <div class="grid-2">
-          <label class="field"><span data-i18n>Check-in</span><input type="date" name="check_in" required></label>
-          <label class="field"><span data-i18n>Check-out</span><input type="date" name="check_out" required></label>
-        </div>
-        <p class="t-hint" id="s-dates-hint" aria-live="polite"></p>
-        <div class="stack-sm">
-          <strong style="font-size:14px" data-i18n>Guests</strong>
-          <div class="t-stepper"><button type="button" id="g-minus" aria-label="Fewer guests">−</button><b id="g-n">2</b><button type="button" id="g-plus" aria-label="More guests">+</button><span class="note" id="g-max"></span></div>
-        </div>
-        <button type="button" class="btn btn-outline" id="sv-done" data-i18n>Done</button>
-      </div>
-    </div>
-    <label class="check sv-opt sv-in hidden" id="pickup-wrap" style="--d:.16s"><input type="checkbox" name="pickup"><span id="pickup-text"></span></label>
-    <label class="field hidden" id="pickup-note-wrap"><span data-i18n>Flight or bus, and arrival time</span><input type="text" name="pickup_note" maxlength="200" placeholder="e.g. KQ 101, landing 6:40 PM at JKIA" data-i18n-ph></label>
-    <div class="grid-2 sv-in" style="--d:.24s">
-      <label class="field"><span data-i18n>Your name</span><input type="text" name="name" autocomplete="name" required></label>
-      <label class="field"><span data-i18n>M-Pesa / WhatsApp number</span><input type="tel" name="phone" autocomplete="tel" placeholder="07XX XXX XXX" required></label>
-    </div>
-    <div class="sv-in" style="--d:.32s">
       <p class="t-rule" id="s-rules"></p>
       <label class="check"><input type="checkbox" name="consent" required><span data-i18n-html>I agree to the stay rules and cancellation policy, and that Viustay can contact me on WhatsApp about this booking (see the <a href="privacy.html" target="_blank">privacy notice</a>).</span></label>
     </div>
     <p class="error hidden" id="stay-error" role="alert"></p>
     <div class="sv-bar">
       <span class="sv-tot"><small data-i18n>Total</small><b id="sv-total">–</b><small id="sv-break"></small></span>
-      <button type="submit" class="btn btn-primary sv-go" id="stay-submit" disabled data-i18n>Continue to pay</button>
+      <button type="submit" class="btn btn-primary sv-go g-asleep" id="stay-submit" data-i18n>Continue to pay</button>
     </div>
     <a href="homes.html?stay=short" id="s-back" class="sv-back" data-i18n>Back</a>
   </form>
@@ -130,14 +127,15 @@
   </div>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="js/lang.js?v=15"></script>
+<script src="js/lang.js?v=16"></script>
 <script src="js/i18n.js"></script>
 <script src="js/config.js"></script>
-<script src="js/common.js?v=15"></script>
+<script src="js/common.js?v=16"></script>
 <script src="js/install.js"></script>
 <script src="js/trip-math.js"></script>
 <script src="js/qrcode.js"></script>
-<script src="js/ticket.js?v=15"></script>
-<script src="js/stay.js?v=15"></script>
+<script src="js/ticket.js?v=16"></script>
+<script src="js/cal.js?v=16"></script>
+<script src="js/stay.js?v=16"></script>
 </body>
 </html>
