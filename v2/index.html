@@ -34,12 +34,11 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Viustay">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&family=Source+Sans+3:wght@400;600&display=swap">
-<link rel="stylesheet" href="css/styles.css?v=23">
-<link rel="stylesheet" href="css/glass.css?v=23">
-<link rel="stylesheet" href="css/chat.css?v=23">
+<link rel="stylesheet" href="css/styles.css?v=24">
+<link rel="stylesheet" href="css/glass.css?v=24">
+<link rel="stylesheet" href="css/chat.css?v=24">
+<link rel="preload" href="assets/fonts/jakarta.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/ui.css?v=2">
 <script src="js/look.js"></script>
 </head>
 <body data-header="main" data-page="home2">
@@ -47,9 +46,12 @@
 <main class="c-wrap">
   <section class="doors" id="home-doors" aria-labelledby="d-h">
     <div class="doors-copy">
-      <h1 id="d-h" data-i18n-html>Find your place<br>in Nairobi.</h1>
+      <span class="hi-chip"><i></i><span id="hi-live" data-i18n>Verified homes, visited by us</span></span>
+      <h1 id="d-h" data-i18n-html>Find your place<br>in <em>Nairobi</em>.</h1>
       <p data-i18n>We drive you to the homes. You choose.</p>
     </div>
+    <div class="hero-art" id="hero-art" aria-hidden="true"></div>
+    <button type="button" class="search-pill" id="d-search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><span><b data-i18n>Where in Nairobi?</b><small data-i18n>Any area · monthly or per night · your budget</small></span><em><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></em></button>
     <div class="doors-pick">
       <span class="doors-k" data-i18n>What are you looking for?</span>
       <div class="doors-two">
@@ -65,6 +67,24 @@
         </a>
       </div>
       <a class="doors-help" id="d-browse" href="homes.html"><span><b data-i18n>Just looking?</b> <span data-i18n>See every home and short stay</span></span><i data-i18n>Browse all homes</i></a>
+    </div>
+  </section>
+  <section class="hx doors-extra" id="home-areas" hidden>
+    <div class="hx-h"><h2 data-i18n>Popular areas</h2><a href="homes.html"><span data-i18n>See all</span> ›</a></div>
+    <div class="hx-row" id="hx-areas"></div>
+  </section>
+  <section class="hx doors-extra" id="home-new" hidden>
+    <div class="hx-h"><h2 data-i18n>Fresh on Viustay</h2><a href="homes.html"><span data-i18n>See all</span> ›</a></div>
+    <div class="hx-row" id="hx-new"></div>
+  </section>
+  <section class="hx doors-extra" id="home-why">
+    <div class="hx-h"><h2 data-i18n>Why people choose Viustay</h2></div>
+    <div class="bento">
+      <div><span class="b-ic"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg></span><b data-i18n>Verified by us</b><span data-i18n>We visit and photograph every home.</span></div>
+      <div><span class="b-ic o"><svg viewBox="0 0 24 24"><path d="M5 16V11l2.2-4.4A2 2 0 0 1 9 5.5h6a2 2 0 0 1 1.8 1.1L19 11v5"/><path d="M3.5 16h17v2.5a1 1 0 0 1-1 1H18a1 1 0 0 1-1-1V18H7v.5a1 1 0 0 1-1 1H4.5a1 1 0 0 1-1-1z"/></svg></span><b data-i18n>We drive you</b><span data-i18n>See several homes in one trip.</span></div>
+      <div><span class="b-ic o"><svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M10.5 18.5h3"/></svg></span><b data-i18n>Pay with M-Pesa</b><span data-i18n>One clear price. No surprises.</span></div>
+      <div><span class="b-ic"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 10h8"/></svg></span><b data-i18n>Real people</b><span data-i18n>Help on WhatsApp, Mon–Sat.</span></div>
+      <div class="wide"><span class="b-ic"><svg viewBox="0 0 24 24"><path d="M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg></span><span><b data-i18n>Own a building?</b><br><span data-i18n>Vacant units? We fill them.</span></span><a class="btn btn-light btn-pill" href="owners.html" style="margin-left:auto;min-height:40px;padding:0 16px" data-i18n>For owners</a></div>
     </div>
   </section>
   <section class="c-hero" aria-labelledby="c-h">
@@ -90,13 +110,13 @@
 </main>
 <div class="c-pill c-glass" id="c-pill"><span><b id="c-pillcnt">–</b> <span id="c-pilllbl"></span></span><button class="btn btn-primary" type="button" id="c-pillbtn"></button></div>
 <footer id="site-footer"></footer>
-<script src="js/lang.js?v=23"></script>
+<script src="js/lang.js?v=25"></script>
 <script src="js/i18n.js"></script>
 <script src="js/config.js"></script>
-<script src="js/common.js?v=23"></script>
+<script src="js/common.js?v=24"></script>
 <script src="js/install.js"></script>
-<script src="js/doors.js?v=23"></script>
-<script src="js/chat.js?v=23"></script>
+<script src="js/doors.js?v=24"></script>
+<script src="js/chat.js?v=24"></script>
 <script src="js/onboard.js"></script>
 </body>
 </html>

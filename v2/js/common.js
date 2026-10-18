@@ -157,8 +157,8 @@
     if (seen) { bootEnd(); return; }
     var o = document.createElement('div');
     o.className = 'vs-launch'; o.setAttribute('aria-hidden', 'true');
-    o.innerHTML = '<svg viewBox="0 0 40 46"><path class="pin" d="M20 2 C10 2 3 9.5 3 19 C3 31 20 44 20 44 C20 44 37 31 37 19 C37 9.5 30 2 20 2 Z" fill="#0E5E54"/>' +
-      '<path class="roof" d="M10.5 17 L20 9.5 L29.5 17" fill="none" stroke="#F2A93B" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>' +
+    o.innerHTML = '<svg viewBox="0 0 40 46"><path class="pin" d="M20 2 C10 2 3 9.5 3 19 C3 31 20 44 20 44 C20 44 37 31 37 19 C37 9.5 30 2 20 2 Z" fill="#123D33"/>' +
+      '<path class="roof" d="M10.5 17 L20 9.5 L29.5 17" fill="none" stroke="#FF8A4C" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>' +
       '<path class="vee" d="M13.5 19.5 L20 29 L26.5 19.5" fill="none" stroke="#FFFFFF" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="word">viustay</span>';
     b.appendChild(o);
     var done = false;
@@ -363,7 +363,7 @@
     function ui() {
       if (el) return el;
       el = document.createElement('div'); el.className = 'ptr'; el.setAttribute('aria-hidden', 'true');
-      el.innerHTML = '<span class="ptr-ball"><svg viewBox="0 0 28 34"><path d="M14 33S2 21 2 13a12 12 0 0 1 24 0c0 8-12 20-12 20Z" fill="#0E5E54"/><circle cx="14" cy="13" r="5" fill="#111111"/></svg></span>';
+      el.innerHTML = '<span class="ptr-ball"><svg viewBox="0 0 28 34"><path d="M14 33S2 21 2 13a12 12 0 0 1 24 0c0 8-12 20-12 20Z" fill="#123D33"/><circle cx="14" cy="13" r="5" fill="#111111"/></svg></span>';
       document.body.appendChild(el); return el;
     }
     function set(d, anim) { var e = ui(); e.style.transition = anim ? 'transform .25s, opacity .25s' : 'none'; e.style.transform = 'translate(-50%,' + (d - 50) + 'px)'; e.style.opacity = Math.min(1, d / GO); e.querySelector('svg').style.transform = 'rotate(' + d * 4 + 'deg)'; }
@@ -497,4 +497,27 @@
   }
   function boot() { watchErrors(); Array.prototype.forEach.call(document.querySelectorAll('[data-guide]'), function (f) { G.form(f); }); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+
+// ---------- UI 2.0: context-aware chrome + the shared home card ----------
+(function () {
+  var V = window.V = window.V || {};
+  // Header gets a hairline once you scroll; the tab bar shrinks while you scroll down and grows back when you scroll up.
+  var lastY = 0, ticking = false;
+  function onScroll() {
+    var y = window.scrollY || 0, b = document.body; if (!b) return;
+    b.classList.toggle('ui-scrolled', y > 8);
+    if (Math.abs(y - lastY) > 6) { b.classList.toggle('ui-down', y > lastY && y > 120); lastY = y; }
+    ticking = false;
+  }
+  window.addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
+  // One card design for homes everywhere (image first, the photo is the hero)
+  V.cardHTML = function (l) {
+    var T = V.t, sh = l.stay === 'short';
+    return '<a class="card" href="home.html?id=' + encodeURIComponent(l.id) + '">' +
+      '<span class="photo" style="' + V.photoStyle(l.photoList[0]) + '">' + (l.photoList[0] ? '' : V.esc(T('Photo coming soon'))) + '<span class="badge">' + V.esc(T('Verified')) + '</span></span>' +
+      '<span class="body"><span class="price">KES ' + V.money(V.price(l)) + ' <small>' + V.esc(V.per(l)) + '</small></span>' +
+      '<span class="desc">' + V.esc(V.shortDesc(l)) + ' · ' + V.esc(l.area) + (sh ? ' · ' + V.esc(T('Up to {n} guests', { n: l.max_guests })) : '') + '</span>' +
+      '<span class="tags">' + V.esc((sh && l.includedList && l.includedList.length ? l.includedList : (l.amenityList || [])).slice(0, 3).map(function (x) { return T(x); }).join(' · ')) + '</span></span></a>';
+  };
 })();

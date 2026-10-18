@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', function () {
     clearInterval(timer); clearInterval(poll);
     t.paid = true; store(t);
     var o = document.createElement('div'); o.className = 'paid-moment'; o.setAttribute('role', 'status');
-    var cols = ['#0E5E54', '#F4F4F2', '#DDDDDD', '#ffffff'], cf = '';
+    var cols = ['#123D33', '#F4F4F2', '#DDDDDD', '#ffffff'], cf = '';
     for (var i = 0; i < 26; i++) cf += '<i class="cf" style="left:' + Math.round(Math.random() * 100) + '%;background:' + cols[i % 4] + ';animation-delay:' + (Math.random() * .6).toFixed(2) + 's"></i>';
     o.innerHTML = cf + '<span class="pm-tick"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><h2>' + V.esc(T('Paid')) + '</h2><span class="pm-amt">' + kes(t.total) + '</span><p>' + V.esc(T('Thank you! Your stay is booked.')) + '</p>';
     document.body.appendChild(o);

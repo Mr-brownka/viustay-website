@@ -79,3 +79,20 @@ document.addEventListener('DOMContentLoaded', function () {
     show();
   }).catch(function () { $('#l-skel').classList.add('hidden'); $('#not-found').classList.remove('hidden'); });
 });
+
+// UI 2.0: on phones a floating price + Book bar follows you while the real booking box is out of view.
+document.addEventListener('DOMContentLoaded', function () {
+  var V = window.V, book = document.getElementById('l-book'); if (!book || !window.IntersectionObserver) return;
+  var bar = document.createElement('div'); bar.className = 'l-cta'; bar.setAttribute('aria-hidden', 'true');
+  bar.innerHTML = '<span><b id="l-cta-p"></b><small id="l-cta-s"></small></span><a class="btn btn-primary btn-pill" href="#" id="l-cta-b"></a>';
+  document.body.appendChild(bar);
+  function sync() {
+    var p = document.getElementById('l-price'); if (!p) return;
+    var txt = (p.textContent || '').trim(); var m = txt.match(/^(KES\s?[\d,]+)\s*(.*)$/);
+    document.getElementById('l-cta-p').textContent = m ? m[1] : txt; document.getElementById('l-cta-s').textContent = m ? m[2] : '';
+    var b = document.getElementById('l-cta-b'); b.textContent = book.textContent; b.href = book.getAttribute('href') || '#';
+  }
+  document.getElementById('l-cta-b').addEventListener('click', function (e) { if (!book.getAttribute('href') || book.getAttribute('href') === '#') { e.preventDefault(); book.click(); } });
+  new IntersectionObserver(function (es) { es.forEach(function (en) { sync(); bar.classList.toggle('on', !en.isIntersecting && !!book.offsetParent); }); }).observe(book);
+  setTimeout(sync, 1500);
+});

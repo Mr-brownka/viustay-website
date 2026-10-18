@@ -36,13 +36,22 @@ document.addEventListener('DOMContentLoaded', function () {
       V.$('#browse-title').textContent = sh ? T(n === 1 ? '{n} short stay' : '{n} short stays', { n: n }) + (state.area ? ' · ' + state.area : '') :
         T(n === 1 ? '{n} home for rent' : '{n} homes for rent', { n: n }) + (state.area ? ' · ' + state.area : '');
       V.$('#browse-empty').classList.toggle('hidden', list.length > 0);
-      V.$('#browse-cards').innerHTML = list.map(function (l) {
-        return '<a class="card" href="home.html?id=' + encodeURIComponent(l.id) + '">' +
-          '<span class="photo" style="' + V.photoStyle(l.photoList[0]) + '">' + (l.photoList[0] ? '' : V.esc(T('Photo coming soon'))) + '<span class="badge">' + V.esc(T('Verified')) + '</span></span>' +
-          '<span class="body"><span class="price">KES ' + V.money(V.price(l)) + ' <small>' + V.esc(V.per(l)) + '</small></span>' +
-          '<span class="desc">' + V.esc(V.shortDesc(l)) + ' · ' + V.esc(l.area) + (sh ? ' · ' + V.esc(T('Up to {n} guests', { n: l.max_guests })) : '') + '</span>' +
-          '<span class="tags">' + V.esc((sh && l.includedList.length ? l.includedList : l.amenityList).slice(0, 3).map(function (x) { return T(x); }).join(' · ')) + '</span></span></a>';
-      }).join('');
+      // No filters yet: group by area (busiest areas first), featured homes last. With filters: one grid.
+      var plain = !state.area && !state.beds && !state.max, box = V.$('#browse-cards');
+      if (plain && list.length > 3) {
+        var by = {}; list.forEach(function (l) { (by[l.area || T('Other')] = by[l.area || T('Other')] || []).push(l); });
+        var areas = Object.keys(by).sort(function (a, b) { return by[b].length - by[a].length || a.localeCompare(b); });
+        var feat = list.filter(function (l) { return /^(y|yes|true|1)$/i.test(String(l.featured || '')); });
+        if (!feat.length) feat = list.filter(function (l) { return l.photoList.length; }).slice().sort(function (a, b) { return b.photoList.length - a.photoList.length || (b.amenityList || []).length - (a.amenityList || []).length; }).slice(0, 6);
+        box.className = 'groups';
+        box.innerHTML = areas.map(function (a) {
+          return '<section class="grp"><div class="hx-h"><h2>' + V.esc(a) + ' <span class="muted" style="font-weight:600;font-size:15px">· ' + by[a].length + '</span></h2><a href="#" data-area="' + V.esc(a) + '">' + V.esc(T('See all')) + ' ›</a></div><div class="hx-row">' + by[a].map(V.cardHTML).join('') + '</div></section>';
+        }).join('') + (feat.length ? '<section class="grp"><div class="hx-h"><h2>' + V.esc(T('Featured homes')) + '</h2></div><div class="hx-row">' + feat.map(V.cardHTML).join('') + '</div></section>' : '');
+      } else { box.className = 'cards'; box.innerHTML = list.map(V.cardHTML).join(''); }
+      // phone bar: segmented control + filters count
+      V.$('#seg').classList.toggle('r', sh);
+      Array.prototype.forEach.call(document.querySelectorAll('#seg button'), function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-stay') === state.stay)); });
+      V.$('#fcount').textContent = [state.area, state.beds, state.max].filter(Boolean).length || '';
       var q = new URLSearchParams();
       if (sh) q.set('stay', 'short');
       if (state.area) q.set('area', state.area);
@@ -51,6 +60,12 @@ document.addEventListener('DOMContentLoaded', function () {
       history.replaceState(null, '', 'homes.html' + (q.toString() ? '?' + q.toString() : ''));
     }
     var t;
+    function sheet(on) { document.body.classList.toggle('f-open', on); }
+    V.$('#fbtn').addEventListener('click', function () { sheet(true); });
+    V.$('#f-scrim').addEventListener('click', function () { sheet(false); });
+    V.$('#f-done').addEventListener('click', function () { sheet(false); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+    V.$('#seg').addEventListener('click', function (e) { var b = e.target.closest('[data-stay]'); if (!b || b.getAttribute('data-stay') === state.stay) return; state.stay = b.getAttribute('data-stay'); state.max = 0; render(); });
+    V.$('#browse-cards').addEventListener('click', function (e) { var a = e.target.closest('[data-area]'); if (!a) return; e.preventDefault(); state.area = a.getAttribute('data-area'); areaInput.value = state.area; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
     areaInput.addEventListener('input', function () { clearTimeout(t); t = setTimeout(function () { state.area = areaInput.value.trim(); render(); }, 200); });
     render();
   }).catch(function () { V.$('#browse-title').textContent = T('Listings could not load. Please refresh.'); V.$('#browse-cards').innerHTML = ''; });

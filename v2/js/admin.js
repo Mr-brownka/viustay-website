@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function card(inner, isNew) {
-    return '<article class="box" style="display:flex;flex-direction:column;gap:8px;border-left:0;' + (isNew ? 'box-shadow:inset 4px 0 0 #0E5E54' : '') + '">' + inner + '</article>';
+    return '<article class="box" style="display:flex;flex-direction:column;gap:8px;border-left:0;' + (isNew ? 'box-shadow:inset 4px 0 0 #123D33' : '') + '">' + inner + '</article>';
   }
 
   function render() {

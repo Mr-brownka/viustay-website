@@ -1,8 +1,8 @@
-/* Viustay website styles. Brand: Emerald #111111, Sun #0E5E54, Sand #FFFFFF */
+/* Viustay website styles. Brand: Emerald #111111, Sun #123D33, Sand #FFFFFF */
 :root {
   --emerald: #111111;
   --emerald-dark: #0A4740;
-  --sun: #0E5E54;
+  --sun: #123D33;
   --sun-text: #3A2400;
   --sand: #FFFFFF;
   --sand-deep: #E6E1D8;
@@ -12,8 +12,8 @@
   --line: #E6E1D8;
   --white: #FFFFFF;
   --radius: 10px;
-  --heading: 'Outfit', sans-serif;
-  --body: 'Source Sans 3', sans-serif;
+  --heading: 'Plus Jakarta Sans', sans-serif;
+  --body: 'Plus Jakarta Sans', sans-serif;
 }
 
 * { box-sizing: border-box; }
