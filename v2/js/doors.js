@@ -29,6 +29,7 @@
       if (lo) V.$('#d-long').textContent = T(lo === 1 ? '{n} home now' : '{n} homes now', { n: lo });
       if (sh) V.$('#d-short').textContent = T(sh === 1 ? '{n} place now' : '{n} places now', { n: sh });
       if (all.length) V.$('#hi-live').textContent = T('{a} homes · {b} short stays live now', { a: lo, b: sh });
+      ['#hi-live', '#d-long', '#d-short'].forEach(function (s) { if (V.countUp) V.countUp(V.$(s)); });
       // Popular areas (most homes first), each tile uses a real photo from that area when there is one
       var by = {};
       all.forEach(function (l) { if (!l.area) return; (by[l.area] = by[l.area] || []).push(l); });

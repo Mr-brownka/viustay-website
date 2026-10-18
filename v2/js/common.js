@@ -157,8 +157,8 @@
     if (seen) { bootEnd(); return; }
     var o = document.createElement('div');
     o.className = 'vs-launch'; o.setAttribute('aria-hidden', 'true');
-    o.innerHTML = '<svg viewBox="0 0 40 46"><path class="pin" d="M20 2 C10 2 3 9.5 3 19 C3 31 20 44 20 44 C20 44 37 31 37 19 C37 9.5 30 2 20 2 Z" fill="#123D33"/>' +
-      '<path class="roof" d="M10.5 17 L20 9.5 L29.5 17" fill="none" stroke="#FF8A4C" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>' +
+    o.innerHTML = '<svg viewBox="0 0 40 46"><path class="pin" d="M20 2 C10 2 3 9.5 3 19 C3 31 20 44 20 44 C20 44 37 31 37 19 C37 9.5 30 2 20 2 Z" fill="#0E5E54"/>' +
+      '<path class="roof" d="M10.5 17 L20 9.5 L29.5 17" fill="none" stroke="#F2A93B" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>' +
       '<path class="vee" d="M13.5 19.5 L20 29 L26.5 19.5" fill="none" stroke="#FFFFFF" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="word">viustay</span>';
     b.appendChild(o);
     var done = false;
@@ -363,7 +363,7 @@
     function ui() {
       if (el) return el;
       el = document.createElement('div'); el.className = 'ptr'; el.setAttribute('aria-hidden', 'true');
-      el.innerHTML = '<span class="ptr-ball"><svg viewBox="0 0 28 34"><path d="M14 33S2 21 2 13a12 12 0 0 1 24 0c0 8-12 20-12 20Z" fill="#123D33"/><circle cx="14" cy="13" r="5" fill="#111111"/></svg></span>';
+      el.innerHTML = '<span class="ptr-ball"><svg viewBox="0 0 28 34"><path d="M14 33S2 21 2 13a12 12 0 0 1 24 0c0 8-12 20-12 20Z" fill="#0E5E54"/><circle cx="14" cy="13" r="5" fill="#111111"/></svg></span>';
       document.body.appendChild(el); return el;
     }
     function set(d, anim) { var e = ui(); e.style.transition = anim ? 'transform .25s, opacity .25s' : 'none'; e.style.transform = 'translate(-50%,' + (d - 50) + 'px)'; e.style.opacity = Math.min(1, d / GO); e.querySelector('svg').style.transform = 'rotate(' + d * 4 + 'deg)'; }
@@ -519,5 +519,42 @@
       '<span class="body"><span class="price">KES ' + V.money(V.price(l)) + ' <small>' + V.esc(V.per(l)) + '</small></span>' +
       '<span class="desc">' + V.esc(V.shortDesc(l)) + ' · ' + V.esc(l.area) + (sh ? ' · ' + V.esc(T('Up to {n} guests', { n: l.max_guests })) : '') + '</span>' +
       '<span class="tags">' + V.esc((sh && l.includedList && l.includedList.length ? l.includedList : (l.amenityList || [])).slice(0, 3).map(function (x) { return T(x); }).join(' · ')) + '</span></span></a>';
+  };
+})();
+
+// ---------- UI 2.1 motion: tap ripples, scroll reveals, count-ups ----------
+(function () {
+  var V = window.V = window.V || {};
+  var calm = function () { return !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); };
+  // Ripple where you tap
+  var RIP = '.btn, .door, .q-opt, .chip, .search-pill, .doors-help, .fbtn, .sc-guests button, .su-kind, .md-btn';
+  document.addEventListener('pointerdown', function (e) {
+    if (calm()) return; var el = e.target.closest && e.target.closest(RIP); if (!el || el.disabled) return;
+    var r = el.getBoundingClientRect(), d = Math.max(r.width, r.height) * 2.2, s = document.createElement('span');
+    s.className = 'rp'; s.style.width = s.style.height = d + 'px'; s.style.left = (e.clientX - r.left - d / 2) + 'px'; s.style.top = (e.clientY - r.top - d / 2) + 'px';
+    el.appendChild(s); setTimeout(function () { s.remove(); }, 650);
+  }, { passive: true });
+  // Cards, tiles and sections rise in as they come into view
+  var SEL = '.card, .area-tile, .bento > div, .grp .hx-h, .panel, .mb-tk, .ad-row, .md-start';
+  var io = window.IntersectionObserver && !calm() ? new IntersectionObserver(function (es) {
+    es.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('rv-in'); io.unobserve(en.target); } });
+  }, { rootMargin: '0px 0px -6% 0px' }) : null;
+  function scan(root) {
+    if (!io) return;
+    Array.prototype.forEach.call((root || document).querySelectorAll(SEL), function (el, i) {
+      if (el.classList.contains('rv')) return;
+      var r = el.getBoundingClientRect(); if (r.top < innerHeight * .9 && r.bottom > 0) return;   // already on screen: leave it
+      el.classList.add('rv'); el.style.transitionDelay = Math.min(i % 4, 3) * 60 + 'ms'; io.observe(el);
+    });
+  }
+  V.reveal = scan;
+  if (window.MutationObserver) new MutationObserver(function () { clearTimeout(scan._t); scan._t = setTimeout(function () { scan(); }, 60); }).observe(document.documentElement, { childList: true, subtree: true });
+  // Numbers count up the first time they appear (live counts on the home page)
+  V.countUp = function (el) {
+    if (!el || calm()) return; var txt = el.textContent, m = txt.match(/\d+/g); if (!m) return;
+    var t0 = null, dur = 700;
+    function step(t) { if (!t0) t0 = t; var p = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - p, 3), i = 0;
+      el.textContent = txt.replace(/\d+/g, function (n) { return String(Math.round(Number(m[i++]) * e)); }); if (p < 1) requestAnimationFrame(step); }
+    requestAnimationFrame(step);
   };
 })();
