@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-light-only>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -38,85 +38,33 @@
 <link rel="stylesheet" href="css/glass.css?v=25">
 <link rel="stylesheet" href="css/chat.css?v=25">
 <link rel="preload" href="assets/fonts/jakarta.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="css/ui.css?v=3">
+<link rel="stylesheet" href="css/ui.css?v=5">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+<link rel="stylesheet" href="css/app.css?v=2">
 <script src="js/look.js"></script>
 </head>
-<body data-header="main" data-page="home2">
-<header id="site-header"></header>
-<main class="c-wrap">
-  <section class="doors" id="home-doors" aria-labelledby="d-h">
-    <div class="doors-copy">
-      <span class="hi-chip"><i></i><span id="hi-live" data-i18n>Verified homes, visited by us</span></span>
-      <h1 id="d-h" data-i18n-html>Find your place<br>in <em>Nairobi</em>.</h1>
-      <p data-i18n>We drive you to the homes. You choose.</p>
-    </div>
-    <div class="hero-art" id="hero-art" aria-hidden="true"></div>
-    <button type="button" class="search-pill" id="d-search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><span><b data-i18n>Where in Nairobi?</b><small data-i18n>Any area · monthly or per night · your budget</small></span><em><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></em></button>
-    <div class="doors-pick">
-      <span class="doors-k" data-i18n>What are you looking for?</span>
-      <div class="doors-two">
-        <a class="door door-rent" href="index.html#ask" id="d-rent">
-          <span class="door-ic"><svg viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l3 3"/></svg></span>
-          <span class="door-tx"><b data-i18n>Rent a home</b><span data-i18n>Monthly rent · we drive you to view</span><small id="d-long"></small></span>
-          <svg class="door-go" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
-        </a>
-        <a class="door door-stay" href="index.html#ask" id="d-stay">
-          <span class="door-ic"><svg viewBox="0 0 24 24"><path d="M20 14A8 8 0 0 1 10 4a8 8 0 1 0 10 10z"/></svg></span>
-          <span class="door-tx"><b data-i18n>Short stay</b><span data-i18n>Per night · pay with M-Pesa</span><small id="d-short"></small></span>
-          <svg class="door-go" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
-        </a>
-      </div>
-      <a class="doors-help" id="d-browse" href="homes.html"><span><b data-i18n>Just looking?</b> <span data-i18n>See every home and short stay</span></span><i data-i18n>Browse all homes</i></a>
-    </div>
-  </section>
-  <section class="hx doors-extra" id="home-areas" hidden>
-    <div class="hx-h"><h2 data-i18n>Popular areas</h2><a href="homes.html"><span data-i18n>See all</span> ›</a></div>
-    <div class="hx-row" id="hx-areas"></div>
-  </section>
-  <section class="hx doors-extra" id="home-new" hidden>
-    <div class="hx-h"><h2 data-i18n>Fresh on Viustay</h2><a href="homes.html"><span data-i18n>See all</span> ›</a></div>
-    <div class="hx-row" id="hx-new"></div>
-  </section>
-  <section class="hx doors-extra" id="home-why">
-    <div class="hx-h"><h2 data-i18n>Why people choose Viustay</h2></div>
-    <div class="bento">
-      <div><span class="b-ic"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg></span><b data-i18n>Verified by us</b><span data-i18n>We visit and photograph every home.</span></div>
-      <div><span class="b-ic o"><svg viewBox="0 0 24 24"><path d="M5 16V11l2.2-4.4A2 2 0 0 1 9 5.5h6a2 2 0 0 1 1.8 1.1L19 11v5"/><path d="M3.5 16h17v2.5a1 1 0 0 1-1 1H18a1 1 0 0 1-1-1V18H7v.5a1 1 0 0 1-1 1H4.5a1 1 0 0 1-1-1z"/></svg></span><b data-i18n>We drive you</b><span data-i18n>See several homes in one trip.</span></div>
-      <div><span class="b-ic o"><svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M10.5 18.5h3"/></svg></span><b data-i18n>Pay with M-Pesa</b><span data-i18n>One clear price. No surprises.</span></div>
-      <div><span class="b-ic"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 10h8"/></svg></span><b data-i18n>Real people</b><span data-i18n>Help on WhatsApp, Mon–Sat.</span></div>
-      <div class="wide"><span class="b-ic"><svg viewBox="0 0 24 24"><path d="M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg></span><span><b data-i18n>Own a building?</b><br><span data-i18n>Vacant units? We fill them.</span></span><a class="btn btn-light btn-pill" href="owners.html" style="margin-left:auto;min-height:40px;padding:0 16px" data-i18n>For owners</a></div>
-    </div>
-  </section>
-  <section class="c-hero" aria-labelledby="c-h">
-    <div class="c-intro">
-      <button type="button" class="doors-back" id="d-back" data-i18n>‹ Back to start</button>
-      <h1 id="c-h" class="sr-only" data-i18n>Find your home in Nairobi</h1>
-      <div class="q-stage" id="c-chat" aria-live="polite"></div>
-      <nav class="home-shortcuts" aria-label="Shortcuts">
-        <span data-i18n>Or go straight to</span>
-        <a href="homes.html" data-i18n>All homes</a>
-        <a href="homes.html?stay=short" data-i18n>Short stays</a>
-        <a href="trip.html" data-i18n>My bookings</a>
-      </nav>
-    </div>
-    <aside class="c-panel c-glass" aria-label="Homes that match">
-      <h3 data-i18n>Homes that match</h3>
-      <div class="c-count"><b id="c-cnt">–</b><span id="c-cntlbl"></span></div>
-      <ul class="c-facts" id="c-facts"></ul>
-      <div class="c-minis" id="c-minis"></div>
-    </aside>
-  </section>
-
+<body data-header="main" data-page="map" class="mapapp" data-no-ptr>
+<header id="site-header" hidden></header>
+<main class="mp" aria-label="Map of Nairobi homes">
+  <div id="map" role="application" aria-label="Map"></div>
 </main>
-<div class="c-pill c-glass" id="c-pill"><span><b id="c-pillcnt">–</b> <span id="c-pilllbl"></span></span><button class="btn btn-primary" type="button" id="c-pillbtn"></button></div>
-<footer id="site-footer"></footer>
-<script src="js/lang.js?v=25"></script>
+<div class="mp-top">
+  <button type="button" class="mp-search" id="mp-search"><svg class="lg" viewBox="0 0 40 46"><path d="M20 2C10 2 3 9.5 3 19c0 12 17 25 17 25s17-13 17-25C37 9.5 30 2 20 2z" fill="#0E5E54"/><path d="M10.5 17 20 9.5l9.5 7.5" fill="none" stroke="#F2A93B" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.5 19.5 20 29l6.5-9.5" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span><b data-i18n>Where in Nairobi?</b><small id="mp-sub" data-i18n>Ask Amina, or tap an area on the map</small></span><i><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></i></button>
+  <div class="st-row" id="st-row" aria-label="Stories"></div>
+  <div class="mp-seg" id="mp-seg"><button type="button" data-stay="long" aria-pressed="true" data-i18n>Monthly</button><button type="button" data-stay="short" aria-pressed="false" data-i18n>Nightly</button><button type="button" data-all aria-pressed="false" data-i18n>All homes</button></div>
+</div>
+<a class="mp-card" id="mp-card" href="amina.html"><span class="av"><svg width="22" height="25" viewBox="0 0 40 46"><path d="M20 2C10 2 3 9.5 3 19c0 12 17 25 17 25s17-13 17-25C37 9.5 30 2 20 2z" fill="#fff"/><path d="M10.5 17 20 9.5l9.5 7.5" fill="none" stroke="#F2A93B" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.5 19.5 20 29l6.5-9.5" fill="none" stroke="#0E5E54" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><b data-i18n>Not sure where?</b><br><small data-i18n>Amina finds homes for you in 1 minute</small></span><em data-i18n>Ask Amina</em></a>
+<section class="mp-sheet" id="mp-sheet" aria-live="polite"><i class="grab"></i><button type="button" class="mp-close" id="mp-close" aria-label="Close">×</button>
+  <div class="mp-sh-h"><span><b id="sh-area"></b><small id="sh-sub"></small></span><button type="button" class="mp-watch" id="sh-watch">▶ <span data-i18n>Watch</span></button></div>
+  <div class="mp-row" id="sh-row"></div>
+</section>
+<script src="js/lang.js?v=27"></script>
 <script src="js/i18n.js"></script>
 <script src="js/config.js"></script>
-<script src="js/common.js?v=25"></script>
+<script src="js/common.js?v=27"></script>
 <script src="js/install.js"></script>
-<script src="js/doors.js?v=25"></script>
-<script src="js/chat.js?v=25"></script>
-<script src="js/onboard.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script src="js/app.js?v=2"></script>
+<script src="js/map.js?v=1"></script>
 </body>
 </html>

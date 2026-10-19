@@ -67,13 +67,13 @@
           '<nav class="site-nav" aria-label="Main">' +
           (owners
             ? '<a href="index.html">' + T('Find a home') + '</a><a href="owners.html#how">' + T('How it works') + '</a><a href="owners.html#caretakers">' + T('Caretakers') + '</a>'
-            : '<a href="homes.html">' + T('Rent') + '</a><a href="homes.html?stay=short">' + T('Short stays') + '</a><a href="trip.html">' + T('My bookings') + '</a><a href="owners.html">' + T('For owners') + '</a>' +
+            : '<a href="index.html">' + T('Map') + '</a><a href="reels.html">' + T('Reels') + '</a><a href="homes.html">' + T('All homes') + '</a><a href="trip.html">' + T('Trips') + '</a><a href="owners.html">' + T('For owners') + '</a>' +
               '<details class="nav-more"><summary>' + T('More') + '</summary><div class="nav-more-list"><a href="how-it-works.html">' + T('How it works') + '</a><a href="about.html">' + T('About') + '</a><a href="list-property.html">' + T('List your property') + '</a><a href="contact.html">' + T('Contact') + '</a></div></details>' +
               '<a class="nav-extra" href="how-it-works.html">' + T('How it works') + '</a><a class="nav-extra" href="about.html">' + T('About') + '</a><a class="nav-extra" href="contact.html">' + T('Contact') + '</a>') +
           '</nav><div class="header-actions">' +
           (owners
             ? '<a class="btn btn-pill btn-light" href="dashboard.html">' + T('Manager log in') + '</a>'
-            : '<a class="btn btn-pill btn-primary" href="index.html#ask">' + T('Help me choose') + '</a>') +
+            : '<a class="btn btn-pill btn-primary" href="amina.html">' + T('Ask Amina') + '</a>') +
           V.langSelect() +
           '</div><div class="menu-looks" role="group" aria-label="Colour look"></div></div></div>';
         document.addEventListener('click', function (ev) { var d = slot.querySelector('.nav-more[open]'); if (d && !d.contains(ev.target)) d.removeAttribute('open'); });
@@ -88,12 +88,12 @@
     // Bottom tab bar on phones (item 24): Home, Homes, Short stays, My bookings, Help
     if (kind === 'main' && !body.hasAttribute('data-no-tabs')) {
       var here = (location.pathname.split('/').pop() || 'index.html'), q = location.search;
-      var cur = here === 'trip.html' ? 'b' : here === 'homes.html' && /stay=short/.test(q) ? 's' : here === 'homes.html' || here === 'home.html' || here === 'matches.html' ? 'h' : here === 'index.html' ? 'i' : '';
-      var TAB = [['i', 'index.html', 'Home', '<path d="M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>'],
-        ['h', 'homes.html', 'Homes', '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>'],
-        ['s', 'homes.html?stay=short', 'Short stays', '<path d="M20 14A8 8 0 0 1 10 4a8 8 0 1 0 10 10z"/>'],
-        ['b', 'trip.html', 'My bookings', '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>'],
-        ['w', V.wa('Hi Viustay, I have a question'), 'Help', '<path d="M4 5h16v11H9l-5 4z"/><path d="M8 10h8"/>']];
+      var cur = here === 'trip.html' ? 'b' : here === 'reels.html' ? 'r' : here === 'amina.html' ? 'a' : here === 'me.html' ? 'm' : here === 'index.html' || here === 'homes.html' || here === 'home.html' || here === 'matches.html' ? 'i' : '';
+      var TAB = [['i', 'index.html', 'Map', '<path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/>'],
+        ['r', 'reels.html', 'Reels', '<rect x="4" y="3" width="16" height="18" rx="4"/><path d="M10 9l5 3-5 3z"/>'],
+        ['a', 'amina.html', 'Amina', '<path d="M4 20l1.3-4A8 8 0 1 1 8 18.7z"/><path d="M9 11h6"/>'],
+        ['b', 'trip.html', 'Trips', '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>'],
+        ['m', 'me.html', 'Me', '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>']];
       var tb = document.createElement('nav'); tb.className = 'tabbar'; tb.setAttribute('aria-label', T('App'));
       tb.innerHTML = TAB.map(function (t) {
         return '<a href="' + t[1] + '"' + (t[0] === 'w' ? ' target="_blank" rel="noopener"' : '') + (t[0] === cur ? ' class="on" aria-current="page"' : '') + '><i><svg viewBox="0 0 24 24">' + t[3] + '</svg></i>' + T(t[2]) + '</a>';
@@ -106,7 +106,7 @@
       foot.innerHTML =
         '<div class="container footer-grid">' +
         '<div class="footer-brand brand" style="display:block"><img class="logo-pearl" src="assets/viustay-logo-colour.svg" alt="Viustay" style="height:28px;width:auto"><img class="logo-night" src="assets/viustay-logo-white.svg" alt="Viustay" style="height:28px;width:auto"><p>' + T('Find your place. We handle the rest.') + '</p><p>' + T('Mon–Sat, 8:00 AM – 5:00 PM') + '</p></div>' +
-        '<nav aria-label="Renters"><strong>' + T('Renters') + '</strong><a href="index.html">' + T('Guided search') + '</a><a href="homes.html">' + T('All homes') + '</a><a href="homes.html?stay=short">' + T('Short stays') + '</a><a href="areas.html">' + T('Area guides') + '</a><a href="trip.html">' + T('My bookings') + '</a></nav>' +
+        '<nav aria-label="Renters"><strong>' + T('Renters') + '</strong><a href="amina.html">' + T('Ask Amina') + '</a><a href="index.html">' + T('Map') + '</a><a href="reels.html">' + T('Reels') + '</a><a href="homes.html">' + T('All homes') + '</a><a href="homes.html?stay=short">' + T('Short stays') + '</a><a href="areas.html">' + T('Area guides') + '</a><a href="trip.html">' + T('My bookings') + '</a></nav>' +
         '<nav aria-label="Owners"><strong>' + T('Owners') + '</strong><a href="owners.html">' + T('For owners') + '</a><a href="list-property.html">' + T('List your property') + '</a><a href="dashboard.html">' + T('Manager log in') + '</a><a href="agent.html">' + T('Agent log in') + '</a></nav>' +
         '<nav aria-label="Company"><strong>' + T('Company') + '</strong><a href="about.html">' + T('About') + '</a><a href="investors.html">' + T('Investors') + '</a><a href="faq.html">FAQ</a><a href="contact.html">' + T('Contact') + '</a></nav>' +
         '<nav aria-label="Legal"><strong>' + T('Legal') + '</strong><a href="terms.html">' + T('Terms') + '</a><a href="privacy.html">' + T('Privacy') + '</a></nav>' +
