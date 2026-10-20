@@ -21,12 +21,12 @@
 
   function barText() {
     var p = [];
-    if (A.stay === 'short') p.push(T('Short stay'));
+    if (A.stay === 'short') p.push(T('Stay a few nights'));
     if (A.area) p.push(S.label(A, 'area'));
     if (A.beds !== undefined) p.push(S.label(A, 'beds'));
     if (A.budget) p.push('KES ' + S.label(A, 'budget') + (A.stay === 'short' ? ' ' + T('/ night') : ''));
     if (A.must && A.must.length) p.push(A.must.length === 1 ? T(A.must[0]) : T(A.must[0]) + ' +' + (A.must.length - 1));
-    return p.join(' · ') || (A.stay === 'short' ? T('All short stays') : T('All homes'));
+    return p.join(' · ') || (A.stay === 'short' ? T('All stays') : T('All homes'));
   }
 
   function render() {

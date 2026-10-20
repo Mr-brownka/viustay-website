@@ -3,7 +3,7 @@
   var V = window.V;
   var AREAS = ['Kilimani', 'Kileleshwa', 'Lavington', 'Parklands', 'South C', 'Westlands'];
   var STEPS = [
-    { k: 'stay', q: 'Karibu! Are you looking for a long stay or a short stay?', type: 'one', o: [['long', 'Long stay', 'monthly rent'], ['short', 'Short stay', 'per night']] },
+    { k: 'stay', q: 'Karibu! Are you looking for a monthly rent, or to stay a few nights?', type: 'one', o: [['long', 'Monthly rent', 'homes to rent · per month'], ['short', 'Stay a few nights', 'furnished · per night']] },
     { k: 'area', q: 'Where in Nairobi would you like to live?', qShort: 'Where in Nairobi would you like to stay?', type: 'one', o: AREAS.map(function (a) { return [a]; }).concat([['Anywhere', 'Anywhere good']]) },
     { k: 'beds', q: 'How many bedrooms do you need?', type: 'one', o: [['0', 'Bedsitter / studio'], ['1', '1 bedroom'], ['2', '2 bedrooms'], ['3', '3+ bedrooms']] },
     { k: 'budget', q: "What's your monthly rent budget?", qShort: "What's your budget per night?", type: 'budget' },

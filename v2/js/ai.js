@@ -1,9 +1,9 @@
 // Viu AI: the guided chat. One question at a time as chat bubbles + quick replies,
 // then a reel of matches to swipe (right = keep), then the next step (viewing trip / book stay).
 document.addEventListener('DOMContentLoaded', function () {
-  var V = window.V, T = V.t, S = window.VSSearch, log = document.getElementById('am-log');
+  var V = window.V, T = V.t, S = window.VSSearch, log = document.getElementById('am-log'), dock = document.getElementById('ai-qr');
   var av = document.getElementById('am-av'); if (av) av.innerHTML = V.sphere(42);
-  var mapCard = null;
+  var wide = window.innerWidth > 900, AV = V.sphere(30, true);
   var A = {}, HOMES = [], loaded = V.loadListings().then(function (all) { HOMES = all; return all; }).catch(function () { return []; });
   var step = -1, waiting = null;
   var q = new URLSearchParams(location.search);
@@ -11,25 +11,26 @@ document.addEventListener('DOMContentLoaded', function () {
   if (q.get('area')) A.area = q.get('area');
 
   function el(tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; }
-  function down() { setTimeout(function () { window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); }, 30); }
-  function clearQR() { Array.prototype.forEach.call(log.querySelectorAll('.qr.live'), function (x) { x.remove(); }); }
+  function down() { setTimeout(function () { log.scrollTo({ top: log.scrollHeight, behavior: 'smooth' }); }, 30); }
+  function clearQR() { dock.innerHTML = ''; }
   function say(text, cb, delay) {
-    var t = el('div', 'bb typing', '<span><i></i><i></i><i></i></span>'); log.appendChild(t); down();
-    setTimeout(function () { t.remove(); var b = el('div', 'bb', '<span></span>'); b.firstChild.textContent = text; log.appendChild(b); down(); if (cb) cb(); }, delay || 650);
+    var t = el('div', 'bb typing', '<i class="bav">' + AV + '</i><span><i></i><i></i><i></i></span>'); log.appendChild(t); down();
+    setTimeout(function () { t.remove(); var b = el('div', 'bb', '<i class="bav">' + AV + '</i><span></span>'); b.lastChild.textContent = text; log.appendChild(b); down(); if (cb) cb(); }, delay || 650);
   }
-  function me(text) { clearQR(); var b = el('div', 'bb me', '<span></span>'); b.firstChild.textContent = text; log.appendChild(b); down(); }
+  function me(text) { clearQR(); var b = el('div', 'bb me', '<span></span><i class="mav"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></i>'); b.firstChild.textContent = text; log.appendChild(b); down(); update(); }
   function replies(opts) {
-    var r = el('div', 'qr live');
+    clearQR(); var r = el('div', 'qr live');
     opts.forEach(function (o) { var b = el('button', o.cls || ''); b.type = 'button'; b.textContent = o.t; if (o.on) b.setAttribute('aria-pressed', 'true'); b.addEventListener('click', function () { o.fn(b); }); r.appendChild(b); });
-    log.appendChild(r); down(); return r;
+    dock.appendChild(r); return r;
   }
   function short() { return A.stay === 'short'; }
   function ask(i) {
     step = i; var s = S.STEPS[i];
-    if (i > 1) liveMap();
+    update();
     if (!s) return results();
-    if (A[s.k] !== undefined && s.k !== 'when' && i < 2 && (s.k === 'stay' || s.k === 'area')) return ask(i + 1);   // came with ?stay= / ?area=
-    say(T(short() && s.qShort ? s.qShort : s.q), function () {
+    if (A[s.k] !== undefined && s.k !== 'when') return ask(i + 1);   // already answered (from the link or typed)
+    var qq = T(short() && s.qShort ? s.qShort : s.q); if (log.querySelector('.bb.me')) qq = qq.replace(/^Karibu! /, '');
+    say(qq, function () {
       if (s.type === 'one') replies(s.o.map(function (o) { return { t: T(o[1] || o[0]), fn: function () { if (s.k === 'stay' && A.stay !== o[0]) { delete A.budget; delete A.when; } A[s.k] = o[0]; me(T(o[1] || o[0])); ask(i + 1); } }; }));
       else if (s.type === 'budget') replies(S.BUDGETS[A.stay || 'long'].map(function (o) { return { t: o[1].replace('Under ', T('Under') + ' '), fn: function () { A.budget = o[0]; me(o[1].replace('Under ', T('Under') + ' ') + ' ' + (short() ? T('per night') : T('per month'))); ask(i + 1); } }; }).concat([{ t: T('Any budget'), cls: 'ghost', fn: function () { delete A.budget; me(T('Any budget')); ask(i + 1); } }]));
       else if (s.type === 'many') {
@@ -63,29 +64,37 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     inCal(); log.appendChild(card); down(); replies([skip]);
   }
-  // a small live map inside the chat: shows the chosen area, pins shrink as answers narrow it down
-  function liveMap() {
-    if (!window.L || !A.area || A.area === 'Anywhere' || !V.AREAS[A.area]) return;
+  // ---------- live results: map on top (phone) or on the right with the list (laptop) ----------
+  var map = null, layer = null, ring = null;
+  if (wide) document.querySelector('.ai-res').appendChild(document.querySelector('.ai-mapw'));
+  if (window.L) {
+    map = L.map('ai-map', { zoomControl: false, attributionControl: wide, scrollWheelZoom: false }).setView([-1.287, 36.80], 12); if (wide) L.control.zoom({ position: 'topright' }).addTo(map);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { subdomains: 'abcd', maxZoom: 19, attribution: '&copy; OpenStreetMap &copy; CARTO' }).addTo(map);
+    layer = L.layerGroup().addTo(map);
+  }
+  function matches() { var B = Object.assign({}, A); delete B.when; return S.matchList(HOMES, B); }
+  function update() {
     loaded.then(function () {
-      var B = Object.assign({}, A); delete B.when; var m = S.matchList(HOMES, B), inArea = HOMES.filter(function (l) { return l.area === A.area && (l.stay === 'short') === short(); });
-      if (!mapCard) {
-        var w = el('div', 'bb'); w.style.display = 'block';
-        w.innerHTML = '<div class="am-map"><div class="am-map-m"></div><div class="am-map-t"></div></div>'; log.appendChild(w); down();
-        var box = w.querySelector('.am-map-m');
-        var map = L.map(box, { zoomControl: false, attributionControl: false, dragging: false, scrollWheelZoom: false, doubleClickZoom: false, touchZoom: false, keyboard: false }).setView(V.AREAS[A.area], 14);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { subdomains: 'abcd', maxZoom: 19 }).addTo(map);
-        L.circle(V.AREAS[A.area], { radius: 900, color: '#1554D1', weight: 2, dashArray: '6 6', fillOpacity: .07 }).addTo(map);
-        mapCard = { w: w, map: map, layer: L.layerGroup().addTo(map) };
-        w.querySelector('.am-map').addEventListener('click', function () { location.href = homesLink(); });
-      }
-      mapCard.layer.clearLayers();
-      m.filter(function (l) { return l.area === A.area; }).forEach(function (l) {
-        mapCard.layer.addLayer(L.marker(V.pinPos(l), { icon: L.divIcon({ className: '', html: '<span class="pp">' + Math.round(V.price(l) / 1000) + 'k</span>', iconSize: [0, 0] }), interactive: false }));
-      });
-      var n = m.filter(function (l) { return l.area === A.area; }).length;
-      mapCard.w.querySelector('.am-map-t').innerHTML = '<b>' + V.esc(T(n === 1 ? '{a} has {n} match so far' : '{a} has {n} matches so far', { a: A.area, n: n })) + '</b> <span>' + V.esc(T('of {n} verified places', { n: inArea.length })) + ' · ' + V.esc(T('Tap to see them on the map')) + '</span>';
+      var m = matches(), n = m.length, started = Object.keys(A).length > 0;
+      var t = !started ? T('Answer, or type what you need') : T(n === 1 ? '{n} home matches so far' : '{n} homes match so far', { n: n });
+      document.getElementById('ai-count').textContent = t;
+      var chips = S.STEPS.map(function (s) { var v = s.k === 'area' && A.area === 'Anywhere' ? T('Anywhere good') : S.label(A, s.k); if (s.k === 'must' && (!A.must || !A.must.length)) v = null; if (s.k === 'when' && A.when === 'Flexible') v = null; return v; }).filter(Boolean);
+      document.getElementById('ai-chips').innerHTML = chips.map(function (c) { return '<span>' + V.esc(c) + '</span>'; }).join('');
+      document.getElementById('ai-top').classList.toggle('on', started);
+      var list = document.getElementById('ai-list');
+      if (list) list.innerHTML = started ? (m.slice(0, 12).map(function (l) {
+        return '<a class="ai-h" href="' + (l.stay === 'short' ? 'stay.html' : 'home.html') + '?id=' + encodeURIComponent(l.id) + '"><span style="' + V.photoStyle(l.photoList[0]) + '"></span><span><i>✓ ' + V.esc(T('Verified')) + '</i><b>KES ' + V.money(V.price(l)) + ' <small>' + V.esc(V.per(l)) + '</small></b><small>' + V.esc(V.shortDesc(l)) + ' · ' + V.esc(l.area) + '</small></span></a>';
+      }).join('') || '<p class="ai-none">' + V.esc(T('Nothing matches yet. Change an answer, or let our team find it.')) + '</p>') : '<p class="ai-none">' + V.esc(T('Homes appear here as you answer.')) + '</p>';
+      if (!map) return;
+      layer.clearLayers(); if (ring) { map.removeLayer(ring); ring = null; }
+      var pts = [];
+      m.forEach(function (l) { var p = V.pinPos(l); pts.push(p); L.marker(p, { icon: L.divIcon({ className: '', html: '<span class="pp">' + Math.round(V.price(l) / 1000) + 'k</span>', iconSize: [0, 0] }), interactive: false }).addTo(layer); });
+      var ak = A.area && Object.keys(V.AREAS).filter(function (a) { return a.toLowerCase() === String(A.area).toLowerCase(); })[0];
+      if (ak) ring = L.circle(V.AREAS[ak], { radius: 1100, color: '#1554D1', weight: 2, dashArray: '7 7', fillColor: '#1554D1', fillOpacity: .07, interactive: false }).addTo(map);
+      setTimeout(function () { map.invalidateSize(); var sz = map.getSize(); if (started && pts.length && sz.x > 40 && sz.y > 40) map.flyToBounds(pts, { padding: [36, 36], maxZoom: 15, duration: .7 }); }, 80);
     });
   }
+  document.getElementById('ai-see').addEventListener('click', function () { location.href = homesLink(); });
   function homesLink() {
     var p = new URLSearchParams(); if (short()) p.set('stay', 'short'); if (A.area && A.area !== 'Anywhere') p.set('area', A.area); if (A.beds !== undefined && A.beds !== '') p.set('beds', A.beds);
     if (A.budget) { var b = A.budget.split('-').map(Number); if (b[1]) p.set('max', b[1]); }
@@ -137,14 +146,40 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   function restart() { me(T('Start over')); A = {}; say(T('Okay, let\'s start again.'), function () { ask(0); }, 400); }
 
-  // typed messages: match an option, an area name, or nudge to the buttons
+  // ---------- typed messages: understand area, size, budget, stay type and must-haves (runs in the browser, free) ----------
+  function parse(v) {
+    var lc = ' ' + v.toLowerCase().replace(/[,.!?]/g, ' ') + ' ', got = {};
+    if (/night|bnb|weekend|few days|short stay|holiday/.test(lc)) got.stay = 'short'; else if (/month|rent|long stay|to live/.test(lc)) got.stay = 'long';
+    var areas = {}; HOMES.forEach(function (l) { if (l.area) areas[l.area] = 1; }); Object.keys(V.AREAS).forEach(function (a) { areas[a] = 1; });
+    Object.keys(areas).sort(function (a, b) { return b.length - a.length; }).some(function (a) { if (lc.indexOf(' ' + a.toLowerCase()) >= 0) { got.area = a; return true; } });
+    if (/bedsitter|studio|single room/.test(lc)) got.beds = '0';
+    var bm = lc.match(/(\d|one|two|three|four)\s*-?\s*(bed|br|bedroom|bdrm)/); if (bm) { var w = { one: 1, two: 2, three: 3, four: 4 }[bm[1]] || +bm[1]; got.beds = String(Math.min(3, w)); }
+    var km = lc.match(/(under|below|less than|max|up to|budget|around|about)?\s*(?:kes|ksh|sh)?\s*(\d{1,3}(?:[ ,]?\d{3})*|\d+(?:\.\d)?)\s*(k|000|thousand)?\b/g);
+    if (km) km.some(function (x) {
+      var mm = x.match(/(\d+(?:[ ,]?\d{3})*(?:\.\d)?)\s*(k|000|thousand)?/); if (!mm) return false; var n = parseFloat(mm[1].replace(/[ ,]/g, ''));
+      if (mm[2] === 'k' || mm[2] === 'thousand') n *= 1000; else if (mm[2] === '000') n *= 1000;
+      if (n < 1000) return false; var lim = Math.round(n);
+      got.budget = /around|about/.test(x) ? Math.round(lim * .8) + '-' + Math.round(lim * 1.2) : '0-' + lim; return true;
+    });
+    var M = [['parking', 'Parking'], ['water', 'Water 24/7'], ['security', 'Security guard'], ['guard', 'Security guard'], ['generator', 'Backup power'], ['backup', 'Backup power'], ['lift', 'Lift'], ['balcony', 'Balcony'], ['furnished', 'Furnished'], ['pet', 'Pet friendly'], ['school', 'Schools nearby']];
+    var mu = []; M.forEach(function (x) { if (lc.indexOf(x[0]) >= 0 && mu.indexOf(x[1]) < 0) mu.push(x[1]); }); if (mu.length) got.must = mu.slice(0, 3);
+    if (/family|kids|children/.test(lc)) got.who = 'Family with kids'; else if (/couple|wife|husband|partner/.test(lc)) got.who = 'Couple'; else if (/friends|sharing/.test(lc)) got.who = 'Sharing with friends'; else if (/just me|alone|myself/.test(lc)) got.who = 'Just me';
+    if (!got.stay && got.budget) { var mx = +got.budget.split('-')[1] || 0; got.stay = mx && mx < 15000 ? 'short' : 'long'; }
+    return got;
+  }
   document.getElementById('am-form').addEventListener('submit', function (e) {
     e.preventDefault(); var inp = document.getElementById('am-in'), v = inp.value.trim(); if (!v) return; inp.value = '';
-    var live = log.querySelector('.qr.live'), lc = v.toLowerCase();
-    if (live) { var hit = Array.prototype.filter.call(live.querySelectorAll('button'), function (b) { return b.textContent.toLowerCase().indexOf(lc) >= 0 || lc.indexOf(b.textContent.toLowerCase()) >= 0; })[0]; if (hit) { hit.click(); return; } }
-    var area = Object.keys(V.AREAS).filter(function (a) { return lc.indexOf(a.toLowerCase()) >= 0; })[0];
-    if (area && step <= 1) { A.area = area; if (lc.indexOf('night') >= 0 || lc.indexOf('short') >= 0) A.stay = 'short'; me(v); ask(step < 0 ? 0 : step + 1); return; }
-    me(v); say(T('Got it! Tap one of the options above and I\'ll keep going.'));
+    var live = dock.querySelector('.qr.live'), lc = v.toLowerCase();
+    if (live && lc.length < 30) { var hit = Array.prototype.filter.call(live.querySelectorAll('button'), function (b) { var t = b.textContent.toLowerCase(); return t === lc || (lc.length > 3 && t.indexOf(lc) >= 0); })[0]; if (hit) { hit.click(); return; } }
+    loaded.then(function () {
+      var got = parse(v), keys = Object.keys(got);
+      me(v);
+      if (!keys.length) { say(T('I help with homes in Nairobi. Try something like "a 2 bedroom in Kilimani under 60k with parking", or tap an answer.')); return; }
+      if (got.stay && got.stay !== A.stay) { delete A.budget; }
+      keys.forEach(function (k) { A[k] = got[k]; });
+      var bits = S.STEPS.map(function (s) { return got[s.k] !== undefined ? S.label(A, s.k) : null; }).filter(Boolean);
+      clearQR(); say(T('Got it: {x}.', { x: bits.join(' · ') }), function () { if (step < 99) ask(0); else results(); });
+    });
   });
 
   say(T('Hi, I\'m Viu AI 👋 I\'ll find you a verified home in Nairobi in about a minute.'), function () { ask(0); }, 500);

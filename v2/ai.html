@@ -34,28 +34,34 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Viustay">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<link rel="stylesheet" href="css/styles.css?v=30">
-<link rel="stylesheet" href="css/glass.css?v=30">
-<link rel="stylesheet" href="css/chat.css?v=30">
+<link rel="stylesheet" href="css/styles.css?v=32">
+<link rel="stylesheet" href="css/glass.css?v=32">
+<link rel="stylesheet" href="css/chat.css?v=32">
 <link rel="preload" href="assets/fonts/jakarta.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="css/ui.css?v=30">
+<link rel="stylesheet" href="css/ui.css?v=32">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
-<link rel="stylesheet" href="css/app.css?v=30">
+<link rel="stylesheet" href="css/app.css?v=32">
 <script src="js/look.js"></script>
 </head>
-<body data-header="main" data-page="ai" class="aminaapp" data-no-ai>
+<body data-header="main" data-page="ai" class="aminaapp ai3app" data-no-ai data-no-tabs>
 <header id="site-header"></header>
-<div class="am-head"><a class="am-back" href="index.html" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></a><span class="av" id="am-av"></span><span><b>Viu AI</b><small data-i18n>Your home finder · online</small></span><a href="homes.html" data-i18n>Browse</a></div>
-<main class="am-log" id="am-log" aria-live="polite"></main>
-<div class="am-input"><form id="am-form"><input id="am-in" autocomplete="off" placeholder="Message Viu AI…" aria-label="Message Viu AI"><button type="submit" aria-label="Send"><svg viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button></form></div>
-<script src="js/lang.js?v=30"></script>
+<main class="ai3">
+<section class="ai-chat">
+  <div class="am-head"><a class="am-back" href="index.html" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></a><span class="av" id="am-av"></span><span><b>Viu AI</b><small id="ai-count" data-i18n>Your home finder · online</small></span><a href="find.html" data-i18n>Quick questions</a></div>
+  <div class="ai-top" id="ai-top"><div class="ai-mapw"><div id="ai-map"></div><button type="button" class="ai-see" id="ai-see"><span data-i18n>See all</span> ›</button></div><div class="ai-chips" id="ai-chips"></div></div>
+  <div class="am-log" id="am-log" aria-live="polite"></div>
+  <div class="ai-dock"><div id="ai-qr"></div><form id="am-form" class="ai-form"><input id="am-in" autocomplete="off" placeholder="Type what you need, or tap an answer" aria-label="Message Viu AI" data-i18n-ph><button type="submit" aria-label="Send"><svg viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button></form></div>
+</section>
+<aside class="ai-res"><div class="ai-list" id="ai-list"></div></aside>
+</main>
+<script src="js/lang.js?v=32"></script>
 <script src="js/i18n.js"></script>
 <script src="js/config.js"></script>
-<script src="js/common.js?v=30"></script>
+<script src="js/common.js?v=32"></script>
 <script src="js/install.js"></script>
-<script src="js/app.js?v=30"></script>
-<script src="js/chat.js?v=30"></script>
+<script src="js/app.js?v=32"></script>
+<script src="js/chat.js?v=32"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-<script src="js/ai.js?v=30"></script>
+<script src="js/ai.js?v=32"></script>
 </body>
 </html>

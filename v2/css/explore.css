@@ -59,3 +59,10 @@ html[data-look="night"] :is(.ex-door:not(.main), .ex-how) { background: var(--su
   .ex-how ol { grid-template-columns: repeat(3, 1fr); }
 }
 .ex-search input, .ex-search input:focus { border: 0 !important; box-shadow: none !important; padding: 0 !important; background: none !important; outline: none !important; border-radius: 0 !important; height: 100% !important; }
+.ex-pair { grid-column: 1 / -1; display: flex; align-items: stretch; gap: 8px; }
+.ex-pair .ex-door { flex: 1; min-height: 140px; }
+.ex-pair .ex-door b { margin-top: auto; }
+.ex-or { flex: none; width: 32px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.ex-or i { flex: 1; width: 1.5px; background: linear-gradient(rgba(206, 215, 227, 0), #CED7E3, rgba(206, 215, 227, 0)); }
+.ex-or b { width: 32px; height: 32px; border-radius: 50%; background: var(--deep); color: #fff; font-size: 10.5px; font-weight: 800; letter-spacing: .04em; display: flex; align-items: center; justify-content: center; }
+@media (min-width: 861px) { .ex-doors { grid-template-columns: 1.6fr 1fr; } .ex-pair { grid-column: auto; } .ex-pair .ex-door { min-height: 150px; } }

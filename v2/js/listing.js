@@ -33,8 +33,8 @@ document.addEventListener('DOMContentLoaded', function () {
     $('#l-ref').textContent = T('Ref') + ' ' + l.id + (l.sample ? ' · ' + T('sample listing') : '');
 
     if (sh) {
-      $('#l-kind').textContent = T('Short stay'); $('#l-kind').classList.remove('hidden');
-      $('#l-back').href = 'homes.html?stay=short'; $('#l-back').textContent = T('Back to short stays');
+      $('#l-kind').textContent = T('Stay a few nights'); $('#l-kind').classList.remove('hidden');
+      $('#l-back').href = 'homes.html?stay=short'; $('#l-back').textContent = T('Back to stays');
       $('#l-facts').innerHTML = (l.min_nights > 1 ? row(T('Minimum stay'), T('{n} nights', { n: l.min_nights })) : '') +
         row(T('Check-in'), T('from {t}', { t: l.check_in })) + row(T('Check-out'), T('by {t}', { t: l.check_out })) +
         row(T('Cleaning fee'), l.cleaning_fee ? 'KES ' + V.money(l.cleaning_fee) : T('Included'));

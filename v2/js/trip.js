@@ -220,7 +220,7 @@ document.addEventListener('DOMContentLoaded', function () {
         : b.status === 'checked_in' ? T('Checked in · enjoy your stay') : done ? T('Stay complete') : T(b.status === 'expired' ? 'Not paid in time' : 'Cancelled');
       return { k: k, dead: dead, done: done, date: b.check_in, time: b.check_in_time || '2:00 PM', reach: reach, steps: 5, next: next,
         l1: b.title || b.listing_id, l2: [b.area, T(b.nights === 1 ? '{n} night' : '{n} nights', { n: b.nights }), T(b.guests === 1 ? '{n} guest' : '{n} guests', { n: b.guests })].filter(Boolean).join(' · '),
-        r1: paidS ? T('Paid') : T('Not paid yet'), r2: kes(b.total), label: T('Short stay'), base: base };
+        r1: paidS ? T('Paid') : T('Not paid yet'), r2: kes(b.total), label: T('Stay a few nights'), base: base };
     }
     var deadT = ['cancelled', 'expired', 'no_show'].indexOf(b.status) >= 0, doneT = b.status === 'completed', ready = b.status === 'confirmed' && !!b.agent;
     var reachT = doneT ? 4 : ready ? 3 : b.status === 'confirmed' ? 2 : 1;
@@ -278,7 +278,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var act = show.filter(function (b) { var x = info(b); return !x.dead && !x.done; }).sort(function (p, q) { return info(p).date < info(q).date ? -1 : 1; });
     var past = show.filter(function (b) { var x = info(b); return x.dead || x.done; });
     var h = '';
-    if (both) h += '<div class="mb-chips" role="group" aria-label="' + T('Show') + '">' + [['all', T('All') + ' · ' + items.length], ['stay', T('Short stays')], ['trip', T('Viewing trips')]].map(function (c) {
+    if (both) h += '<div class="mb-chips" role="group" aria-label="' + T('Show') + '">' + [['all', T('All') + ' · ' + items.length], ['stay', T('Stays')], ['trip', T('Viewing trips')]].map(function (c) {
       return '<button type="button" class="mb-chip ' + c[0] + (filter === c[0] ? ' on' : '') + '" data-f="' + c[0] + '" aria-pressed="' + (filter === c[0]) + '"><i></i>' + V.esc(c[1]) + '</button>';
     }).join('') + '</div>';
     if (act.length) h += '<p class="mb-kick">' + T('Coming up · soonest first') + '</p>';

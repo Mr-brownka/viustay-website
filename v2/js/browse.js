@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function () {
   var BEDS = [['', 'Any'], ['0', 'Studio'], ['1', '1 bed'], ['2', '2 bed'], ['3', '3+ bed']];
   var PRICES = { long: [[0, 'Any'], [30000, 'Up to 30k'], [45000, 'Up to 45k'], [70000, 'Up to 70k'], [100000, 'Up to 100k']],
     short: [[0, 'Any'], [5000, 'Up to 5k'], [8000, 'Up to 8k'], [12000, 'Up to 12k'], [20000, 'Up to 20k']] };
-  var STAYS = [['long', 'Monthly rent'], ['short', 'Short stays']];
+  var STAYS = [['long', 'Monthly rent'], ['short', 'Stay a few nights']];
   var params = new URLSearchParams(window.location.search);
   var state = { stay: params.get('stay') === 'short' ? 'short' : 'long', area: params.get('area') || '', beds: params.get('beds') || '', max: Number(params.get('max') || 0) };
   V.$('#browse-cards').innerHTML = V.skel.cards(6);
@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function () {
       var list = all.filter(function (l) { return V.matches(l, { stay: state.stay, area: state.area, bedrooms: state.beds, max: state.max }); });
       list.sort(function (a, b) { return V.price(a) - V.price(b); });
       var n = list.length;
-      V.$('#browse-title').textContent = sh ? T(n === 1 ? '{n} short stay' : '{n} short stays', { n: n }) + (state.area ? ' · ' + state.area : '') :
+      V.$('#browse-title').textContent = sh ? T(n === 1 ? '{n} place to stay a few nights' : '{n} places to stay a few nights', { n: n }) + (state.area ? ' · ' + state.area : '') :
         T(n === 1 ? '{n} home for rent' : '{n} homes for rent', { n: n }) + (state.area ? ' · ' + state.area : '');
       V.$('#browse-empty').classList.toggle('hidden', list.length > 0);
       // No filters yet: group by area (busiest areas first), featured homes last. With filters: one grid.

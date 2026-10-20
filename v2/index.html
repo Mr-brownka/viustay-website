@@ -34,12 +34,12 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Viustay">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<link rel="stylesheet" href="css/styles.css?v=30">
-<link rel="stylesheet" href="css/glass.css?v=30">
+<link rel="stylesheet" href="css/styles.css?v=32">
+<link rel="stylesheet" href="css/glass.css?v=32">
 <link rel="preload" href="assets/fonts/jakarta.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="css/ui.css?v=30">
-<link rel="stylesheet" href="css/app.css?v=30">
-<link rel="stylesheet" href="css/explore.css?v=30">
+<link rel="stylesheet" href="css/ui.css?v=32">
+<link rel="stylesheet" href="css/app.css?v=32">
+<link rel="stylesheet" href="css/explore.css?v=32">
 <script src="js/look.js"></script>
 </head>
 <body data-header="main" data-page="explore">
@@ -55,15 +55,16 @@
       <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
       <input id="ex-q" type="search" placeholder="Area, building or landmark" aria-label="Search area, building or landmark" data-i18n-ph autocomplete="off" list="ex-areas">
       <datalist id="ex-areas"></datalist>
-      <select id="ex-stay" aria-label="Type of stay"><option value="long" data-i18n>Long stay</option><option value="short" data-i18n>Short stay</option></select>
+      <select id="ex-stay" aria-label="Type of stay"><option value="long" data-i18n>Monthly rent</option><option value="short" data-i18n>Stay a few nights</option></select>
       <button type="submit" class="ex-go" aria-label="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><span data-i18n>Search</span></button>
     </form>
   </section>
   <div class="ex-wrap">
     <section class="ex-doors">
-      <a class="ex-door main" href="ai.html?stay=long"><i><svg viewBox="0 0 24 24"><path d="M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg></i><b data-i18n>Find a home</b><span data-i18n>Long stay · monthly rent</span></a>
-      <a class="ex-door" href="ai.html?stay=short"><i><svg viewBox="0 0 24 24"><path d="M20 14A8 8 0 0 1 10 4a8 8 0 1 0 10 10z"/></svg></i><b data-i18n>Explore short stays</b><span data-i18n>Furnished · per night</span></a>
-      <a class="ex-ai" href="ai.html"><span class="ex-ai-orb"></span><span class="ex-ai-t"><b data-i18n>Not sure where to start?</b><span data-i18n>Viu AI finds homes around your budget and needs.</span></span><em data-i18n>Ask Viu AI</em></a>
+      <div class="ex-pair"><a class="ex-door main" href="find.html?stay=long"><i><svg viewBox="0 0 24 24"><path d="M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg></i><b data-i18n>Monthly rent</b><span data-i18n>Homes to rent · per month</span></a>
+      <span class="ex-or" aria-hidden="true"><i></i><b data-i18n>OR</b><i></i></span>
+      <a class="ex-door" href="find.html?stay=short"><i><svg viewBox="0 0 24 24"><path d="M20 14A8 8 0 0 1 10 4a8 8 0 1 0 10 10z"/></svg></i><b data-i18n>Stay a few nights</b><span data-i18n>Furnished · per night</span></a></div>
+      <a class="ex-ai" href="ai.html"><span class="ex-ai-orb"></span><span class="ex-ai-t"><b data-i18n>Not sure where to live?</b><span data-i18n>Viu AI compares areas, budgets and homes for you, step by step.</span></span><em data-i18n>Ask Viu AI</em></a>
     </section>
     <section class="ex-sec">
       <div class="ex-h"><h2 data-i18n>Explore neighbourhoods</h2><a href="homes.html" data-i18n>See all</a></div>
@@ -74,13 +75,13 @@
       <div class="ex-row cards-row" id="ex-homes"></div>
     </section>
     <section class="ex-sec" id="ex-short-sec">
-      <div class="ex-h"><h2 data-i18n>Short stays this week</h2><a href="homes.html?stay=short" data-i18n>See all</a></div>
+      <div class="ex-h"><h2 data-i18n>Stay a few nights</h2><a href="homes.html?stay=short" data-i18n>See all</a></div>
       <div class="ex-row cards-row" id="ex-short"></div>
     </section>
     <section class="ex-how">
       <h2 data-i18n>How Viustay works</h2>
       <ol>
-        <li><b data-i18n>Tell us what you need</b><span data-i18n>Search, or answer a few questions with Viu AI.</span></li>
+        <li><b data-i18n>Tell us what you need</b><span data-i18n>Search, answer a few quick questions, or ask Viu AI.</span></li>
         <li><b data-i18n>Save up to 3 homes</b><span data-i18n>Every home is visited and checked by Viustay.</span></li>
         <li><b data-i18n>See them in one trip</b><span data-i18n>We take you to all of them in one organised viewing.</span></li>
       </ol>
@@ -89,12 +90,12 @@
   </div>
 </main>
 <footer id="site-footer"></footer>
-<script src="js/lang.js?v=30"></script>
+<script src="js/lang.js?v=32"></script>
 <script src="js/i18n.js"></script>
 <script src="js/config.js"></script>
-<script src="js/common.js?v=30"></script>
+<script src="js/common.js?v=32"></script>
 <script src="js/install.js"></script>
-<script src="js/app.js?v=30"></script>
-<script src="js/explore.js?v=30"></script>
+<script src="js/app.js?v=32"></script>
+<script src="js/explore.js?v=32"></script>
 </body>
 </html>
