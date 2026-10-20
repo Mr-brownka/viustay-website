@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', function () {
         T(n === 1 ? '{n} home for rent' : '{n} homes for rent', { n: n }) + (state.area ? ' · ' + state.area : '');
       V.$('#browse-empty').classList.toggle('hidden', list.length > 0);
       // No filters yet: group by area (busiest areas first), featured homes last. With filters: one grid.
-      var plain = !state.area && !state.beds && !state.max, box = V.$('#browse-cards');
+      var plain = !state.area && !state.beds && !state.max && window.innerWidth < 861, box = V.$('#browse-cards');
       if (plain && list.length > 3) {
         var by = {}; list.forEach(function (l) { (by[l.area || T('Other')] = by[l.area || T('Other')] || []).push(l); });
         var areas = Object.keys(by).sort(function (a, b) { return by[b].length - by[a].length || a.localeCompare(b); });
@@ -58,6 +58,53 @@ document.addEventListener('DOMContentLoaded', function () {
       if (state.beds) q.set('beds', state.beds);
       if (state.max) q.set('max', state.max);
       history.replaceState(null, '', 'homes.html' + (q.toString() ? '?' + q.toString() : ''));
+      pins(list);
+    }
+    // ---------- the map beside the list (laptop) / above it (phone) ----------
+    var map = null, layer = null, ring = null, M = {};
+    if (window.L) {
+      map = L.map('rmap-map', { zoomControl: window.innerWidth > 860, attributionControl: true, scrollWheelZoom: false }).setView([-1.287, 36.80], 12);
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { subdomains: 'abcd', maxZoom: 19, attribution: '&copy; OpenStreetMap &copy; CARTO' }).addTo(map);
+      layer = L.layerGroup().addTo(map);
+      map.on('click', function () { prev(null); });
+    } else V.$('#rmap').style.display = 'none';
+    function k(n) { return n >= 1000 ? Math.round(n / 1000) + 'k' : String(n); }
+    function pins(list) {
+      if (!map) return; layer.clearLayers(); M = {}; if (ring) { map.removeLayer(ring); ring = null; }
+      var pts = [];
+      list.forEach(function (l) {
+        var p = V.pinPos(l); pts.push(p);
+        var m = L.marker(p, { icon: L.divIcon({ className: '', html: '<span class="pp" data-pin="' + V.esc(l.id) + '">' + (l.stay === 'short' ? 'KES ' : '') + k(V.price(l)) + '</span>', iconSize: [0, 0] }), riseOnHover: true, title: l.area });
+        m.on('click', function (e) { L.DomEvent.stopPropagation(e); hi(l.id, true); prev(l); });
+        m.addTo(layer); M[l.id] = m;
+      });
+      var area = Object.keys(V.AREAS).filter(function (a) { return a.toLowerCase() === state.area.toLowerCase(); })[0];
+      if (area) ring = L.circle(V.AREAS[area], { radius: 1100, color: '#1554D1', weight: 2, dashArray: '7 7', fillColor: '#1554D1', fillOpacity: .06, interactive: false }).addTo(map);
+      if (pts.length) map.fitBounds(pts, { padding: [40, 40], maxZoom: 15 }); else map.setView([-1.287, 36.80], 12);
+      setTimeout(function () { map.invalidateSize(); }, 60);
+    }
+    function hi(id, scroll) {
+      Array.prototype.forEach.call(document.querySelectorAll('.pp.on'), function (x) { x.classList.remove('on'); });
+      Array.prototype.forEach.call(document.querySelectorAll('.card.hl'), function (x) { x.classList.remove('hl'); });
+      if (!id) return;
+      var p = document.querySelector('.pp[data-pin="' + CSS.escape(id) + '"]'); if (p) p.classList.add('on');
+      var c = document.querySelector('.card[data-id="' + CSS.escape(id) + '"]'); if (c) { c.classList.add('hl'); if (scroll && window.innerWidth > 860) c.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    }
+    function prev(l) {
+      var box = V.$('#rmap-prev');
+      if (!l) { box.classList.remove('on'); hi(null); return; }
+      box.innerHTML = '<a href="home.html?id=' + encodeURIComponent(l.id) + '"><span style="' + V.photoStyle(l.photoList[0]) + '"></span><span><b>KES ' + V.money(V.price(l)) + ' <small>' + V.esc(V.per(l)) + '</small></b><small>' + V.esc(V.shortDesc(l)) + ' · ' + V.esc(l.area) + '</small><i>✓ ' + V.esc(T('Verified')) + '</i></span></a>';
+      box.classList.add('on');
+    }
+    V.$('#browse-cards').addEventListener('mouseover', function (e) { var c = e.target.closest('.card[data-id]'); if (c && !c.classList.contains('hl')) hi(c.getAttribute('data-id')); });
+    V.$('#browse-cards').addEventListener('mouseleave', function () { hi(null); });
+    function full(on) { document.body.classList.toggle('rmap-full', on); if (!on) prev(null); setTimeout(function () { if (map) map.invalidateSize(); }, 320); }
+    V.$('#rmap-exp').addEventListener('click', function () { full(true); });
+    V.$('#rmap-x').addEventListener('click', function () { full(false); });
+    // phone: as you scroll the list, the pin of the card in view lights up
+    if ('IntersectionObserver' in window && window.innerWidth <= 860) {
+      var seen = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting && !document.body.classList.contains('rmap-full')) hi(e.target.getAttribute('data-id')); }); }, { rootMargin: '-45% 0px -45% 0px' });
+      new MutationObserver(function () { Array.prototype.forEach.call(document.querySelectorAll('#browse-cards .card[data-id]'), function (c) { seen.observe(c); }); }).observe(V.$('#browse-cards'), { childList: true, subtree: true });
     }
     var t;
     function sheet(on) { document.body.classList.toggle('f-open', on); }

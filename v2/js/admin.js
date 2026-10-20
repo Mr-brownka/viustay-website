@@ -90,11 +90,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function statusSelect(k, ids, value) {
     var opts = TABS[k].statuses.map(function (s) { return '<option' + (s === value ? ' selected' : '') + '>' + s + '</option>'; }).join('');
-    return '<select class="a-status" data-ids="' + ids.join(',') + '" aria-label="Status" style="font:inherit;padding:8px 10px;border-radius:8px;border:1px solid #D8D1C4;background:#fff">' + opts + '</select>';
+    return '<select class="a-status" data-ids="' + ids.join(',') + '" aria-label="Status" style="font:inherit;padding:8px 10px;border-radius:8px;border:1px solid #D3DBE6;background:#fff">' + opts + '</select>';
   }
 
   function card(inner, isNew) {
-    return '<article class="box" style="display:flex;flex-direction:column;gap:8px;border-left:0;' + (isNew ? 'box-shadow:inset 4px 0 0 #0E5E54' : '') + '">' + inner + '</article>';
+    return '<article class="box" style="display:flex;flex-direction:column;gap:8px;border-left:0;' + (isNew ? 'box-shadow:inset 4px 0 0 #1554D1' : '') + '">' + inner + '</article>';
   }
 
   function render() {

@@ -6,7 +6,7 @@ body.ow-page::before, body.ow-page .vs-sky { display: none !important; }
 .ow-head { position: absolute; top: 0; left: 0; right: 0; z-index: 5; display: flex; align-items: center; justify-content: space-between; padding: 16px max(18px, 5vw); }
 .ow-logo { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
 .ow-logo img { height: 30px; }
-.ow-logo span { font: 600 11px 'Plus Jakarta Sans', sans-serif; padding: 3px 9px; border-radius: 99px; background: #0E5E54; color: #FFFFFF; }
+.ow-logo span { font: 600 11px 'Plus Jakarta Sans', sans-serif; padding: 3px 9px; border-radius: 99px; background: #1554D1; color: #FFFFFF; }
 .ow-login { color: #fff; font-weight: 600; font-size: 15px; text-decoration: none; padding: 8px 16px; border-radius: 99px; border: 1.5px solid rgba(255, 255, 255, .45); }
 .ow-login:hover { background: rgba(255, 255, 255, .1); }
 
@@ -14,10 +14,10 @@ body.ow-page::before, body.ow-page .vs-sky { display: none !important; }
 .ow-hero-in { max-width: 1180px; margin: 0 auto; display: flex; align-items: flex-end; gap: 40px; }
 .ow-copy { flex: 1; padding-bottom: 64px; }
 .ow-hero h1 { color: #fff; font-size: clamp(40px, 6.2vw, 68px); line-height: 1.04; }
-.ow-hero h1 em { font-style: normal; color: #F4F4F2; }
+.ow-hero h1 em { font-style: normal; color: #F4F6F9; }
 .ow-hero p { font-size: clamp(16px, 1.6vw, 19px); opacity: .92; margin: 16px 0 26px; max-width: 470px; line-height: 1.45; }
 .ow-ctas { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
-.ow-btn { display: inline-flex; align-items: center; justify-content: center; height: 54px; padding: 0 28px; border-radius: 99px; background: #0E5E54; color: #FFFFFF; font-weight: 600; font-size: 17px; text-decoration: none; }
+.ow-btn { display: inline-flex; align-items: center; justify-content: center; height: 54px; padding: 0 28px; border-radius: 99px; background: #1554D1; color: #FFFFFF; font-weight: 600; font-size: 17px; text-decoration: none; }
 .ow-btn:hover { background: #F6B85A; }
 .ow-pulse { animation: ow-pulse 2.4s ease-in-out infinite; }
 .ow-small { font-size: 15px; opacity: .92; }
@@ -30,17 +30,17 @@ body.ow-page::before, body.ow-page .vs-sky { display: none !important; }
 .ow-legend { display: flex; justify-content: center; gap: 18px; padding: 14px; background: #fff; font-size: 13px; }
 .ow-legend > span { display: inline-flex; align-items: center; gap: 6px; }
 .ow-legend i { width: 11px; height: 11px; border-radius: 3px; }
-.ow-legend i.v { background: #0E5E54; } .ow-legend i.f { background: #DDDDDD; }
+.ow-legend i.v { background: #1554D1; } .ow-legend i.f { background: #DDDDDD; }
 
 .ow-how { max-width: 1100px; margin: 0 auto; padding: 48px max(22px, 5vw) 16px; }
-.ow-k { text-align: center; font-size: 13px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #9A5B05; margin: 0 0 26px; }
+.ow-k { text-align: center; font-size: 13px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #8A5A00; margin: 0 0 26px; }
 .ow-steps { position: relative; display: flex; gap: 30px; }
-.ow-line { position: absolute; left: 16%; right: 16%; top: 21px; height: 3px; border-radius: 3px; background: #E2DDD3; }
-.ow-line i { display: block; height: 100%; width: 0; background: #0E5E54; border-radius: 3px; transition: width 1.4s .5s ease-out; }
+.ow-line { position: absolute; left: 16%; right: 16%; top: 21px; height: 3px; border-radius: 3px; background: #DCE3EC; }
+.ow-line i { display: block; height: 100%; width: 0; background: #1554D1; border-radius: 3px; transition: width 1.4s .5s ease-out; }
 .ow-steps.in .ow-line i { width: 100%; }
 .ow-step { flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; position: relative; }
-.ow-step b { width: 44px; height: 44px; border-radius: 50%; background: #E7F2EE; color: #111111; font: 600 18px 'Plus Jakarta Sans', sans-serif; display: flex; align-items: center; justify-content: center; }
-.ow-step:first-of-type b, .ow-steps .ow-step:nth-child(2) b { background: #0E5E54; color: #FFFFFF; }
+.ow-step b { width: 44px; height: 44px; border-radius: 50%; background: #EAF0FB; color: #111111; font: 600 18px 'Plus Jakarta Sans', sans-serif; display: flex; align-items: center; justify-content: center; }
+.ow-step:first-of-type b, .ow-steps .ow-step:nth-child(2) b { background: #1554D1; color: #FFFFFF; }
 .ow-step strong, .ow-trust strong { display: block; font-size: 16px; }
 .ow-step small, .ow-trust small { display: block; color: rgba(17, 17, 17, .62); font-size: 14px; margin-top: 2px; }
 .ow-trust { max-width: 1100px; margin: 0 auto; padding: 30px max(22px, 5vw) 34px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
@@ -57,9 +57,9 @@ body.ow-page::before, body.ow-page .vs-sky { display: none !important; }
 .ow-r { opacity: 0; transform: translateY(24px); transition: opacity .7s cubic-bezier(.2, .7, .2, 1) var(--d, 0s), transform .7s cubic-bezier(.2, .7, .2, 1) var(--d, 0s); }
 .ow-r.in, .ow-steps.in .ow-r { opacity: 1; transform: none; }
 @keyframes ow-up { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
-@keyframes ow-fill { 0%, 18% { background: #0E5E54; box-shadow: 0 0 0 0 rgba(14, 94, 84, .6); } 22% { box-shadow: 0 0 0 7px rgba(14, 94, 84, 0); } 40%, 100% { background: #DDDDDD; box-shadow: none; } }
+@keyframes ow-fill { 0%, 18% { background: #1554D1; box-shadow: 0 0 0 0 rgba(21, 84, 209, .6); } 22% { box-shadow: 0 0 0 7px rgba(21, 84, 209, 0); } 40%, 100% { background: #DDDDDD; box-shadow: none; } }
 @keyframes ow-tick { 0%, 38% { opacity: 0; transform: scale(.4); } 45%, 100% { opacity: 1; transform: none; } }
-@keyframes ow-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(14, 94, 84, .55); } 50% { box-shadow: 0 0 0 12px rgba(14, 94, 84, 0); } }
+@keyframes ow-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(21, 84, 209, .55); } 50% { box-shadow: 0 0 0 12px rgba(21, 84, 209, 0); } }
 @media (prefers-reduced-motion: reduce) { .ow-a, .ow-r { opacity: 1; transform: none; animation: none; transition: none; } .ow-tower .w.v, .ow-tower .w.v i, .ow-pulse { animation: none; } }
 
 /* Phones */

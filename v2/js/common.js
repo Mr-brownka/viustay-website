@@ -67,14 +67,14 @@
           '<nav class="site-nav" aria-label="Main">' +
           (owners
             ? '<a href="index.html">' + T('Find a home') + '</a><a href="owners.html#how">' + T('How it works') + '</a><a href="owners.html#caretakers">' + T('Caretakers') + '</a>'
-            : '<a href="index.html">' + T('Map') + '</a><a href="reels.html">' + T('Reels') + '</a><a href="homes.html">' + T('All homes') + '</a><a href="trip.html">' + T('Trips') + '</a><a href="owners.html">' + T('For owners') + '</a>' +
+            : '<a href="index.html">' + T('Explore') + '</a><a href="homes.html">' + T('All homes') + '</a><a href="saved.html">' + T('Saved') + '</a><a href="trip.html">' + T('My Plans') + '</a><a href="owners.html">' + T('For owners') + '</a>' +
               '<details class="nav-more"><summary>' + T('More') + '</summary><div class="nav-more-list"><a href="how-it-works.html">' + T('How it works') + '</a><a href="about.html">' + T('About') + '</a><a href="list-property.html">' + T('List your property') + '</a><a href="contact.html">' + T('Contact') + '</a></div></details>' +
               '<a class="nav-extra" href="how-it-works.html">' + T('How it works') + '</a><a class="nav-extra" href="about.html">' + T('About') + '</a><a class="nav-extra" href="contact.html">' + T('Contact') + '</a>') +
           '</nav><div class="header-actions">' +
           (owners
             ? '<a class="btn btn-pill btn-light" href="dashboard.html">' + T('Manager log in') + '</a>'
-            : '<a class="btn btn-pill btn-primary" href="amina.html">' + T('Ask Amina') + '</a>') +
-          V.langSelect() +
+            : '<a class="btn btn-pill btn-primary hdr-ai" href="ai.html">' + V.sphere(26) + '<span>' + T('Ask Viu AI') + '</span></a>') +
+          V.langSelect() + (owners ? '' : '<a class="hdr-me" href="me.html" aria-label="' + T('Me') + '"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></a>') +
           '</div><div class="menu-looks" role="group" aria-label="Colour look"></div></div></div>';
         document.addEventListener('click', function (ev) { var d = slot.querySelector('.nav-more[open]'); if (d && !d.contains(ev.target)) d.removeAttribute('open'); });
         var tog = slot.querySelector('.menu-toggle'), panel = slot.querySelector('.menu-panel');
@@ -88,15 +88,14 @@
     // Bottom tab bar on phones (item 24): Home, Homes, Short stays, My bookings, Help
     if (kind === 'main' && !body.hasAttribute('data-no-tabs')) {
       var here = (location.pathname.split('/').pop() || 'index.html'), q = location.search;
-      var cur = here === 'trip.html' ? 'b' : here === 'reels.html' ? 'r' : here === 'amina.html' ? 'a' : here === 'me.html' ? 'm' : here === 'index.html' || here === 'homes.html' || here === 'home.html' || here === 'matches.html' ? 'i' : '';
-      var TAB = [['i', 'index.html', 'Map', '<path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/>'],
-        ['r', 'reels.html', 'Reels', '<rect x="4" y="3" width="16" height="18" rx="4"/><path d="M10 9l5 3-5 3z"/>'],
-        ['a', 'amina.html', 'Amina', '<path d="M4 20l1.3-4A8 8 0 1 1 8 18.7z"/><path d="M9 11h6"/>'],
-        ['b', 'trip.html', 'Trips', '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>'],
-        ['m', 'me.html', 'Me', '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>']];
+      var cur = here === 'trip.html' ? 'b' : here === 'saved.html' ? 's' : here === 'ai.html' || here === 'amina.html' ? 'a' : here === 'index.html' || here === 'homes.html' || here === 'home.html' || here === 'matches.html' || here === 'reels.html' ? 'i' : '';
+      var TAB = [['i', 'index.html', 'Explore', '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>'],
+        ['a', 'ai.html', 'Viu AI', ''],
+        ['s', 'saved.html', 'Saved', '<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>'],
+        ['b', 'trip.html', 'My Plans', '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>']];
       var tb = document.createElement('nav'); tb.className = 'tabbar'; tb.setAttribute('aria-label', T('App'));
       tb.innerHTML = TAB.map(function (t) {
-        return '<a href="' + t[1] + '"' + (t[0] === 'w' ? ' target="_blank" rel="noopener"' : '') + (t[0] === cur ? ' class="on" aria-current="page"' : '') + '><i><svg viewBox="0 0 24 24">' + t[3] + '</svg></i>' + T(t[2]) + '</a>';
+        return '<a href="' + t[1] + '"' + (t[0] === 'w' ? ' target="_blank" rel="noopener"' : '') + (t[0] === cur ? ' class="on" aria-current="page"' : '') + '><i>' + (t[0] === 'a' ? V.sphere(24, true) : '<svg viewBox="0 0 24 24">' + t[3] + '</svg>') + '</i>' + T(t[2]) + '</a>';
       }).join('');
       body.appendChild(tb); body.classList.add('has-tabs');
     }
@@ -106,14 +105,17 @@
       foot.innerHTML =
         '<div class="container footer-grid">' +
         '<div class="footer-brand brand" style="display:block"><img class="logo-pearl" src="assets/viustay-logo-colour.svg" alt="Viustay" style="height:28px;width:auto"><img class="logo-night" src="assets/viustay-logo-white.svg" alt="Viustay" style="height:28px;width:auto"><p>' + T('Find your place. We handle the rest.') + '</p><p>' + T('Mon–Sat, 8:00 AM – 5:00 PM') + '</p></div>' +
-        '<nav aria-label="Renters"><strong>' + T('Renters') + '</strong><a href="amina.html">' + T('Ask Amina') + '</a><a href="index.html">' + T('Map') + '</a><a href="reels.html">' + T('Reels') + '</a><a href="homes.html">' + T('All homes') + '</a><a href="homes.html?stay=short">' + T('Short stays') + '</a><a href="areas.html">' + T('Area guides') + '</a><a href="trip.html">' + T('My bookings') + '</a></nav>' +
+        '<nav aria-label="Renters"><strong>' + T('Renters') + '</strong><a href="ai.html">' + T('Ask Viu AI') + '</a><a href="homes.html">' + T('All homes') + '</a><a href="saved.html">' + T('Saved') + '</a><a href="reels.html">' + T('Home reels') + '</a><a href="homes.html?stay=short">' + T('Short stays') + '</a><a href="areas.html">' + T('Area guides') + '</a><a href="trip.html">' + T('My Plans') + '</a></nav>' +
         '<nav aria-label="Owners"><strong>' + T('Owners') + '</strong><a href="owners.html">' + T('For owners') + '</a><a href="list-property.html">' + T('List your property') + '</a><a href="dashboard.html">' + T('Manager log in') + '</a><a href="agent.html">' + T('Agent log in') + '</a></nav>' +
         '<nav aria-label="Company"><strong>' + T('Company') + '</strong><a href="about.html">' + T('About') + '</a><a href="investors.html">' + T('Investors') + '</a><a href="faq.html">FAQ</a><a href="contact.html">' + T('Contact') + '</a></nav>' +
         '<nav aria-label="Legal"><strong>' + T('Legal') + '</strong><a href="terms.html">' + T('Terms') + '</a><a href="privacy.html">' + T('Privacy') + '</a></nav>' +
         '</div><div class="container footer-base"><span>&copy; ' + new Date().getFullYear() + ' Viustay · Nairobi, Kenya</span><span>' + T('Draft website · Version 2') + '</span></div>';
     }
     // Floating WhatsApp button on every page except the dashboard
-    if (!body.hasAttribute('data-no-wa') && !V.$('.wa-float')) {
+    if (kind === 'main' && !body.hasAttribute('data-no-ai') && !V.$('.ai-fab')) {
+      var fab = document.createElement('a'); fab.className = 'ai-fab'; fab.href = 'ai.html'; fab.setAttribute('aria-label', T('Ask Viu AI'));
+      fab.innerHTML = V.sphere(60) + '<span>' + T('Ask Viu AI') + '</span>'; body.appendChild(fab);
+    } else if (!body.hasAttribute('data-no-wa') && !V.$('.wa-float')) {
       var wa = document.createElement('a');
       wa.className = 'wa-float';
       wa.href = V.wa('Hi Viustay, I have a question');
@@ -157,8 +159,8 @@
     if (seen) { bootEnd(); return; }
     var o = document.createElement('div');
     o.className = 'vs-launch'; o.setAttribute('aria-hidden', 'true');
-    o.innerHTML = '<svg viewBox="0 0 40 46"><path class="pin" d="M20 2 C10 2 3 9.5 3 19 C3 31 20 44 20 44 C20 44 37 31 37 19 C37 9.5 30 2 20 2 Z" fill="#0E5E54"/>' +
-      '<path class="roof" d="M10.5 17 L20 9.5 L29.5 17" fill="none" stroke="#F2A93B" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>' +
+    o.innerHTML = '<svg viewBox="0 0 40 46"><path class="pin" d="M20 2 C10 2 3 9.5 3 19 C3 31 20 44 20 44 C20 44 37 31 37 19 C37 9.5 30 2 20 2 Z" fill="#1554D1"/>' +
+      '<path class="roof" d="M10.5 17 L20 9.5 L29.5 17" fill="none" stroke="#FFB020" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>' +
       '<path class="vee" d="M13.5 19.5 L20 29 L26.5 19.5" fill="none" stroke="#FFFFFF" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="word">viustay</span>';
     b.appendChild(o);
     var done = false;
@@ -363,7 +365,7 @@
     function ui() {
       if (el) return el;
       el = document.createElement('div'); el.className = 'ptr'; el.setAttribute('aria-hidden', 'true');
-      el.innerHTML = '<span class="ptr-ball"><svg viewBox="0 0 28 34"><path d="M14 33S2 21 2 13a12 12 0 0 1 24 0c0 8-12 20-12 20Z" fill="#0E5E54"/><circle cx="14" cy="13" r="5" fill="#111111"/></svg></span>';
+      el.innerHTML = '<span class="ptr-ball"><svg viewBox="0 0 28 34"><path d="M14 33S2 21 2 13a12 12 0 0 1 24 0c0 8-12 20-12 20Z" fill="#1554D1"/><circle cx="14" cy="13" r="5" fill="#111111"/></svg></span>';
       document.body.appendChild(el); return el;
     }
     function set(d, anim) { var e = ui(); e.style.transition = anim ? 'transform .25s, opacity .25s' : 'none'; e.style.transform = 'translate(-50%,' + (d - 50) + 'px)'; e.style.opacity = Math.min(1, d / GO); e.querySelector('svg').style.transform = 'rotate(' + d * 4 + 'deg)'; }
@@ -512,10 +514,33 @@
   }
   window.addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
   // One card design for homes everywhere (image first, the photo is the hero)
+  // Viu AI sphere (futuristic, animated): <span class="vai"> ... "AI"
+  V.sphere = function (size, mini) {
+    return '<span class="vai' + (mini ? ' vai-sm' : '') + '" style="--s:' + size + 'px" aria-hidden="true"><span class="vai-core"></span><span class="vai-ring"></span><span class="vai-orbit"><b></b></span><em>AI</em></span>';
+  };
+  // Saved homes (favourites, any number). The 3-home viewing trip is separate (V.TripBasket in app.js).
+  V.Favs = {
+    ids: function () { try { return JSON.parse(localStorage.getItem('vs-favs') || '[]'); } catch (e) { return []; } },
+    has: function (id) { return V.Favs.ids().indexOf(id) >= 0; },
+    toggle: function (id) { var a = V.Favs.ids(), i = a.indexOf(id); if (i >= 0) a.splice(i, 1); else a.unshift(id); try { localStorage.setItem('vs-favs', JSON.stringify(a)); } catch (e) {} try { window.dispatchEvent(new CustomEvent('vs-favs')); } catch (e) {} return i < 0; }
+  };
+  document.addEventListener('click', function (e) {
+    var h = e.target.closest && e.target.closest('[data-fav]'); if (!h) return;
+    e.preventDefault(); e.stopPropagation();
+    var on = V.Favs.toggle(h.getAttribute('data-fav'));
+    Array.prototype.forEach.call(document.querySelectorAll('[data-fav="' + h.getAttribute('data-fav') + '"]'), function (x) { x.setAttribute('aria-pressed', String(on)); });
+    h.classList.remove('pop'); void h.offsetWidth; h.classList.add('pop');
+    if (V.toast) V.toast(on ? V.t('Saved. Find it in Saved.') : V.t('Removed from Saved'));
+  }, true);
+  if (!V.toast) V.toast = function (msg) {
+    var t = document.querySelector('.app-toast'); if (!t) { t = document.createElement('div'); t.className = 'app-toast'; t.setAttribute('role', 'status'); document.body.appendChild(t); }
+    t.textContent = msg; t.classList.remove('on'); void t.offsetWidth; t.classList.add('on'); clearTimeout(V._tt); V._tt = setTimeout(function () { t.classList.remove('on'); }, 2200);
+  };
+  V.heart = function (id) { var on = V.Favs.has(id); return '<span class="fav" role="button" tabindex="0" data-fav="' + V.esc(id) + '" aria-pressed="' + on + '" aria-label="' + V.esc(V.t('Save')) + '"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg></span>'; };
   V.cardHTML = function (l) {
     var T = V.t, sh = l.stay === 'short';
-    return '<a class="card" href="home.html?id=' + encodeURIComponent(l.id) + '">' +
-      '<span class="photo" style="' + V.photoStyle(l.photoList[0]) + '">' + (l.photoList[0] ? '' : V.esc(T('Photo coming soon'))) + '<span class="badge">' + V.esc(T('Verified')) + '</span></span>' +
+    return '<a class="card" data-id="' + V.esc(l.id) + '" href="home.html?id=' + encodeURIComponent(l.id) + '">' +
+      '<span class="photo" style="' + V.photoStyle(l.photoList[0]) + '">' + (l.photoList[0] ? '' : V.esc(T('Photo coming soon'))) + '<span class="badge">' + V.esc(T('Verified')) + '</span>' + V.heart(l.id) + '</span>' +
       '<span class="body"><span class="price">KES ' + V.money(V.price(l)) + ' <small>' + V.esc(V.per(l)) + '</small></span>' +
       '<span class="desc">' + V.esc(V.shortDesc(l)) + ' · ' + V.esc(l.area) + (sh ? ' · ' + V.esc(T('Up to {n} guests', { n: l.max_guests })) : '') + '</span>' +
       '<span class="tags">' + V.esc((sh && l.includedList && l.includedList.length ? l.includedList : (l.amenityList || [])).slice(0, 3).map(function (x) { return T(x); }).join(' · ')) + '</span></span></a>';

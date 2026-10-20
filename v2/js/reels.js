@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
       (sh ? '' : '<button type="button" data-trip="' + id + '" class="' + (on ? 'on' : '') + '"><b>' + I.heart + '</b><span>' + V.esc(on ? T('In trip') : T('Save')) + '</span></button>') +
       '<button type="button" data-room-tour="' + id + '"><b>' + I.cam + '</b><span>' + V.esc(T('Tour')) + '</span></button>' +
       '<a href="index.html?area=' + encodeURIComponent(l.area) + '"><b>' + I.pin + '</b><span>' + V.esc(T('Map')) + '</span></a>' +
-      '<a href="amina.html?stay=' + (sh ? 'short' : 'long') + '&area=' + encodeURIComponent(l.area) + '"><b>' + I.chat + '</b><span>' + V.esc(T('Ask')) + '</span></a></div>' +
+      '<a href="ai.html?stay=' + (sh ? 'short' : 'long') + '&area=' + encodeURIComponent(l.area) + '"><b>' + I.chat + '</b><span>' + V.esc(T('Ask')) + '</span></a></div>' +
       '<div class="rl-info"><span class="rl-badge">✓ ' + V.esc(T('Verified by Viustay')) + '</span><b class="rl-price">KES ' + V.money(V.price(l)) + '<small> ' + V.esc(V.per(l)) + '</small></b><span class="rl-what">' + V.esc(V.shortDesc(l)) + ' · ' + V.esc(l.area) + '</span>' +
       '<span class="rl-tags">' + V.esc(((sh && l.includedList && l.includedList.length) ? l.includedList : (l.amenityList || [])).slice(0, 3).map(T).join(' · ')) + '</span></div>' +
       '<div class="rl-acts">' + (sh ? '<a class="rl-btn am" href="' + href + '">' + I.moon + V.esc(T('Book stay')) + '</a>' : '<button type="button" class="rl-btn am" data-trip="' + id + '">' + I.car + '<span>' + V.esc(on ? T('In your trip') : T('Add to trip')) + '</span></button>') + '<a class="rl-btn gl" href="' + href + '">' + V.esc(T('Details')) + '</a></div></section>';

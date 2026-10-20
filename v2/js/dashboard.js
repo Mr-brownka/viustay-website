@@ -459,7 +459,7 @@ document.addEventListener('DOMContentLoaded', function () {
         (nx ? '<span class="note">' + esc(T('Next viewing')) + ' <b>' + esc(nx.viewing_date === today() ? T('today') : nx.viewing_date === addDays(today(), 1) ? T('tomorrow') : dayName(nx.viewing_date)) + ' ' + esc(shortTime(nx.viewing_time)) + '</b>' + (nx.agent_name ? ' · ' + esc(nx.agent_name.split(' ')[0]) : '') + '</span>' : '');
     } else {
       var st = setupSteps(b), done = st.filter(function (s) { return s[0] === 'done'; }).length, next = st.filter(function (s) { return s[0] === 'now'; })[0];
-      body = '<span class="prog"><span class="row1"><b>' + esc(next ? next[1] + (next[2] ? ' · ' + next[2] : '') : '') + '</b><span class="dim">' + esc(T('{a} of {b}', { a: done, b: st.length })) + '</span></span><span class="bar" style="display:block"><i style="width:' + (done / st.length * 100) + '%;background:#0E5E54"></i></span></span>';
+      body = '<span class="prog"><span class="row1"><b>' + esc(next ? next[1] + (next[2] ? ' · ' + next[2] : '') : '') + '</b><span class="dim">' + esc(T('{a} of {b}', { a: done, b: st.length })) + '</span></span><span class="bar" style="display:block"><i style="width:' + (done / st.length * 100) + '%;background:#1554D1"></i></span></span>';
     }
     return '<button type="button" class="md-bcard" data-bid="' + b.id + '">' + photo(b, lab) + body + '</button>';
   }
@@ -514,7 +514,7 @@ document.addEventListener('DOMContentLoaded', function () {
       var st = setupSteps(b), done = st.filter(function (s) { return s[0] === 'done'; }).length, next = st.filter(function (s) { return s[0] === 'now'; })[0];
       el.innerHTML = '<section>' + band(b) +
         '<div class="md-hero"><div class="md-setup"><div style="display:flex;justify-content:space-between"><span class="k">' + esc(T('Getting set up')) + '</span><b>' + esc(T('{a} of {b}', { a: done, b: st.length })) + '</b></div>' +
-        '<div class="bar"><i style="width:' + (done / st.length * 100) + '%;background:#0E5E54"></i></div>' +
+        '<div class="bar"><i style="width:' + (done / st.length * 100) + '%;background:#1554D1"></i></div>' +
         '<div style="font-size:15px;line-height:1.45">' + esc(T('Next:')) + ' <b>' + esc(next ? next[1] : '') + '</b>' + (next && next[2] ? ' · ' + esc(next[2]) : '') + '</div>' +
         '<p style="margin:12px 0 0;opacity:.85;font-size:14px">' + esc(T('You can add your vacancies now. We list them after the visit.')) + '</p></div>' +
         '<div class="md-card md-steps">' + st.map(function (s) {
@@ -547,7 +547,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function stat(label, n, sub) { return '<div class="md-stat"><small>' + esc(label) + '</small><b>' + n + '</b><span>' + esc(sub) + '</span></div>'; }
   function daysBar(u) {
     var d = daysSince(u.vacant_since), hot = d > 20;
-    return '<span class="md-days"><span class="bar" style="display:block"><i style="width:' + Math.min(100, Math.max(4, d * 3)) + '%;background:' + (hot ? '#E24B4A' : '#0E5E54') + '"></i></span>' +
+    return '<span class="md-days"><span class="bar" style="display:block"><i style="width:' + Math.min(100, Math.max(4, d * 3)) + '%;background:' + (hot ? '#E24B4A' : '#1554D1') + '"></i></span>' +
       '<span style="color:' + (hot ? '#A32D2D' : '#6B6B6B') + '">' + esc(d === 0 ? T('Empty from today') : d === 1 ? T('1 day empty') : T('{n} days empty', { n: d })) + '</span></span>';
   }
   function agentMini(v) {
@@ -982,7 +982,7 @@ document.addEventListener('DOMContentLoaded', function () {
     o.className = 'bk-made';
     o.setAttribute('role', 'status');
     o.style.cssText = 'position:fixed;inset:0;z-index:80;background:linear-gradient(150deg,#1F1F1F,#111111);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font:600 26px Plus Jakarta Sans,sans-serif;text-align:center;padding:24px';
-    o.innerHTML = '<span style="width:84px;height:84px;border-radius:50%;background:#0E5E54;color:#FFFFFF;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" style="width:44px;height:44px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round"><path d="M5 12l5 5 9-10"/></svg></span>' +
+    o.innerHTML = '<span style="width:84px;height:84px;border-radius:50%;background:#1554D1;color:#FFFFFF;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" style="width:44px;height:44px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round"><path d="M5 12l5 5 9-10"/></svg></span>' +
       esc(text) + '<span style="font:400 16px \'Plus Jakarta Sans\',sans-serif;opacity:.9;max-width:320px">' + esc(T('Next, add your vacancies. We call you to confirm the photo visit.')) + '</span>';
     document.body.appendChild(o);
     setTimeout(function () { o.remove(); then(); }, 2200);
@@ -1074,7 +1074,7 @@ document.addEventListener('DOMContentLoaded', function () {
     showDash({
       buildings: [
         { id: 1, code: 'KIL-101', name: 'Sunrise Apartments', location: 'Kilimani', road: 'Argwings Kodhek Rd', floors: 6, total_units: 12, status: 'live',
-          details: { contacts: { person: 'Amina Mohamed', phone: '0712 345 678', caretaker: 'Joseph', caretaker_phone: '0722 111 222', viewing_times: ['Weekday mornings', 'Saturdays'], notice_hours: 2 },
+          details: { contacts: { person: 'Halima Noor', phone: '0712 345 678', caretaker: 'Joseph', caretaker_phone: '0722 111 222', viewing_times: ['Weekday mornings', 'Saturdays'], notice_hours: 2 },
             house_types: [{ type: 'One bedroom', units: 4, rent: 26000, deposit: '1 month' }, { type: 'Two bedroom', units: 8, rent: 38000, deposit: '2 months' }],
             services: { water_source: ['Borehole', 'City water'], electricity: ['Token', 'Backup generator'], security: ['Gate', 'Guards', 'CCTV'], parking: ['Parking', 'Lift'], amenities: ['Rooftop'] },
             rules: { pets: 'Not allowed', notice: '1 month', short_stays: 'Not allowed', move_in: ['ID', 'Signed lease'] } } },
@@ -1086,7 +1086,7 @@ document.addEventListener('DOMContentLoaded', function () {
         { id: 4, building_id: 1, label: 'B4', type: 'One bedroom', rent: 26000, status: 'let', vacant_since: null, listing_id: 'VS-004', paused: false }
       ],
       viewings: [mk(2, wd(0), '9:00 AM', 'VS-007', 'done', hassan), mk(3, wd(1), '11:30 AM', 'VS-001', 'confirmed', hassan), mk(5, wd(2), '11:30 AM', 'VS-007', 'new', null)],
-      profile: { email: 'amina@sunrise.co.ke', name: 'Amina Mohamed', phone: '0712 345 678', notify_booked: true, notify_agent: true, notify_weekly: false }
+      profile: { email: 'halima@sunrise.co.ke', name: 'Halima Noor', phone: '0712 345 678', notify_booked: true, notify_agent: true, notify_weekly: false }
     });
     return;
   }

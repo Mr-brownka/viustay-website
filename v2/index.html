@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-light-only>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -34,37 +34,67 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Viustay">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<link rel="stylesheet" href="css/styles.css?v=25">
-<link rel="stylesheet" href="css/glass.css?v=25">
-<link rel="stylesheet" href="css/chat.css?v=25">
+<link rel="stylesheet" href="css/styles.css?v=30">
+<link rel="stylesheet" href="css/glass.css?v=30">
 <link rel="preload" href="assets/fonts/jakarta.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="css/ui.css?v=5">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
-<link rel="stylesheet" href="css/app.css?v=2">
+<link rel="stylesheet" href="css/ui.css?v=30">
+<link rel="stylesheet" href="css/app.css?v=30">
+<link rel="stylesheet" href="css/explore.css?v=30">
 <script src="js/look.js"></script>
 </head>
-<body data-header="main" data-page="map" class="mapapp" data-no-ptr>
-<header id="site-header" hidden></header>
-<main class="mp" aria-label="Map of Nairobi homes">
-  <div id="map" role="application" aria-label="Map"></div>
+<body data-header="main" data-page="explore">
+<header id="site-header"></header>
+<main class="ex">
+  <section class="ex-hero" id="ex-hero">
+    <div class="ex-hero-in">
+      <span class="ex-loc"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg><span data-i18n>Nairobi</span></span>
+      <h1 data-i18n>Your next chapter starts with a place.</h1>
+      <p data-i18n>Find verified homes in Nairobi without the endless searching.</p>
+    </div>
+    <form class="ex-search" id="ex-search" role="search">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+      <input id="ex-q" type="search" placeholder="Area, building or landmark" aria-label="Search area, building or landmark" data-i18n-ph autocomplete="off" list="ex-areas">
+      <datalist id="ex-areas"></datalist>
+      <select id="ex-stay" aria-label="Type of stay"><option value="long" data-i18n>Long stay</option><option value="short" data-i18n>Short stay</option></select>
+      <button type="submit" class="ex-go" aria-label="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><span data-i18n>Search</span></button>
+    </form>
+  </section>
+  <div class="ex-wrap">
+    <section class="ex-doors">
+      <a class="ex-door main" href="ai.html?stay=long"><i><svg viewBox="0 0 24 24"><path d="M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg></i><b data-i18n>Find a home</b><span data-i18n>Long stay · monthly rent</span></a>
+      <a class="ex-door" href="ai.html?stay=short"><i><svg viewBox="0 0 24 24"><path d="M20 14A8 8 0 0 1 10 4a8 8 0 1 0 10 10z"/></svg></i><b data-i18n>Explore short stays</b><span data-i18n>Furnished · per night</span></a>
+      <a class="ex-ai" href="ai.html"><span class="ex-ai-orb"></span><span class="ex-ai-t"><b data-i18n>Not sure where to start?</b><span data-i18n>Viu AI finds homes around your budget and needs.</span></span><em data-i18n>Ask Viu AI</em></a>
+    </section>
+    <section class="ex-sec">
+      <div class="ex-h"><h2 data-i18n>Explore neighbourhoods</h2><a href="homes.html" data-i18n>See all</a></div>
+      <div class="ex-row" id="ex-hoods"></div>
+    </section>
+    <section class="ex-sec">
+      <div class="ex-h"><h2 data-i18n>Recommended homes</h2><a href="homes.html" data-i18n>See all</a></div>
+      <div class="ex-row cards-row" id="ex-homes"></div>
+    </section>
+    <section class="ex-sec" id="ex-short-sec">
+      <div class="ex-h"><h2 data-i18n>Short stays this week</h2><a href="homes.html?stay=short" data-i18n>See all</a></div>
+      <div class="ex-row cards-row" id="ex-short"></div>
+    </section>
+    <section class="ex-how">
+      <h2 data-i18n>How Viustay works</h2>
+      <ol>
+        <li><b data-i18n>Tell us what you need</b><span data-i18n>Search, or answer a few questions with Viu AI.</span></li>
+        <li><b data-i18n>Save up to 3 homes</b><span data-i18n>Every home is visited and checked by Viustay.</span></li>
+        <li><b data-i18n>See them in one trip</b><span data-i18n>We take you to all of them in one organised viewing.</span></li>
+      </ol>
+    </section>
+    <a class="ex-owner" href="owners.html"><span><small data-i18n>For property owners</small><b data-i18n>Vacant units? We fill them.</b></span><em data-i18n>List a property</em></a>
+  </div>
 </main>
-<div class="mp-top">
-  <button type="button" class="mp-search" id="mp-search"><svg class="lg" viewBox="0 0 40 46"><path d="M20 2C10 2 3 9.5 3 19c0 12 17 25 17 25s17-13 17-25C37 9.5 30 2 20 2z" fill="#0E5E54"/><path d="M10.5 17 20 9.5l9.5 7.5" fill="none" stroke="#F2A93B" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.5 19.5 20 29l6.5-9.5" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span><b data-i18n>Where in Nairobi?</b><small id="mp-sub" data-i18n>Ask Amina, or tap an area on the map</small></span><i><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></i></button>
-  <div class="st-row" id="st-row" aria-label="Stories"></div>
-  <div class="mp-seg" id="mp-seg"><button type="button" data-stay="long" aria-pressed="true" data-i18n>Monthly</button><button type="button" data-stay="short" aria-pressed="false" data-i18n>Nightly</button><button type="button" data-all aria-pressed="false" data-i18n>All homes</button></div>
-</div>
-<a class="mp-card" id="mp-card" href="amina.html"><span class="av"><svg width="22" height="25" viewBox="0 0 40 46"><path d="M20 2C10 2 3 9.5 3 19c0 12 17 25 17 25s17-13 17-25C37 9.5 30 2 20 2z" fill="#fff"/><path d="M10.5 17 20 9.5l9.5 7.5" fill="none" stroke="#F2A93B" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.5 19.5 20 29l6.5-9.5" fill="none" stroke="#0E5E54" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><b data-i18n>Not sure where?</b><br><small data-i18n>Amina finds homes for you in 1 minute</small></span><em data-i18n>Ask Amina</em></a>
-<section class="mp-sheet" id="mp-sheet" aria-live="polite"><i class="grab"></i><button type="button" class="mp-close" id="mp-close" aria-label="Close">×</button>
-  <div class="mp-sh-h"><span><b id="sh-area"></b><small id="sh-sub"></small></span><button type="button" class="mp-watch" id="sh-watch">▶ <span data-i18n>Watch</span></button></div>
-  <div class="mp-row" id="sh-row"></div>
-</section>
-<script src="js/lang.js?v=27"></script>
+<footer id="site-footer"></footer>
+<script src="js/lang.js?v=30"></script>
 <script src="js/i18n.js"></script>
 <script src="js/config.js"></script>
-<script src="js/common.js?v=27"></script>
+<script src="js/common.js?v=30"></script>
 <script src="js/install.js"></script>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-<script src="js/app.js?v=2"></script>
-<script src="js/map.js?v=1"></script>
+<script src="js/app.js?v=30"></script>
+<script src="js/explore.js?v=30"></script>
 </body>
 </html>

@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function () {
   ins.addEventListener('click', function (e) { e.preventDefault(); var b = document.querySelector('.vs-install'); if (b) b.click(); else V.toast(T('Open the menu in your browser and tap "Add to Home screen".')); });
   function picks() {
     var ids = V.TripBasket.ids(), box = document.getElementById('me-picks');
-    if (!ids.length) { box.innerHTML = '<a class="me-cta" href="amina.html"><span>' + V.esc(T('No homes picked yet')) + '<br><small style="font-weight:600;opacity:.85">' + V.esc(T('Amina finds homes for you in 1 minute')) + '</small></span><em>' + V.esc(T('Ask Amina')) + '</em></a>'; return; }
+    if (!ids.length) { box.innerHTML = '<a class="me-cta" href="ai.html"><span>' + V.esc(T('No homes picked yet')) + '<br><small style="font-weight:600;opacity:.85">' + V.esc(T('Amina finds homes for you in 1 minute')) + '</small></span><em>' + V.esc(T('Ask Amina')) + '</em></a>'; return; }
     V.loadListings().then(function (all) {
       var ls = ids.map(function (id) { return all.filter(function (x) { return x.id === id; })[0]; }).filter(Boolean);
       box.innerHTML = '<p class="me-sec">' + V.esc(T('Your viewing trip · {n}/3', { n: ls.length })) + '</p><div class="me-picks">' + ls.map(function (l) { return '<a href="home.html?id=' + encodeURIComponent(l.id) + '"><span style="' + V.photoStyle(l.photoList[0]) + '"></span><b>KES ' + V.money(V.price(l)) + '<br><small style="font-weight:600;color:#777">' + V.esc(l.area) + '</small></b></a>'; }).join('') + '</div>' +

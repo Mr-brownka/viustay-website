@@ -48,7 +48,7 @@
       var sw = document.createElement('div');
       sw.className = 'vs-looks'; sw.setAttribute('role', 'group'); sw.setAttribute('aria-label', 'Colour look');
       sw.innerHTML = '<button type="button" data-look="pearl"><i style="background:#fff"></i>Pearl</button>' +
-                     '<button type="button" data-look="night"><i style="background:#073B35"></i>Night</button>';
+                     '<button type="button" data-look="night"><i style="background:#0A2540"></i>Night</button>';
       document.body.appendChild(sw);
       Array.prototype.forEach.call(sw.querySelectorAll('button'), function (b) {
         b.addEventListener('click', function () { set(b.getAttribute('data-look')); });

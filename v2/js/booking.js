@@ -348,7 +348,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   function changesMade(title, href) {
     var o = document.createElement('div'); o.className = 'bk-made';
-    o.innerHTML = '<div class="bk-check"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#F4F4F2" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="bk-tick" d="M5 12.5 10 17l9-10"/></svg></div><h1>' + V.esc(title) + '</h1><p>' + t_('Taking you back to your booking…') + '</p><span class="bk-made-bar"><i></i></span>';
+    o.innerHTML = '<div class="bk-check"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#F4F6F9" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="bk-tick" d="M5 12.5 10 17l9-10"/></svg></div><h1>' + V.esc(title) + '</h1><p>' + t_('Taking you back to your booking…') + '</p><span class="bk-made-bar"><i></i></span>';
     document.body.appendChild(o);
     setTimeout(function () { location.href = href; }, 2600);
   }

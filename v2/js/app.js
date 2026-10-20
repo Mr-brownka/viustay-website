@@ -4,7 +4,7 @@
   var V = window.V, T = V.t;
   function esc(s) { return V.esc(s); }
   function calm() { return !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); }
-  var EM = '#0E5E54', AM = '#F2A93B';
+  var EM = '#1554D1', AM = '#FFB020';
 
   // ---------- Trip basket (homes picked for one viewing trip; max 3, monthly homes only) ----------
   var MAX = 3;
@@ -35,6 +35,14 @@
     'Karen': [-1.3197, 36.7073], 'Langata': [-1.3420, 36.7680], 'Lang\'ata': [-1.3420, 36.7680], 'Kasarani': [-1.2219, 36.8960], 'Roysambu': [-1.2180, 36.8870], 'Embakasi': [-1.3196, 36.8941],
     'Ruaka': [-1.2045, 36.7808], 'Rongai': [-1.3960, 36.7440], 'Syokimau': [-1.3618, 36.9238], 'Kitengela': [-1.4730, 36.9600], 'Riverside': [-1.2700, 36.7980], 'Spring Valley': [-1.2550, 36.7930],
     'Runda': [-1.2180, 36.8100], 'Gigiri': [-1.2330, 36.8030], 'Muthaiga': [-1.2490, 36.8330], 'Donholm': [-1.2950, 36.8890], 'Buruburu': [-1.2860, 36.8780], 'Thika Rd': [-1.2300, 36.8800], 'CBD': [-1.2864, 36.8172]
+  };
+
+  // approximate pin for a home: its area centre plus a small fixed offset (we never invent exact addresses)
+  V.pinPos = function (l) {
+    var c = V.AREAS[l.area] || [-1.2864, 36.8172], h = 2166136261, id = String(l.id || '');
+    for (var i = 0; i < id.length; i++) { h ^= id.charCodeAt(i); h = Math.imul(h, 16777619); }
+    h ^= h >>> 16; h = Math.imul(h, 0x45d9f3b); h ^= h >>> 16; h >>>= 0;
+    return [c[0] + ((h & 1023) / 1023 - .5) * .012, c[1] + (((h >>> 10) & 1023) / 1023 - .5) * .014];
   };
 
   // ---------- Reel player ----------

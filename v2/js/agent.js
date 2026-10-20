@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var t = today(), tm = new Date(Date.now() + 864e5).toISOString().slice(0, 10);
     me = { name: 'Hassan Ali' };
     trips = [
-      { id: 1, ref: 'VS-7KQ2PA', date: tm, slot: '9:00 AM', status: 'confirmed', response: 'pending', pickup_area: 'South B', pickup_note: 'Gate B, Capital Centre side', homes: [{ title: '1 bedroom, Argwings Kodhek Rd', area: 'Kilimani' }, { title: '2 bedroom, James Gichuru Rd', area: 'Lavington' }], pay: 1600, km: 24.3, drive_min: 66, wait_min: 40, client: 'Amina', attempts_left: 5 },
+      { id: 1, ref: 'VS-7KQ2PA', date: tm, slot: '9:00 AM', status: 'confirmed', response: 'pending', pickup_area: 'South B', pickup_note: 'Gate B, Capital Centre side', homes: [{ title: '1 bedroom, Argwings Kodhek Rd', area: 'Kilimani' }, { title: '2 bedroom, James Gichuru Rd', area: 'Lavington' }], pay: 1600, km: 24.3, drive_min: 66, wait_min: 40, client: 'Halima', attempts_left: 5 },
       { id: 2, ref: 'VS-3MD9TE', date: t, slot: '11:30 AM', status: 'confirmed', response: 'accepted', pickup_area: 'Kilimani', pickup_note: '', homes: [{ title: 'Studio, Yaya area', area: 'Kilimani' }], pay: 700, km: 6.1, drive_min: 17, wait_min: 20, client: 'Brian', phone: '0722000111', attempts_left: 5, pay_after: true, total: 1650, lat: -1.3201, lng: 36.8269 },
       { id: 3, ref: 'VS-9PLX2B', date: '2026-10-09', slot: '2:00 PM', status: 'completed', response: 'accepted', pickup_area: 'Parklands', homes: [{ title: '1 bedroom, Parklands', area: 'Parklands' }], pay: 650, km: 4, drive_min: 11, wait_min: 20, client: 'Fatma', attempts_left: 5 }
     ];

@@ -1,10 +1,10 @@
 // Viustay v2 service worker: makes the site installable and keeps it usable on a weak connection.
 // Pages: network first (always fresh), cached copy if offline. Styles, scripts, images: cache first.
 // Supabase, Google Sheets and other sites are never cached.
-var CACHE = 'viustay-v2-28';
+var CACHE = 'viustay-v2-29';
 var CORE = ['./', './index.html', './homes.html', './matches.html', './book.html', './owners.html',
   './css/styles.css', './css/glass.css', './css/chat.css', './css/trips.css', './css/book.css', './trip.html',
-  './js/look.js', './js/common.js', './js/config.js', './js/chat.js', './js/results.js', './js/flow.js', './js/install.js', './js/lang.js', './js/i18n.js', './js/onboard.js', './js/stay.js', './stay.html', './js/trip-math.js', './js/booking.js', './js/trip.js', './js/doors.js', './js/ticket.js', './js/qrcode.js', './js/cal.js', './css/ui.css', './css/app.css', './js/app.js', './js/map.js', './js/amina.js', './js/reels.js', './js/me.js', './amina.html', './reels.html', './me.html', './assets/fonts/jakarta.woff2', './assets/fonts/serif-italic.woff2',
+  './js/look.js', './js/common.js', './js/config.js', './js/chat.js', './js/results.js', './js/flow.js', './js/install.js', './js/lang.js', './js/i18n.js', './js/onboard.js', './js/stay.js', './stay.html', './js/trip-math.js', './js/booking.js', './js/trip.js', './js/doors.js', './js/ticket.js', './js/qrcode.js', './js/cal.js', './css/ui.css', './css/app.css', './js/app.js', './js/ai.js', './js/saved.js', './js/explore.js', './css/explore.css', './ai.html', './saved.html', './js/reels.js', './js/me.js', './reels.html', './me.html', './assets/fonts/jakarta.woff2', './assets/fonts/serif-italic.woff2',
   './assets/viustay-logo-colour.svg', './assets/viustay-logo-white.svg', './assets/app-icon-192.png', './assets/favicon.png'];
 
 self.addEventListener('install', function (e) {

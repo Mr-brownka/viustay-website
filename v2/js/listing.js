@@ -76,6 +76,7 @@ document.addEventListener('DOMContentLoaded', function () {
       $('#thumbs').appendChild(b);
     });
     if (!photos.length) $('#thumbs').classList.add('hidden');
+    $('#main-photo').insertAdjacentHTML('beforeend', V.heart(l.id));
     if (photos.length) { var tb = document.createElement('button'); tb.type = 'button'; tb.className = 'tour-btn'; tb.setAttribute('data-room-tour', l.id); tb.innerHTML = '\u25B6 ' + V.esc(T('Room tour')); $('#main-photo').appendChild(tb); }
     show();
   }).catch(function () { $('#l-skel').classList.add('hidden'); $('#not-found').classList.remove('hidden'); });

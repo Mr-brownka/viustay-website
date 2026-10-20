@@ -83,7 +83,7 @@
     var a = agent(t.agent_id), st = STATUS[t.status] || ['', t.status];
     var unpaidOld = t.status === 'awaiting_payment' && (Date.now() - new Date(t.created_at)) > (S.pay_window_min || 30) * 60000;
     if (unpaidOld) st = ['bad', 'Not paid in time'];
-    var h = '<article class="t-card" data-trip="' + t.id + '"' + (needsAction(t) ? ' style="box-shadow:inset 4px 0 0 #0E5E54"' : '') + '>' +
+    var h = '<article class="t-card" data-trip="' + t.id + '"' + (needsAction(t) ? ' style="box-shadow:inset 4px 0 0 #1554D1"' : '') + '>' +
       '<div class="row-between" style="flex-wrap:wrap;gap:8px"><strong style="font-size:18px">' + V.esc(t.client_name) + ' · ' + V.esc(t.client_phone) + '</strong><span class="t-badge ' + st[0] + '">' + st[1] + '</span></div>' +
       '<div class="t-kv"><span>Trip</span><strong>' + dayFmt(t.trip_date) + ', ' + V.esc(t.slot) + ' · ' + V.esc(t.booking_ref) + '</strong>' +
       '<span>Pickup</span><span>' + V.esc(t.pickup_area) + (t.pickup_note ? ' · ' + V.esc(t.pickup_note) : '') + (t.pickup_lat ? ' · <a target="_blank" rel="noopener" href="https://www.google.com/maps?q=' + t.pickup_lat + ',' + t.pickup_lng + '">exact pin</a>' : '') + '</span>' +
@@ -171,7 +171,7 @@
   }
   function renderTripsBoard() {
     var recent = new Date(Date.now() - 14 * 864e5).toISOString().slice(0, 10);
-    var cols = [{ title: 'New', sub: 'check homes', tone: '#0E5E54', items: [] }, { title: 'Confirmed', sub: 'needs agent', tone: '#3E8C7B', items: [] },
+    var cols = [{ title: 'New', sub: 'check homes', tone: '#1554D1', items: [] }, { title: 'Confirmed', sub: 'needs agent', tone: '#3B6FD8', items: [] },
       { title: 'Agent ready', sub: 'trip day', tone: '#111111', items: [] }, { title: 'Done', sub: 'last 2 weeks', tone: '#5F5E5A', items: [] }];
     data.trips.slice().sort(function (a, b) { return a.trip_date < b.trip_date ? -1 : 1; }).forEach(function (t) {
       var c = tripCol(t); if (c < 0) return; if (c === 3 && t.trip_date < recent && !(t.pay_after && !t.mpesa_code)) return;
@@ -185,7 +185,7 @@
   function renderStaysBoard() {
     if (data.stays === null) { main().innerHTML = head('Bookings', viewToggle()) + seg('stays') + '<p class="t-warn">Run <strong>supabase/add-stays.sql</strong> in Supabase to turn on short-stay bookings, then tap Refresh.</p>'; return; }
     var recent = new Date(Date.now() - 14 * 864e5).toISOString().slice(0, 10);
-    var cols = [{ title: 'Waiting', sub: 'for payment', tone: '#0E5E54', items: [] }, { title: 'Paid', sub: 'check M-Pesa', tone: '#C98A3E', items: [] },
+    var cols = [{ title: 'Waiting', sub: 'for payment', tone: '#1554D1', items: [] }, { title: 'Paid', sub: 'check M-Pesa', tone: '#C98A3E', items: [] },
       { title: 'Confirmed', sub: 'before arrival', tone: '#1F1F1F', items: [] }, { title: 'Checked in', sub: 'in the house', tone: '#111111', items: [] }, { title: 'Done', sub: 'last 2 weeks', tone: '#5F5E5A', items: [] }];
     var holdMin = (S.pay_window_min || 30) * 60000;
     data.stays.slice().sort(function (a, b) { return a.check_in < b.check_in ? -1 : 1; }).forEach(function (s) {
@@ -265,7 +265,7 @@
     var st = SST[s.status] || ['', s.status];
     if (s.status === 'awaiting_payment' && (Date.now() - new Date(s.created_at)) > (S.pay_window_min || 30) * 60000) st = ['bad', 'Not paid in time'];
     var first = s.guest_name.split(' ')[0];
-    var h = '<article class="t-card" data-stay="' + s.id + '"' + (stayAction(s) ? ' style="box-shadow:inset 4px 0 0 #0E5E54"' : '') + '>' +
+    var h = '<article class="t-card" data-stay="' + s.id + '"' + (stayAction(s) ? ' style="box-shadow:inset 4px 0 0 #1554D1"' : '') + '>' +
       '<div class="row-between" style="flex-wrap:wrap;gap:8px"><strong style="font-size:18px">' + V.esc(s.guest_name) + ' · ' + V.esc(s.guest_phone) + '</strong><span class="t-badge ' + st[0] + '">' + st[1] + '</span></div>' +
       '<div class="t-kv"><span>Stay</span><strong>' + V.esc(s.listing_title || s.listing_id) + ' (' + V.esc(s.listing_id) + ') · ' + V.esc(s.booking_ref) + '</strong>' +
       '<span>Dates</span><span>' + dayFmt(s.check_in) + ' → ' + dayFmt(s.check_out) + ' · ' + s.nights + ' night' + (s.nights === 1 ? '' : 's') + ' · ' + s.guests + ' guest' + (s.guests === 1 ? '' : 's') + '</span>' +
