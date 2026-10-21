@@ -11,7 +11,7 @@
   document.body.appendChild(o);
   document.documentElement.classList.add('onb-open');
 
-  var PIN = '<svg viewBox="0 0 40 46" aria-hidden="true"><path d="M20 2 C10 2 3 9.5 3 19 C3 31 20 44 20 44 C20 44 37 31 37 19 C37 9.5 30 2 20 2 Z" fill="#111111"/><path d="M10.5 17 L20 9.5 L29.5 17" fill="none" stroke="#1554D1" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.5 19.5 L20 29 L26.5 19.5" fill="none" stroke="#FFFFFF" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var PIN = '<svg viewBox="8 4 32 40" aria-hidden="true"><path d="M24 5C15.2 5 9 11.6 9 20c0 10.5 15 23 15 23s15-12.5 15-23C39 11.6 32.8 5 24 5z" fill="#111111"/><circle cx="24" cy="18.5" r="5" fill="#FFB020"/><path d="M21.6 21.5h4.8l-1.3 8a1.1 1.1 0 0 1-2.2 0z" fill="#FFB020"/></svg>';
 
   function finish() {
     try { localStorage.setItem(KEY, '1'); sessionStorage.removeItem(STEP); sessionStorage.removeItem('vs-onb-goal'); } catch (e) {}

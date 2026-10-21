@@ -431,3 +431,8 @@ html[data-look="night"] { --orange-ink: #FFAA6B; --orange-soft: rgba(245, 137, 5
 @media (hover: hover) { .card:hover, a.card:hover { border-color: rgba(245, 137, 58, .55) !important; } }
 .q-segs i.on { background: var(--orange) !important; }
 .q-segs i.now { background: linear-gradient(90deg, var(--orange) 50%, var(--sand-deep) 50%) !important; }
+.vs-launch .pin { transform-origin: 24px 43px; }
+.vs-launch .key { transform-origin: 24px 22px; animation: vl-key .45s .4s cubic-bezier(.3, 1.6, .5, 1) both; }
+@keyframes vl-key { from { transform: scale(0); opacity: 0; } }
+.vs-launch .word { color: #0A2540; font-weight: 800; }
+@media (prefers-reduced-motion: reduce) { .vs-launch .key { animation: none; } }
