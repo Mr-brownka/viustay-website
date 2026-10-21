@@ -34,12 +34,12 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Viustay">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<link rel="stylesheet" href="css/styles.css?v=41">
-<link rel="stylesheet" href="css/glass.css?v=41">
+<link rel="stylesheet" href="css/styles.css?v=42">
+<link rel="stylesheet" href="css/glass.css?v=42">
 <link rel="preload" href="assets/fonts/jakarta.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="css/ui.css?v=41">
-<link rel="stylesheet" href="css/app.css?v=41">
-<link rel="stylesheet" href="css/explore.css?v=41">
+<link rel="stylesheet" href="css/ui.css?v=42">
+<link rel="stylesheet" href="css/app.css?v=42">
+<link rel="stylesheet" href="css/explore.css?v=42">
 <script src="js/look.js"></script>
 </head>
 <body data-header="main" data-page="explore" data-no-ai>
@@ -52,22 +52,10 @@
       <p data-i18n>Verified homes. Less searching. A simpler move.</p>
     </section>
     <div class="ex-side">
-      <form class="ex-sc" id="ex-sc" role="search" aria-label="Search homes">
-        <div class="ex-seg" role="tablist" aria-label="Type of stay"><button type="button" role="tab" data-stay="long" aria-selected="true" data-i18n>Monthly rent</button><button type="button" role="tab" data-stay="short" aria-selected="false" data-i18n>Stay a few nights</button></div>
-        <label class="ex-f"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg><span><b id="ex-where-l">Where do you want to live?</b><input id="ex-q" type="search" placeholder="Area, neighbourhood or building" data-i18n-ph autocomplete="off" list="ex-areas"></span></label>
-        <datalist id="ex-areas"></datalist>
-        <div class="ex-two" id="ex-long">
-          <label class="ex-f"><svg viewBox="0 0 24 24"><path d="M3 18V8M3 14h18v4M21 18v-6a3 3 0 0 0-3-3h-7v5"/></svg><span><b data-i18n>Bedrooms</b><select id="ex-beds"><option value="" data-i18n>Any</option><option value="0" data-i18n>Bedsitter / studio</option><option value="1" data-i18n>1 bedroom</option><option value="2" data-i18n>2 bedrooms</option><option value="3" data-i18n>3+ bedrooms</option></select></span></label>
-          <label class="ex-f"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg><span><b data-i18n>Budget</b><select id="ex-max"><option value="" data-i18n>Any / month</option><option value="40000">Under 40k</option><option value="60000">Under 60k</option><option value="80000">Under 80k</option><option value="120000">Under 120k</option></select></span></label>
-        </div>
-        <div class="ex-two" id="ex-short" hidden>
-          <label class="ex-f"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span><b data-i18n>Check-in</b><input type="date" id="ex-in"></span></label>
-          <label class="ex-f"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 20a6 6 0 0 0-3-5.2"/></svg><span><b data-i18n>Guests</b><select id="ex-guests"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option><option value="5">5+</option></select></span></label>
-        </div>
-        <button type="submit" class="ex-go"><span id="ex-go-t">Search homes</span><svg viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button>
-        <a class="ex-guide" id="ex-guide" href="find.html?stay=long" data-i18n>Or answer a few quick questions ›</a>
-      </form>
-      <a class="ex-ai" href="ai.html"><span class="ex-ai-orb"></span><span class="ex-ai-t"><b data-i18n>Not sure where to live?</b><span data-i18n>Viu AI compares areas, budgets and homes for you.</span></span><em data-i18n>Ask Viu AI</em></a>
+      <h2 class="ex-title" data-i18n>Find your place in Nairobi</h2>
+      <button type="button" class="ex-where" id="ex-where" aria-haspopup="dialog"><span class="ex-wgo"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></span><b data-i18n>Where do you want to live?</b></button>
+      <div class="ex-chips" id="ex-chips"></div>
+      <div class="ex-ai-lap"><a class="ex-ai" href="ai.html"><span class="ex-ai-orb"></span><span class="ex-ai-t"><b data-i18n>Not sure where to live?</b><span data-i18n>Viu AI compares areas, budgets and homes for you.</span></span><em data-i18n>Ask Viu AI</em></a></div>
     </div>
   </div>
   <div class="ex-wrap">
@@ -75,6 +63,7 @@
       <div class="ex-h"><span><h2 id="ex-homes-h">Verified homes for monthly rent</h2><small id="ex-homes-s">Visited and checked by Viustay</small></span><a id="ex-homes-all" href="homes.html" data-i18n>See all</a></div>
       <div class="ex-row cards-row" id="ex-homes"></div>
     </section>
+    <div class="ex-ai-ph"><a class="ex-ai" href="ai.html"><span class="ex-ai-orb"></span><span class="ex-ai-t"><b data-i18n>Not sure where to live?</b><span data-i18n>Viu AI compares areas, budgets and homes for you.</span></span><em data-i18n>Ask Viu AI</em></a></div>
     <section class="ex-sec">
       <div class="ex-h"><span><h2 data-i18n>Explore by neighbourhood</h2><small data-i18n>Where Viustay has verified homes</small></span><a href="homes.html" data-i18n>See all</a></div>
       <div class="ex-row" id="ex-hoods"></div>
@@ -82,7 +71,7 @@
     <section class="ex-how">
       <h2 data-i18n>How Viustay works</h2>
       <ol>
-        <li><b data-i18n>Tell us what you need</b><span data-i18n>Search, answer a few quick questions, or ask Viu AI.</span></li>
+        <li><b data-i18n>Tell us what you need</b><span data-i18n>Search, answer a few quick questions, or ask Viu AI.</span><a class="ex-guide" href="find.html" data-i18n>Answer a few quick questions ›</a></li>
         <li><b data-i18n>Save up to 3 homes</b><span data-i18n>Every home is visited and checked by Viustay.</span></li>
         <li><b data-i18n>See them in one trip</b><span data-i18n>We take you to all of them in one organised viewing.</span></li>
       </ol>
@@ -90,13 +79,27 @@
     <a class="ex-owner" href="owners.html"><span><small data-i18n>For property owners</small><b data-i18n>Vacant units? We fill them.</b></span><em data-i18n>List a property</em></a>
   </div>
 </main>
+<div class="ex-pick" id="ex-pick" role="dialog" aria-modal="true" aria-labelledby="ex-pick-h" hidden>
+  <div class="ex-pick-in">
+    <div class="ex-pick-top"><button type="button" class="ex-back" id="ex-back" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><b id="ex-pick-h" data-i18n>Where in Nairobi?</b></div>
+    <form class="ex-sin" id="ex-sin" role="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="ex-q" type="search" placeholder="Type an area or building" data-i18n-ph autocomplete="off" enterkeyhint="search"></form>
+    <div class="ex-list" id="ex-list"></div>
+  </div>
+</div>
+<div class="ex-ask" id="ex-ask" role="dialog" aria-modal="true" aria-labelledby="ex-ask-h" hidden>
+  <div class="ex-scrim" data-close></div>
+  <div class="ex-bsh"><i class="ex-grab"></i><b id="ex-ask-h"></b><span class="ex-ask-s" data-i18n>One tap and we show you the homes.</span>
+    <button type="button" class="ex-big" data-stay="long"><span class="ex-bi"><svg viewBox="0 0 24 24"><path d="M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg></span><span><b data-i18n>Monthly rent</b><small data-i18n>A home to live in · pay per month</small></span></button>
+    <button type="button" class="ex-big" data-stay="short"><span class="ex-bi"><svg viewBox="0 0 24 24"><path d="M20 14A8 8 0 0 1 10 4a8 8 0 1 0 10 10z"/></svg></span><span><b data-i18n>A few nights</b><small data-i18n>Furnished · pay per night by M-Pesa</small></span></button>
+  </div>
+</div>
 <footer id="site-footer"></footer>
-<script src="js/lang.js?v=41"></script>
+<script src="js/lang.js?v=42"></script>
 <script src="js/i18n.js"></script>
 <script src="js/config.js"></script>
-<script src="js/common.js?v=41"></script>
+<script src="js/common.js?v=42"></script>
 <script src="js/install.js"></script>
-<script src="js/app.js?v=41"></script>
-<script src="js/explore.js?v=41"></script>
+<script src="js/app.js?v=42"></script>
+<script src="js/explore.js?v=42"></script>
 </body>
 </html>

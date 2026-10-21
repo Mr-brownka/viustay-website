@@ -1364,7 +1364,18 @@ window.VS_DICT = {
   "Explore by neighbourhood": "Gundua kwa mtaa",
   "Where Viustay has verified homes": "Mahali Viustay ina nyumba zilizothibitishwa",
   "Install app": "Sakinisha programu",
-  "Or answer a few quick questions ›": "Au jibu maswali machache ya haraka ›"
+  "Or answer a few quick questions ›": "Au jibu maswali machache ya haraka ›",
+  "Find your place in Nairobi": "Pata makazi yako Nairobi",
+  "Type an area or building": "Andika eneo au jengo",
+  "Show me the best homes in Nairobi": "Nionyeshe nyumba bora Nairobi",
+  "Search for “{q}”": "Tafuta “{q}”",
+  "Area, street or building": "Eneo, barabara au jengo",
+  "Areas": "Maeneo",
+  "{a} · how long?": "{a} · kwa muda gani?",
+  "One tap and we show you the homes.": "Gusa mara moja tukuonyeshe nyumba.",
+  "A home to live in · pay per month": "Nyumba ya kuishi · lipa kila mwezi",
+  "Furnished · pay per night by M-Pesa": "Yenye samani · lipa kwa usiku kwa M-Pesa",
+  "Answer a few quick questions ›": "Jibu maswali machache ›"
  },
  "so": {
   "Find a home": "Raadi guri",
@@ -2730,6 +2741,17 @@ window.VS_DICT = {
   "Explore by neighbourhood": "Ku sahamin xaafad",
   "Where Viustay has verified homes": "Halka Viustay ay ku leedahay guryo la xaqiijiyay",
   "Install app": "Rakib app-ka",
-  "Or answer a few quick questions ›": "Ama ka jawaab su'aalo yar oo degdeg ah ›"
+  "Or answer a few quick questions ›": "Ama ka jawaab su'aalo yar oo degdeg ah ›",
+  "Find your place in Nairobi": "Ka hel meeshaada Nairobi",
+  "Type an area or building": "Qor xaafad ama dhisme",
+  "Show me the best homes in Nairobi": "I tus guryaha ugu fiican Nairobi",
+  "Search for “{q}”": "Raadi “{q}”",
+  "Area, street or building": "Xaafad, waddo ama dhisme",
+  "Areas": "Xaafadaha",
+  "{a} · how long?": "{a} · muddo intee le'eg?",
+  "One tap and we show you the homes.": "Hal mar taabo, guryaha ayaan ku tusaynaa.",
+  "A home to live in · pay per month": "Guri lagu noolaado · bil walba bixi",
+  "Furnished · pay per night by M-Pesa": "Qalabaysan · habeen kasta ku bixi M-Pesa",
+  "Answer a few quick questions ›": "Ka jawaab dhowr su'aalood ›"
  }
 };
