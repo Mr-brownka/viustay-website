@@ -436,3 +436,5 @@ html[data-look="night"] { --orange-ink: #FFAA6B; --orange-soft: rgba(245, 137, 5
 @keyframes vl-key { from { transform: scale(0); opacity: 0; } }
 .vs-launch .word { color: #0A2540; font-weight: 800; }
 @media (prefers-reduced-motion: reduce) { .vs-launch .key { animation: none; } }
+.vs-launch.vl2 { background: transparent !important; display: block !important; padding: 0 !important; z-index: 2147483000; }
+.vs-launch.vl2 svg { position: absolute; left: 0; top: 0; width: 100% !important; height: 100% !important; overflow: visible; }

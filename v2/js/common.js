@@ -62,6 +62,7 @@
         slot.innerHTML =
           '<div class="container">' +
           '<a class="brand" href="' + (owners ? 'owners.html' : 'index.html') + '"><img class="logo-pearl" src="assets/viustay-logo-colour.svg" alt="Viustay home"><img class="logo-night" src="assets/viustay-logo-white.svg" alt="Viustay home">' + (owners ? '<span class="tag">for owners</span>' : '') + '</a>' +
+          (owners ? '' : '<span class="hdr-q"><button type="button" class="vs-install hdr-inst" hidden><svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span>' + T('Install app') + '</span></button><a class="hdr-me" href="me.html" aria-label="' + T('Me') + '"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></a></span>') +
           '<button type="button" class="menu-toggle" aria-expanded="false" aria-controls="menu-panel" aria-label="Open menu"><span></span><span></span><span></span></button>' +
           '<div class="menu-panel" id="menu-panel">' +
           '<nav class="site-nav" aria-label="Main">' +
@@ -157,15 +158,54 @@
     if (!b || b.hasAttribute('data-no-launch')) { bootEnd(); return; }
     var seen = false; try { seen = sessionStorage.getItem('vs-launched'); sessionStorage.setItem('vs-launched', '1'); } catch (e) { seen = true; }
     if (seen) { bootEnd(); return; }
+    // Keyhole reveal: the logo drops in, the keyhole lights up, then the app opens THROUGH the keyhole.
+    // Drawn as one SVG with a mask, animated frame by frame (requestAnimationFrame) so it stays smooth.
+    var calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var W = window.innerWidth || 390, H = window.innerHeight || 844, NS = 'http://www.w3.org/2000/svg';
+    var u = Math.min(118, W * .3) / 32, x0 = W / 2 - 16 * u, y0 = H / 2 - 20 * u - 26, cx = x0 + 16 * u, cy = y0 + 14.5 * u;
+    var K = Math.sqrt(Math.max(cx, W - cx) * Math.max(cx, W - cx) + Math.max(cy, H - cy) * Math.max(cy, H - cy)) / (5 * u) + 3;
+    var KEYP = '<circle cx="0" cy="0" r="5"/><path d="M-2.4 3h4.8l-1.3 8a1.1 1.1 0 0 1-2.2 0z"/>';
     var o = document.createElement('div');
-    o.className = 'vs-launch'; o.setAttribute('aria-hidden', 'true');
-    o.innerHTML = '<svg viewBox="8 4 32 40"><path class="pin" d="M24 5C15.2 5 9 11.6 9 20c0 10.5 15 23 15 23s15-12.5 15-23C39 11.6 32.8 5 24 5z" fill="#1554D1"/><g class="key"><circle cx="24" cy="18.5" r="5" fill="#FFB020"/><path d="M21.6 21.5h4.8l-1.3 8a1.1 1.1 0 0 1-2.2 0z" fill="#FFB020"/></g></svg><span class="word">viustay</span>';
+    o.className = 'vs-launch vl2'; o.setAttribute('aria-hidden', 'true');
+    o.innerHTML = '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" xmlns="' + NS + '">' +
+      '<defs><mask id="vl-m" maskUnits="userSpaceOnUse" x="0" y="0" width="' + W + '" height="' + H + '"><rect width="' + W + '" height="' + H + '" fill="#fff"/>' +
+      '<g transform="translate(' + cx + ' ' + cy + ')"><g id="vl-h" transform="scale(0)"><g transform="scale(' + u + ')" fill="#000">' + KEYP + '</g></g></g></mask></defs>' +
+      '<g mask="url(#vl-m)"><rect width="' + W + '" height="' + H + '" fill="#FFFFFF"/>' +
+      '<g id="vl-logo" opacity="0"><g transform="translate(' + x0 + ' ' + y0 + ') scale(' + u + ') translate(-8 -4)"><path d="M24 5C15.2 5 9 11.6 9 20c0 10.5 15 23 15 23s15-12.5 15-23C39 11.6 32.8 5 24 5z" fill="#1554D1"/>' +
+      '<g transform="translate(24 18.5)"><g id="vl-k" transform="scale(0)" fill="#FFB020">' + KEYP + '</g></g></g></g>' +
+      '<text id="vl-w" x="' + (W / 2) + '" y="' + (y0 + 40 * u + 46) + '" text-anchor="middle" font-family="Plus Jakarta Sans, system-ui, sans-serif" font-weight="800" font-size="34" letter-spacing="-0.6" fill="#0A2540" opacity="0">viustay</text></g></svg>';
     b.appendChild(o);
-    var done = false;
+    var logo = o.querySelector('#vl-logo'), key = o.querySelector('#vl-k'), word = o.querySelector('#vl-w'), hole = o.querySelector('#vl-h');
+    var done = false, opened = false, t0 = null, openAt = calm ? 250 : 900, OPEN = calm ? 1 : 650;
     window.VS_LAUNCHING = true;
-    function end() { if (done) return; done = true; bootEnd(); o.classList.add('out'); window.VS_LAUNCHING = false; try { window.dispatchEvent(new Event('vs-launch-done')); } catch (e) {} setTimeout(function () { if (o.parentNode) o.parentNode.removeChild(o); }, 320); }
-    o.addEventListener('click', end);
-    setTimeout(end, window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches ? 350 : 900);
+    function cl(x) { return x < 0 ? 0 : x > 1 ? 1 : x; }
+    function back(p) { var c = 1.7; return 1 + (c + 1) * Math.pow(p - 1, 3) + c * Math.pow(p - 1, 2); }
+    function inout(p) { return p < .5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2; }
+    function finish() {
+      if (done) return; done = true; window.VS_LAUNCHING = false;
+      if (o.parentNode) o.parentNode.removeChild(o);
+      try { window.dispatchEvent(new Event('vs-launch-done')); } catch (e) {}
+    }
+    function frame(ts) {
+      if (done) return; if (t0 === null) t0 = ts; var t = ts - t0;
+      if (calm) { logo.setAttribute('opacity', 1); key.setAttribute('transform', 'scale(1)'); word.setAttribute('opacity', 1); }
+      else {
+        var p1 = cl(t / 420), p2 = cl((t - 280) / 300), p3 = cl((t - 430) / 260);
+        logo.setAttribute('opacity', p1.toFixed(3)); logo.setAttribute('transform', 'translate(0 ' + (-46 * (1 - back(p1))).toFixed(2) + ')');
+        key.setAttribute('transform', 'scale(' + Math.max(0, back(p2)).toFixed(3) + ')');
+        word.setAttribute('opacity', (p3 * (1 - cl((t - openAt) / 160))).toFixed(3));
+      }
+      if (t >= openAt) {
+        if (!opened) { opened = true; bootEnd(); }
+        var q = cl((t - openAt) / OPEN);
+        hole.setAttribute('transform', 'scale(' + (K * inout(q)).toFixed(3) + ')');
+        if (q >= 1) { finish(); return; }
+      }
+      requestAnimationFrame(frame);
+    }
+    o.addEventListener('click', function () { if (!opened && t0 !== null) { openAt = Math.max(0, performance.now() - t0); } });
+    requestAnimationFrame(frame);
+    setTimeout(function () { if (!done) { bootEnd(); finish(); } }, 3500);   // safety net
   })();
 
   document.addEventListener('DOMContentLoaded', function () {

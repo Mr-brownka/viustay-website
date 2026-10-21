@@ -459,3 +459,15 @@ body.f-open .ai-fab, html.rl-open .ai-fab, body.rmap-full .ai-fab { display: non
 @keyframes favPop { 50% { transform: scale(1.25); } }
 .tabbar a i:has(.vai) { padding: 3px 16px !important; }
 @media (max-width: 860px) { body:not([data-page="explore"]) .ai-fab { display: none; } .ai-fab { bottom: calc(100px + env(safe-area-inset-bottom)); } }
+/* v5: phone header quick actions (Install app + Me), never under the tab bar */
+.hdr-q { display: none; }
+@media (max-width: 860px) {
+  .site-header .container { gap: 8px; }
+  .hdr-q { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+  .hdr-q + .menu-toggle { margin-left: 0 !important; }
+  .hdr-inst { height: 36px; padding: 0 10px 0 8px; border-radius: 11px; border: 1.5px solid #CFDCF5; background: #F2F6FE; color: #1554D1; font: 800 12.5px var(--body); display: inline-flex; align-items: center; gap: 5px; cursor: pointer; white-space: nowrap; }
+  .hdr-inst svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .hdr-q .hdr-me { width: 36px; height: 36px; }
+  .menu-panel .hdr-me { display: none; }
+  .ai-fab { display: none !important; }
+}
